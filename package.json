@@ -1,8 +1,8 @@
 {
     "name": "airtable",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "homepage": "https://github.com/airtable/airtable.js",
-    "repository": "git://github.com/airtable/airtable.git",
+    "repository": "git://github.com/airtable/airtable.js.git",
 
     "dependencies": {
         "async": "0.9.0",
