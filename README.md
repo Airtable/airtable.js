@@ -17,7 +17,7 @@ We hope you find it fun and easy!
 
 There are two configurable options available:
 
-  * apiKey - set the token to your secret API token. Visit [your account page](https://airtable.com/account) to create an API token.  (`AIRTABLE_API_KEY`)
+  * apiKey - set the token to your secret API token. Visit [your account page](https://airtable.com/useraccount) to create an API token.  (`AIRTABLE_API_KEY`)
   * endpointUrl - the API endpoint to hit. You might want to override
     it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`)
 
@@ -36,7 +36,7 @@ You can also override the settings per connection:
 
 # Interactive documentation
 
-Go to https://airtable.com/api to see the interactive API documentation for your Airtable applications. It'll have examples for all operation
+Go to https://airtable.com/api to see the interactive API documentation for your Airtable applications. It'll have examples for all operations you can perform against your apps.
 
 # What happened to the tests?
 
