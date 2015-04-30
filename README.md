@@ -8,7 +8,7 @@ information or todo items, the vocabulary of the interactions closely
 matches your data structure. You will use your table names to address
 tables, column names to access data stored in those column IDs. In
 other words, Airtable API is your own RESTful API for your
-application.
+base.
 
 We hope you find it fun and easy!
 
@@ -36,7 +36,7 @@ You can also override the settings per connection:
 
 # Interactive documentation
 
-Go to https://airtable.com/api to see the interactive API documentation for your Airtable applications. It'll have examples for all operations you can perform against your apps.
+Go to https://airtable.com/api to see the interactive API documentation for your Airtable bases. It'll have examples for all operations you can perform against your bases.
 
 # What happened to the tests?
 
