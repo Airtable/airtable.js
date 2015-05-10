@@ -2,7 +2,7 @@ The awesome Airtable javascript library. It's official.
 
 # Airtable.js
 
-Airtable API v0.1.0 provides a simple way of accessing *your*
+The Airtable API provides a simple way of accessing *your*
 data. Whether it's contacts, sales leads, inventory, applicant
 information or todo items, the vocabulary of the interactions closely
 matches your data structure. You will use your table names to address
