@@ -16,7 +16,8 @@ module.exports = function(grunt) {
                     console: true,
                     module: true,
                     require: true,
-                    process: true
+                    process: true,
+                    setTimeout: true
                 }
             }
         }
