@@ -1,27 +1,30 @@
 {
-    "name": "airtable",
-    "version": "0.2.0",
-    "homepage": "https://github.com/airtable/airtable.js",
-    "repository": "git://github.com/airtable/airtable.js.git",
-
-    "private": false,
-    "dependencies": {
-        "async": "0.9.0",
-        "request": "2.42.0",
-        "lodash": "2.4.1"
-    },
-    "main" : "./lib/airtable.js",
-    "devDependencies": {
-        "grunt": "~0.4.5",
-        "grunt-contrib-jshint": "~0.10.0"
-    },
-    "keywords": [
-        "airtable",
-        "productivity",
-        "database",
-        "spreadsheet"
-    ],
-    "engines": {
-        "node": ">= 0.10.0"
-    }
+  "name": "airtable",
+  "version": "0.2.0",
+  "homepage": "https://github.com/airtable/airtable.js",
+  "repository": "git://github.com/airtable/airtable.js.git",
+  "private": false,
+  "dependencies": {
+    "async": "0.9.0",
+    "request": "2.42.0",
+    "lodash": "2.4.1"
+  },
+  "main": "./lib/airtable.js",
+  "browser": {
+    "./lib/run_action.js": "./lib/run_action_with_jquery.js"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-browserify": "^3.8.0",
+    "grunt-contrib-jshint": "~0.10.0"
+  },
+  "keywords": [
+    "airtable",
+    "productivity",
+    "database",
+    "spreadsheet"
+  ],
+  "engines": {
+    "node": ">= 0.10.0"
+  }
 }

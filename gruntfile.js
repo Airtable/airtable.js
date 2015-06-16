@@ -20,7 +20,18 @@ module.exports = function(grunt) {
                     setTimeout: true
                 }
             }
-        }
+        },
+        browserify: {
+            client: {
+                src: './lib/airtable.js',
+                dest: './airtable.browser.js',
+                options: {
+                    preBundleCB: function(b) {
+                        b.require('./lib/airtable.js', { expose: 'airtable' });
+                    }
+                }
+            }
+        },
     });
 
     // Load the plugin that provides the "uglify" task.
@@ -29,4 +40,5 @@ module.exports = function(grunt) {
     // Default task(s).
     grunt.registerTask('default', ['jshint']);
 
+    grunt.loadNpmTasks('grunt-browserify');
 };
