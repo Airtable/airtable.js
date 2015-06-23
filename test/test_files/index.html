@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="jquery-1.11.3.min.js"></script>
+        <script src="airtable.browser.js"></script>
+    </head>
+    <body>
+        <div id="artists"></div>
+    </body>
+
+
+    <script>
+var Airtable = require('airtable');
+// Get a base ID for an instance of art gallery example
+var base = new Airtable({ apiKey: 'FILL_OUT_API_KEY' }).base('FILL_OUT_BASE_ID');
+
+var deleteArtist = function(record) {
+    record.destroy(function(err) {
+        if (err) {
+            console.log('Error destroying ', recordId, err);
+        } else {
+            console.log('Destroyed ', record.getId());
+            $('div[data-record-id="'+record.getId()+'"]').remove();
+        }
+    });
+};
+
+base('Artists').list(3, null, {view: 'Main View'}, function(err, records, newOffset) {
+    if (err) {
+        console.log(err);
+        return;
+    }
+
+    records.forEach(function(record) {
+        console.log('Retrieved ', record.get('Name'));
+
+        var $artistInfo = $('<div>');
+        $artistInfo.append($('<h3>').text(record.get('Name')));
+        $artistInfo.append($('<div>').text(record.get('Bio')));
+        var x = $('<div>').text('x');
+        x.click(function(){
+            deleteArtist(record);
+        });
+        $artistInfo.append(x)
+        $artistInfo.attr('data-record-id', record.getId());
+
+        $('#artists').append($artistInfo);
+    });
+});
+
+</script>
+</html>
