@@ -24,7 +24,7 @@ module.exports = function(grunt) {
         browserify: {
             client: {
                 src: './lib/airtable.js',
-                dest: './airtable.browser.js',
+                dest: './build/airtable.browser.js',
                 options: {
                     preBundleCB: function(b) {
                         b.require('./lib/airtable.js', { expose: 'airtable' });
