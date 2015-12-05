@@ -279,21 +279,21 @@ function runActionWithJQuery(base, method, path, queryParams, bodyData, callback
 
         headers: {
             'Authorization': 'Bearer ' + base._airtable._apiKey,
-            // TODO: uncomment when the server is fixed to allow this header:
-            //'X-API-VERSION': base._airtable._apiVersion
+            'x-api-version': base._airtable._apiVersion,
+            'x-airtable-application-id': base.getId(),
         },
         success: function(data, textStatus, jqXHR) {
             callback(null, null, data);
         },
         error: function(jqXHR, textStatus) {
             var error;
-            if(jqXHR.statusCode()===429 && !base._airtable._noRetryIfRateLimited){
-                setTimeout(function(){
+            if (jqXHR.status === 429 && !base._airtable._noRetryIfRateLimited) {
+                setTimeout(function() {
                     runActionWithJQuery(base, method, path, queryParams, bodyData, callback);
                 }, internalConfig.RETRY_DELAY_IF_RATE_LIMITED);
                 return;
             }
-            error = base._checkStatusForError(jqXHR.statusCode(), jqXHR.respnoseText);
+            error = base._checkStatusForError(jqXHR.status, jqXHR.responseJSON);
             callback(error);
         }
     });
@@ -385,13 +385,18 @@ var Table = Class.extend({
             }
         ], done);
     },
-    _forEachRecord: function(callback, done) {
+    _forEachRecord: function(opts, callback, done) {
+        if (arguments.length === 2) {
+            done = callback;
+            callback = opts;
+            opts = {};
+        }
         var that = this;
         var limit = Table.__recordsPerPageForIteration || 100;
         var offset = null;
 
         var nextPage = function() {
-            that.list(limit, offset, function(err, page, newOffset) {
+            that.list(limit, offset, opts, function(err, page, newOffset) {
                 if (err) { done(err); return; }
 
                 _.each(page, callback);
