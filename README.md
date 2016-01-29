@@ -50,7 +50,6 @@ right, be sure to ping us on intercom or open a github issue.
 
 Here's a few things that we'll expose in the API shortly:
 
- * Referencing records by name or some other field.
  * Transparently creating new multiple choice options when you update records.
  * Querying for recent changes
  * Receiving notifications about changed records
