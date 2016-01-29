@@ -91,7 +91,7 @@ Base.createFunctor = function(airtable, baseId) {
 
 module.exports = Base;
 
-},{"./airtable_error":1,"./class":3,"./internal_config":4,"./run_action":6,"./table":7,"lodash":14}],3:[function(require,module,exports){
+},{"./airtable_error":1,"./class":3,"./internal_config":5,"./run_action":8,"./table":9,"lodash":17}],3:[function(require,module,exports){
 /*jshint strict:false */
 
 /* Simple JavaScript Inheritance
@@ -167,11 +167,195 @@ module.exports = Base;
 })();
 
 },{}],4:[function(require,module,exports){
+var didWarnForDeprecation = {};
+
+/**
+ * Convenience function for marking a function as deprecated.
+ *
+ * Will emit a warning the first time that function is called.
+ *
+ * @param fn the function to mark as deprecated.
+ * @param key a unique key identifying the function.
+ * @param message the warning message.
+ *
+ * @return a wrapped function
+ */
+function deprecate(fn, key, message) {
+    return function() {
+        if (!didWarnForDeprecation[key]) {
+            didWarnForDeprecation[key] = true;
+            console.warn(message);
+        }
+        fn.apply(this, arguments);
+    };
+}
+
+module.exports = deprecate;
+
+
+},{}],5:[function(require,module,exports){
 module.exports={
     "RETRY_DELAY_IF_RATE_LIMITED": 5000,
     "REQUEST_TIMEOUT": 30000
 }
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+'use strict';
+
+var assert = require('assert');
+var _ = require('lodash');
+
+var check = require('./typecheck');
+var Class = require('./class');
+var Record = require('./record');
+
+var Query = Class.extend({
+    /**
+     * Builds a query object. Won't fetch until `firstPage` or
+     * or `eachPage` is called.
+     */
+    init: function(table, params) {
+        assert(_.isPlainObject(params));
+        _.each(params, function(value, key) {
+            assert(Query.paramValidators[key] && Query.paramValidators[key](value).pass, 'Invalid parameter for Query: ' + key);
+        });
+
+        this._table = table;
+        this._params = params;
+    },
+
+    /**
+     * Fetches the first page of results for the query asynchronously,
+     * then calls `done(error, records)`.
+     */
+    firstPage: function(done) {
+        assert(_.isFunction(done),
+            'The first parameter to `firstPage` must be a function');
+
+        this.eachPage(function(records, fetchNextPage) {
+            done(null, records);
+        }, function(error) {
+            done(error, null);
+        });
+    },
+
+    /**
+     * Fetches each page of results for the query asynchronously.
+     *
+     * Calls `pageCallback(records, fetchNextPage)` for each
+     * page. You must call `fetchNextPage()` to fetch the next page of
+     * results.
+     *
+     * After fetching all pages, or if there's an error, calls
+     * `done(error)`.
+     */
+    eachPage: function(pageCallback, done) {
+        assert(_.isFunction(pageCallback),
+            'The first parameter to `eachPage` must be a function');
+
+        assert(_.isFunction(done) || _.isUndefined(done),
+            'The second parameter to `eachPage` must be a function or undefined');
+
+        var that = this;
+        var path = '/' + this._table._urlEncodedNameOrId();
+        var params = _.clone(this._params);
+
+        var inner = function() {
+            that._table._base.runAction('get', path, params, {}, function(err, response, result) {
+                if (err) {
+                    done(err, null);
+                } else {
+                    var next;
+                    if (result.offset) {
+                        params.offset = result.offset;
+                        next = inner;
+                    } else {
+                        next = function() {
+                            if (done) {
+                                done(null);
+                            }
+                        };
+                    }
+
+                    var records = _.map(result.records, function(recordJson) {
+                        return new Record(that, null, recordJson);
+                    });
+
+                    pageCallback(records, next);
+                }
+            });
+        };
+
+        inner();
+    },
+});
+
+Query.paramValidators = {
+    fields:
+        check(check.isArrayOf(_.isString), 'the value for `fields` should be an array of strings'),
+
+    filterByFormula:
+        check(_.isString, 'the value for `filterByFormula` should be a string'),
+
+    maxRecords:
+        check(_.isNumber, 'the value for `maxRecords` should be a number'),
+
+    pageSize:
+        check(_.isNumber, 'the value for `pageSize` should be a number'),
+
+    sort:
+        check(check.isArrayOf(function(obj) {
+            return (
+                _.isPlainObject(obj) &&
+                _.isString(obj.field) &&
+                (_.isUndefined(obj.direction) || _.contains(['asc', 'desc'], obj.direction))
+            );
+        }), 'the value for `sort` should be an array of sort objects. ' +
+            'Each sort object must have a string `field` value, and an optional ' +
+            '`direction` value that is "asc" or "desc".'
+        ),
+
+    view:
+        check(_.isString, 'the value for `view` should be a string'),
+};
+
+/**
+ * Validates the parameters for passing to the Query constructor.
+ *
+ * @return an object with two keys:
+ *  validParams: the object that should be passed to the constructor.
+ *  ignoredKeys: a list of keys that will be ignored.
+ *  errors: a list of error messages.
+ */
+Query.validateParams = function validateParams(params) {
+    assert(_.isPlainObject(params));
+
+    var validParams = {};
+    var ignoredKeys = [];
+    var errors = [];
+    _.each(params, function(value, key) {
+        if (Query.paramValidators.hasOwnProperty(key)) {
+            var validator = Query.paramValidators[key];
+            var validationResult = validator(value);
+            if (validationResult.pass) {
+                validParams[key] = value;
+            } else {
+                errors.push(validationResult.error);
+            }
+        } else {
+            ignoredKeys.push(key);
+        }
+    });
+
+    return {
+        validParams: validParams,
+        ignoredKeys: ignoredKeys,
+        errors: errors,
+    };
+};
+
+module.exports = Query;
+
+},{"./class":3,"./record":7,"./typecheck":10,"assert":12,"lodash":17}],7:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -257,7 +441,7 @@ var Record = Class.extend({
 
 module.exports = Record;
 
-},{"./class":3,"lodash":14}],6:[function(require,module,exports){
+},{"./class":3,"lodash":17}],8:[function(require,module,exports){
 /*globals jQuery */
 'use strict';
 
@@ -301,7 +485,7 @@ function runActionWithJQuery(base, method, path, queryParams, bodyData, callback
 
 module.exports = runActionWithJQuery;
 
-},{"./internal_config":4}],7:[function(require,module,exports){
+},{"./internal_config":5}],9:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -309,9 +493,11 @@ var _ = require('lodash');
 var assert = require('assert');
 var async = require('async');
 
-var Class = require('./class');
-var Record = require('./record');
 var AirtableError = require('./airtable_error');
+var Class = require('./class');
+var deprecate = require('./deprecate');
+var Query = require('./query');
+var Record = require('./record');
 
 var Table = Class.extend({
     init: function(base, tableId, tableName) {
@@ -321,17 +507,57 @@ var Table = Class.extend({
         this.name = tableName;
 
         // Public API
-        this.find = this._record.bind(this);
+        this.find = this._findRecordById.bind(this);
+        this.select = this._selectRecords.bind(this);
         this.create = this._createRecord.bind(this);
-        this.list = this._listRecords.bind(this);
-        this.forEach = this._forEachRecord.bind(this);
         this.update = this._updateRecord.bind(this);
         this.destroy = this._destroyRecord.bind(this);
         this.replace = this._replaceRecord.bind(this);
+
+        // Deprecated API
+        this.list = deprecate(this._listRecords.bind(this),
+            'table.list',
+            'Airtable: `list()` is deprecated. Use `select()` instead.');
+        this.forEach = deprecate(this._forEachRecord.bind(this),
+            'table.forEach',
+            'Airtable: `forEach()` is deprecated. Use `select()` instead.');
     },
-    _record: function(recordId, done) {
+    _findRecordById: function(recordId, done) {
         var record = new Record(this, recordId);
         record.fetch(done);
+    },
+    _selectRecords: function(params) {
+        if (_.isUndefined(params)) {
+            params = {};
+        }
+
+        if (arguments.length > 1) {
+            console.warn('Airtable: `select` takes only one parameter, but it was given '
+                + arguments.length + ' parameters. '
+                + 'Use `eachPage` or `firstPage` to fetch records.');
+        }
+
+        if (_.isPlainObject(params)) {
+            var validationResults = Query.validateParams(params);
+
+            if (validationResults.errors.length) {
+                var formattedErrors = validationResults.errors.map(function(error) {
+                    return '  * ' + error;
+                });
+
+                assert(false, 'Airtable: invalid parameters for `select`:\n'
+                    + formattedErrors.join('\n'));
+            }
+
+            if (validationResults.ignoredKeys.length) {
+                console.warn('Airtable: the following parameters to `select` will be ignored: '
+                    + validationResults.ignoredKeys.join(', '));
+            }
+
+            return new Query(this, validationResults.validParams);
+        } else {
+            assert(false, 'Airtable: the parameter for `select` should be a plain object or undefined.');
+        }
     },
     _urlEncodedNameOrId: function(){
         return this.id || encodeURIComponent(this.name);
@@ -396,7 +622,7 @@ var Table = Class.extend({
         var offset = null;
 
         var nextPage = function() {
-            that.list(limit, offset, opts, function(err, page, newOffset) {
+            that._listRecords(limit, offset, opts, function(err, page, newOffset) {
                 if (err) { done(err); return; }
 
                 _.each(page, callback);
@@ -415,7 +641,32 @@ var Table = Class.extend({
 
 module.exports = Table;
 
-},{"./airtable_error":1,"./class":3,"./record":5,"assert":9,"async":8,"lodash":14}],8:[function(require,module,exports){
+},{"./airtable_error":1,"./class":3,"./deprecate":4,"./query":6,"./record":7,"assert":12,"async":11,"lodash":17}],10:[function(require,module,exports){
+var _ = require('lodash');
+
+function check(fn, error) {
+    return function(value) {
+        if (fn(value)) {
+            return {pass: true};
+        } else {
+            return {pass: false, error: error};
+        }
+    };
+}
+
+check.isOneOf = function isOneOf(options) {
+    return _.contains.bind(this, options);
+};
+
+check.isArrayOf = function(itemValidator) {
+    return function(value) {
+        return _.isArray(value) && _.every(value, itemValidator);
+    };
+};
+
+module.exports = check;
+
+},{"lodash":17}],11:[function(require,module,exports){
 (function (process){
 /*!
  * async
@@ -1542,7 +1793,7 @@ module.exports = Table;
 }());
 
 }).call(this,require('_process'))
-},{"_process":11}],9:[function(require,module,exports){
+},{"_process":14}],12:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 //
 // THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
@@ -1903,7 +2154,7 @@ var objectKeys = Object.keys || function (obj) {
   return keys;
 };
 
-},{"util/":13}],10:[function(require,module,exports){
+},{"util/":16}],13:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -1928,7 +2179,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2020,14 +2271,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -2617,7 +2868,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":12,"_process":11,"inherits":10}],14:[function(require,module,exports){
+},{"./support/isBuffer":15,"_process":14,"inherits":13}],17:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -9414,8 +9665,8 @@ var assert = require('assert');
 
 var Class = require('./class');
 var Base = require('./base');
-var Table = require('./table');
 var Record = require('./record');
+var Table = require('./table');
 
 var Airtable = Class.extend({
     init: function(opts) {
@@ -9463,4 +9714,4 @@ Airtable.Table = Table;
 module.exports = Airtable;
 
 }).call(this,require('_process'))
-},{"./base":2,"./class":3,"./record":5,"./table":7,"_process":11,"assert":9}]},{},["airtable"]);
+},{"./base":2,"./class":3,"./record":7,"./table":9,"_process":14,"assert":12}]},{},["airtable"]);
