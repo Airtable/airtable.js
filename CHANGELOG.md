@@ -1,3 +1,10 @@
+# v0.4.1
+
+ * Fixed a bug that prevented records returned from select queries
+   from being deleted.
+
+ * Fixed the demo page (test/test_files/index.html)
+
 # v0.4.0
 
  * Added `Table.select` for querying records in a table. It takes the
