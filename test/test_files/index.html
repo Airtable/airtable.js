@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="jquery-1.11.3.min.js"></script>
-        <script src="airtable.browser.js"></script>
+        <script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+        <script src="../../build/airtable.browser.js"></script>
     </head>
     <body>
         <h1>Artists</h1>
         <div id="artists"></div>
 
         <hr/>
-        <a href='#' id='create'> CREATE </a>
+        <button id='create'>Create</button>
         <div id="created"></div>
     </body>
 
@@ -30,28 +30,34 @@ var deleteArtist = function(record) {
     });
 };
 
-base('Artists').list(3, null, {view: 'Main View'}, function(err, records, newOffset) {
-    if (err) {
-        console.log(err);
-        return;
-    }
+var loadArtists = function() {
+    $('#artists').empty();
 
-    records.forEach(function(record) {
-        console.log('Retrieved ', record.get('Name'));
+    base('Artists').select({
+        sort: [
+            {field: 'Name', direction: 'asc'}
+        ]
+    }).eachPage(function page(records, fetchNextPage) {
+        records.forEach(function(record) {
+            console.log('Retrieved ', record.get('Name'));
 
-        var $artistInfo = $('<div>');
-        $artistInfo.append($('<h3>').text(record.get('Name')));
-        $artistInfo.append($('<div>').text(record.get('Bio')));
-        var x = $('<div>').text('x');
-        x.click(function(){
-            deleteArtist(record);
+            var $artistInfo = $('<div>');
+            $artistInfo.append($('<h3>').text(record.get('Name')));
+            $artistInfo.append($('<div>').text(record.get('Bio')));
+            var x = $('<button>').text('Delete').click(function() {
+                deleteArtist(record);
+            });
+            $artistInfo.append(x)
+            $artistInfo.attr('data-record-id', record.getId());
+
+            $('#artists').append($artistInfo);
         });
-        $artistInfo.append(x)
-        $artistInfo.attr('data-record-id', record.getId());
 
-        $('#artists').append($artistInfo);
+        fetchNextPage();
+    }, function done(error) {
+        console.log(error);
     });
-});
+};
 
 $('#create').click(function(){
     base('Artists').create({
@@ -61,15 +67,14 @@ $('#create').click(function(){
             "American Abstract Expressionism",
             "Color Field"
         ],
-        "Collection": [
-            "recMQKxuURmQpX0CA"
-        ],
         "On Display?": true
     }, function(err, record) {
         if (err) { console.log(err); return; }
-        $('#created').append('+');
+        loadArtists();
     });
 });
+
+loadArtists();
 
 </script>
 </html>
