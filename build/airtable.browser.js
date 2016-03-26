@@ -277,7 +277,7 @@ var Query = Class.extend({
                     }
 
                     var records = _.map(result.records, function(recordJson) {
-                        return new Record(that, null, recordJson);
+                        return new Record(that._table, null, recordJson);
                     });
 
                     pageCallback(records, next);
@@ -502,7 +502,7 @@ var Record = require('./record');
 var Table = Class.extend({
     init: function(base, tableId, tableName) {
         this._base = base;
-        assert(tableId || tableName, 'Table name or table ID is require');
+        assert(tableId || tableName, 'Table name or table ID is required');
         this.id = tableId;
         this.name = tableName;
 
@@ -2212,7 +2212,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -2264,7 +2266,6 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
