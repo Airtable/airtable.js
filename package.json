@@ -5,9 +5,9 @@
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
   "dependencies": {
-    "async": "0.9.0",
-    "request": "2.42.0",
-    "lodash": "2.4.1"
+    "async": "1.5.2",
+    "lodash": "2.4.1",
+    "request": "2.73.0"
   },
   "main": "./lib/airtable.js",
   "browser": {
