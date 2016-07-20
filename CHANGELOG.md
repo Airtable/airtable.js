@@ -1,3 +1,7 @@
+# v0.4.2
+
+ * Upgraded dependencies: async 1.5.2, request 2.73.0
+
 # v0.4.1
 
  * Fixed a bug that prevented records returned from select queries
