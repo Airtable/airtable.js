@@ -23,7 +23,7 @@ There are two configurable options available:
 
 You can set the options globally via Airtable.configure:
 
-    Airtable.configure({ apiKey: 'YOUR_SECRET_API_KEY })
+    Airtable.configure({ apiKey: 'YOUR_SECRET_API_KEY' })
 
 
 Globally via process env (e.g. in 12factor setup).
