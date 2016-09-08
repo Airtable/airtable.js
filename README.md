@@ -12,6 +12,19 @@ base.
 
 We hope you find it fun and easy!
 
+# Installation
+
+### Node.js
+
+To install airtable.js in a node project:
+
+    npm install airtable
+
+
+### Browser
+
+To use airtable.js in the browser, use [airtable.browser.js](https://github.com/Airtable/airtable.js/blob/master/build/airtable.browser.js) which is in the `build` folder.
+
 
 # Configuration
 
