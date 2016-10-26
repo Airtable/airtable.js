@@ -25,6 +25,16 @@ To install airtable.js in a node project:
 
 To use airtable.js in the browser, use [airtable.browser.js](https://github.com/Airtable/airtable.js/blob/master/build/airtable.browser.js) which is in the `build` folder.
 
+For a demo, run
+```
+cd test/test_files
+python -m SimpleHTTPServer
+```
+
+Edit `test/test_files/index.html` - put your `BASE_ID` and `API_KEY` (Be careful! You are putting your API key on a web page! Create a separate account and share only one base with it).
+
+Then open http://localhost:8000/ in your browser.
+
 
 # Configuration
 
