@@ -1,3 +1,8 @@
+# v0.4.3
+
+ * Fixed issue that prevented callback from being called with error
+   when running in the browser and servers are unreachable.
+
 # v0.4.2
 
  * Upgraded dependencies: async 1.5.2, request 2.73.0
