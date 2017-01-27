@@ -7,11 +7,12 @@
   "dependencies": {
     "async": "1.5.2",
     "lodash": "2.4.1",
-    "request": "2.79.0"
+    "request": "2.79.0",
+    "xhr": "2.3.3"
   },
   "main": "./lib/airtable.js",
   "browser": {
-    "./lib/run_action.js": "./lib/run_action_with_jquery.js"
+    "request": "xhr"
   },
   "devDependencies": {
     "grunt": "~0.4.5",
