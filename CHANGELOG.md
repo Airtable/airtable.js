@@ -1,3 +1,9 @@
+# v0.4.4
+
+ * airtable.browser.js no longer implicitly depends on jQuery being available
+   on the page.
+ * Upgraded dependency: request 2.79.0 (removes tough-cookie vulnerability warning).
+
 # v0.4.3
 
  * Fixed issue that prevented callback from being called with error
