@@ -36,11 +36,12 @@ Then open http://localhost:8000/ in your browser.
 
 # Configuration
 
-There are two configurable options available:
+There are three configurable options available:
 
   * apiKey - set the token to your secret API token. Visit [your account page](https://airtable.com/account) to create an API token.  (`AIRTABLE_API_KEY`)
   * endpointUrl - the API endpoint to hit. You might want to override
     it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`)
+  * requestTimeout - the timeout in milliseconds for requests. The default is 5 minutes (`300000`)
 
 You can set the options globally via Airtable.configure:
 
