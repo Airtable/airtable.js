@@ -1,3 +1,11 @@
+# v0.4.5
+
+ * The default timeout for requests is increased from 30 seconds
+   to 5 minutes. You can set a custom timeout by passing `requestTimeout`
+   in milliseconds to the Airtable constructor or Airtable.configure:
+
+       Airtable.configure({requestTimeout: 30 * 1000}); // 30 seconds
+
 # v0.4.4
 
  * airtable.browser.js no longer implicitly depends on jQuery being available

@@ -197,9 +197,9 @@ module.exports = deprecate;
 
 },{}],5:[function(require,module,exports){
 module.exports={
-    "RETRY_DELAY_IF_RATE_LIMITED": 5000,
-    "REQUEST_TIMEOUT": 30000
+    "RETRY_DELAY_IF_RATE_LIMITED": 5000
 }
+
 },{}],6:[function(require,module,exports){
 'use strict';
 
@@ -511,7 +511,7 @@ function runAction(base, method, path, queryParams, bodyData, callback) {
         url: url,
         body: bodyData,
         json: true,
-        timeout: internalConfig.REQUEST_TIMEOUT,
+        timeout: base._airtable.requestTimeout,
         headers: {
             'authorization': 'Bearer ' + base._airtable._apiKey,
             'x-api-version': base._airtable._apiVersion,
@@ -10268,6 +10268,7 @@ var Airtable = Class.extend({
         this._apiVersionMajor = this._apiVersion.split('.')[0];
         this._allowUnauthorizedSsl = opts.allowUnauthorizedSsl || Airtable.allowUnauthorizedSsl || Airtable.default_config.allowUnauthorizedSsl;
         this._noRetryIfRateLimited = opts.noRetryIfRateLimited || Airtable.noRetryIfRateLimited || Airtable.default_config.noRetryIfRateLimited;
+        this.requestTimeout = opts.requestTimeout || Airtable.default_config.requestTimeout;
 
         assert(this._apiKey, 'API key is required to connect to Airtable');
     },
@@ -10282,7 +10283,8 @@ Airtable.default_config = {
     apiVersion: '0.1.0',
     apiKey: process.env.AIRTABLE_API_KEY,
     allowUnauthorizedSsl: false,
-    noRetryIfRateLimited: false
+    noRetryIfRateLimited: false,
+    requestTimeout: 300 * 1000, // 5 minutes
 };
 
 Airtable.configure = function(opts) {
