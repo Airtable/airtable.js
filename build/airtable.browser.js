@@ -20,7 +20,7 @@ var AirtableError = Class.extend({
 
 module.exports = AirtableError;
 
-},{"./class":3}],2:[function(require,module,exports){
+},{"./class":4}],2:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -91,7 +91,46 @@ Base.createFunctor = function(airtable, baseId) {
 
 module.exports = Base;
 
-},{"./airtable_error":1,"./class":3,"./internal_config":5,"./run_action":9,"./table":10,"lodash":18}],3:[function(require,module,exports){
+},{"./airtable_error":1,"./class":4,"./internal_config":6,"./run_action":10,"./table":11,"lodash":19}],3:[function(require,module,exports){
+'use strict';
+
+/**
+ * Given a function fn that takes a callback as its last argument, returns
+ * a new version of the function that takes the callback optionally. If
+ * the function is not called with a callback for the last argument, the
+ * function will return a promise instead.
+ */
+function callbackToPromise(fn, context, callbackArgIndex) {
+    return function() {
+        // If callbackArgIndex isn't provided, use the last argument.
+        if (callbackArgIndex === undefined) {
+            callbackArgIndex = arguments.length > 0 ? arguments.length - 1 : 0;
+        }
+        var callbackArg = arguments[callbackArgIndex];
+        if (typeof callbackArg === 'function') {
+            fn.apply(context, arguments);
+        } else {
+            var args = [];
+            for (var i = 0; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+            return new Promise(function(resolve, reject) {
+                args.push(function(err, result) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+                fn.apply(context, args);
+            });
+        }
+    };
+}
+
+module.exports = callbackToPromise;
+
+},{}],4:[function(require,module,exports){
 /*jshint strict:false */
 
 /* Simple JavaScript Inheritance
@@ -166,7 +205,7 @@ module.exports = Base;
     }
 })();
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var didWarnForDeprecation = {};
@@ -195,12 +234,12 @@ function deprecate(fn, key, message) {
 module.exports = deprecate;
 
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports={
     "RETRY_DELAY_IF_RATE_LIMITED": 5000
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -242,7 +281,8 @@ function objectToQueryParamString(obj) {
         parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
     };
 
-    _.each(obj, function(value, key) {
+    _.each(_.keys(obj), function(key) {
+        var value = obj[key];
         buildParams(key, value, addFn);
     });
 
@@ -251,7 +291,7 @@ function objectToQueryParamString(obj) {
 
 module.exports = objectToQueryParamString;
 
-},{"lodash":18}],7:[function(require,module,exports){
+},{"lodash":19}],8:[function(require,module,exports){
 'use strict';
 
 var assert = require('assert');
@@ -260,6 +300,7 @@ var _ = require('lodash');
 var check = require('./typecheck');
 var Class = require('./class');
 var Record = require('./record');
+var callbackToPromise = require('./callback_to_promise');
 
 var Query = Class.extend({
     /**
@@ -268,12 +309,17 @@ var Query = Class.extend({
      */
     init: function(table, params) {
         assert(_.isPlainObject(params));
-        _.each(params, function(value, key) {
+        _.each(_.keys(params), function(key) {
+            var value = params[key];
             assert(Query.paramValidators[key] && Query.paramValidators[key](value).pass, 'Invalid parameter for Query: ' + key);
         });
 
         this._table = table;
         this._params = params;
+
+        this.firstPage = callbackToPromise(this.firstPage, this);
+        this.eachPage = callbackToPromise(this.eachPage, this, 1);
+        this.all = callbackToPromise(this.all, this);
     },
 
     /**
@@ -313,7 +359,7 @@ var Query = Class.extend({
         var params = _.clone(this._params);
 
         var inner = function() {
-            that._table._base.runAction('get', path, params, {}, function(err, response, result) {
+            that._table._base.runAction('get', path, params, null, function(err, response, result) {
                 if (err) {
                     done(err, null);
                 } else {
@@ -340,6 +386,25 @@ var Query = Class.extend({
 
         inner();
     },
+    /**
+     * Fetches all pages of results asynchronously. May take a long time.
+     */
+    all: function(done) {
+        assert(_.isFunction(done),
+            'The first parameter to `all` must be a function');
+
+        var allRecords = [];
+        this.eachPage(function(pageRecords, fetchNextPage) {
+            allRecords.push.apply(allRecords, pageRecords);
+            fetchNextPage();
+        }, function(err) {
+            if (err) {
+                done(err, null);
+            } else {
+                done(null, allRecords);
+            }
+        });
+    }
 });
 
 Query.paramValidators = {
@@ -385,7 +450,8 @@ Query.validateParams = function validateParams(params) {
     var validParams = {};
     var ignoredKeys = [];
     var errors = [];
-    _.each(params, function(value, key) {
+    _.each(_.keys(params), function(key) {
+        var value = params[key];
         if (Query.paramValidators.hasOwnProperty(key)) {
             var validator = Query.paramValidators[key];
             var validationResult = validator(value);
@@ -408,18 +474,26 @@ Query.validateParams = function validateParams(params) {
 
 module.exports = Query;
 
-},{"./class":3,"./record":8,"./typecheck":11,"assert":13,"lodash":18}],8:[function(require,module,exports){
+},{"./callback_to_promise":3,"./class":4,"./record":9,"./typecheck":12,"assert":14,"lodash":19}],9:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
 
 var Class = require('./class');
+var callbackToPromise = require('./callback_to_promise');
 
 var Record = Class.extend({
     init: function(table, recordId, recordJson) {
         this._table = table;
         this.id = recordId || recordJson.id;
         this.setRawJson(recordJson);
+
+        this.save = callbackToPromise(this.save, this);
+        this.patchUpdate = callbackToPromise(this.patchUpdate, this);
+        this.putUpdate = callbackToPromise(this.putUpdate, this);
+        this.destroy = callbackToPromise(this.destroy, this);
+        this.fetch = callbackToPromise(this.fetch, this);
+
         this.updateFields = this.patchUpdate;
         this.replaceFields = this.putUpdate;
     },
@@ -470,7 +544,7 @@ var Record = Class.extend({
     },
     destroy: function(done) {
         var that = this;
-        this._table._base.runAction('delete', '/' + this._table._urlEncodedNameOrId() + '/' + this.id, {}, {}, function(err, response, results) {
+        this._table._base.runAction('delete', '/' + this._table._urlEncodedNameOrId() + '/' + this.id, {}, null, function(err, response, results) {
             if (err) { done(err); return; }
 
             done(null, that);
@@ -479,7 +553,7 @@ var Record = Class.extend({
 
     fetch: function(done) {
         var that = this;
-        this._table._base.runAction('get', '/' + this._table._urlEncodedNameOrId() + '/' + this.id, {}, {}, function(err, response, results) {
+        this._table._base.runAction('get', '/' + this._table._urlEncodedNameOrId() + '/' + this.id, {}, null, function(err, response, results) {
             if (err) { done(err); return; }
 
             that.setRawJson(results);
@@ -494,7 +568,7 @@ var Record = Class.extend({
 
 module.exports = Record;
 
-},{"./class":3,"lodash":18}],9:[function(require,module,exports){
+},{"./callback_to_promise":3,"./class":4,"lodash":19}],10:[function(require,module,exports){
 'use strict';
 
 var internalConfig = require('./internal_config');
@@ -506,10 +580,9 @@ var request = require('request');
 function runAction(base, method, path, queryParams, bodyData, callback) {
     var url = base._airtable._endpointUrl + '/v' + base._airtable._apiVersionMajor + '/' + base._id + path + '?' + objectToQueryParamString(queryParams);
 
-    request({
+    var options = {
         method: method.toUpperCase(),
         url: url,
-        body: bodyData,
         json: true,
         timeout: base._airtable.requestTimeout,
         headers: {
@@ -521,7 +594,13 @@ function runAction(base, method, path, queryParams, bodyData, callback) {
         agentOptions: {
             rejectUnauthorized: base._airtable._allowUnauthorizedSsl
         },
-    }, function(error, resp, body) {
+    };
+
+    if (bodyData !== null) {
+        options.body = bodyData;
+    }
+
+    request(options, function(error, resp, body) {
         if (error) {
             callback(error, resp, body);
             return;
@@ -541,7 +620,7 @@ function runAction(base, method, path, queryParams, bodyData, callback) {
 
 module.exports = runAction;
 
-},{"./internal_config":5,"./object_to_query_param_string":6,"request":19}],10:[function(require,module,exports){
+},{"./internal_config":6,"./object_to_query_param_string":7,"request":20}],11:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -554,6 +633,7 @@ var Class = require('./class');
 var deprecate = require('./deprecate');
 var Query = require('./query');
 var Record = require('./record');
+var callbackToPromise = require('./callback_to_promise');
 
 var Table = Class.extend({
     init: function(base, tableId, tableName) {
@@ -563,12 +643,12 @@ var Table = Class.extend({
         this.name = tableName;
 
         // Public API
-        this.find = this._findRecordById.bind(this);
+        this.find = callbackToPromise(this._findRecordById, this);
         this.select = this._selectRecords.bind(this);
-        this.create = this._createRecord.bind(this);
-        this.update = this._updateRecord.bind(this);
-        this.destroy = this._destroyRecord.bind(this);
-        this.replace = this._replaceRecord.bind(this);
+        this.create = callbackToPromise(this._createRecord, this);
+        this.update = callbackToPromise(this._updateRecord, this);
+        this.destroy = callbackToPromise(this._destroyRecord, this);
+        this.replace = callbackToPromise(this._replaceRecord, this);
 
         // Deprecated API
         this.list = deprecate(this._listRecords.bind(this),
@@ -634,11 +714,21 @@ var Table = Class.extend({
     },
     _updateRecord: function(recordId, recordData, opts, done) {
         var record = new Record(this, recordId);
-        record.patchUpdate(recordData, opts, done);
+        if (!done) {
+            done = opts;
+            record.patchUpdate(recordData, done);
+        } else {
+            record.patchUpdate(recordData, opts, done);
+        }
     },
     _replaceRecord: function(recordId, recordData, opts, done) {
         var record = new Record(this, recordId);
-        record.putUpdate(recordData, opts, done);
+        if (!done) {
+            done = opts;
+            record.putUpdate(recordData, done);
+        } else {
+            record.putUpdate(recordData, opts, done);
+        }
     },
     _destroyRecord: function(recordId, done) {
         var record = new Record(this, recordId);
@@ -657,7 +747,7 @@ var Table = Class.extend({
 
         async.waterfall([
             function(next) {
-                that._base.runAction('get', '/' + that._urlEncodedNameOrId() + '/', listRecordsParameters, {}, next);
+                that._base.runAction('get', '/' + that._urlEncodedNameOrId() + '/', listRecordsParameters, null, next);
             },
             function(response, results, next) {
                 var records = _.map(results.records, function(recordJson) {
@@ -697,7 +787,7 @@ var Table = Class.extend({
 
 module.exports = Table;
 
-},{"./airtable_error":1,"./class":3,"./deprecate":4,"./query":7,"./record":8,"assert":13,"async":12,"lodash":18}],11:[function(require,module,exports){
+},{"./airtable_error":1,"./callback_to_promise":3,"./class":4,"./deprecate":5,"./query":8,"./record":9,"assert":14,"async":13,"lodash":19}],12:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -724,7 +814,7 @@ check.isArrayOf = function(itemValidator) {
 
 module.exports = check;
 
-},{"lodash":18}],12:[function(require,module,exports){
+},{"lodash":19}],13:[function(require,module,exports){
 (function (process,global){
 /*!
  * async
@@ -1993,7 +2083,7 @@ module.exports = check;
 }());
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":15}],13:[function(require,module,exports){
+},{"_process":16}],14:[function(require,module,exports){
 // http://wiki.commonjs.org/wiki/Unit_Testing/1.0
 //
 // THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
@@ -2354,7 +2444,7 @@ var objectKeys = Object.keys || function (obj) {
   return keys;
 };
 
-},{"util/":17}],14:[function(require,module,exports){
+},{"util/":18}],15:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2379,7 +2469,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2471,14 +2561,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3068,7 +3158,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":16,"_process":15,"inherits":14}],18:[function(require,module,exports){
+},{"./support/isBuffer":17,"_process":16,"inherits":15}],19:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -9857,7 +9947,7 @@ function hasOwnProperty(obj, prop) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 var window = require("global/window")
 var isFunction = require("is-function")
@@ -10100,7 +10190,7 @@ function getXml(xhr) {
 
 function noop() {}
 
-},{"global/window":20,"is-function":21,"parse-headers":24,"xtend":25}],20:[function(require,module,exports){
+},{"global/window":21,"is-function":22,"parse-headers":25,"xtend":26}],21:[function(require,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window;
@@ -10113,7 +10203,7 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -10130,7 +10220,7 @@ function isFunction (fn) {
       fn === window.prompt))
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var isFunction = require('is-function')
 
 module.exports = forEach
@@ -10178,7 +10268,7 @@ function forEachObject(object, iterator, context) {
     }
 }
 
-},{"is-function":21}],23:[function(require,module,exports){
+},{"is-function":22}],24:[function(require,module,exports){
 
 exports = module.exports = trim;
 
@@ -10194,7 +10284,7 @@ exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var trim = require('trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -10226,7 +10316,7 @@ module.exports = function (headers) {
 
   return result
 }
-},{"for-each":22,"trim":23}],25:[function(require,module,exports){
+},{"for-each":23,"trim":24}],26:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -10306,4 +10396,4 @@ Airtable.Table = Table;
 module.exports = Airtable;
 
 }).call(this,require('_process'))
-},{"./base":2,"./class":3,"./record":8,"./table":10,"_process":15,"assert":13}]},{},["airtable"]);
+},{"./base":2,"./class":4,"./record":9,"./table":11,"_process":16,"assert":14}]},{},["airtable"]);

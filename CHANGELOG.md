@@ -1,3 +1,23 @@
+# v5.0.0
+
+ * Optional Promise-based API: if you call any method that takes a
+   callback without providing a callback, it will return a Promise:
+
+       table.find(recordId).then(record => {
+           // Process record.
+       }).catch(err => {
+           // Handle error.
+       })
+
+  * Added an `all()` method for automatically fetching all records
+    across all pages when selecting from a table:
+
+       table.select({view: 'Main View').all().then(records => {
+           // records array will contain every record in Main View.
+       }).catch(err => {
+           // Handle error.
+       })
+
 # v0.4.5
 
  * The default timeout for requests is increased from 30 seconds
