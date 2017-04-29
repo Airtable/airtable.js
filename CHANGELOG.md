@@ -12,7 +12,7 @@
   * Added an `all()` method for automatically fetching all records
     across all pages when selecting from a table:
 
-        table.select({view: 'Main View').all().then(records => {
+        table.select({view: 'Main View'}).all().then(records => {
             // records array will contain every record in Main View.
         }).catch(err => {
             // Handle error.
