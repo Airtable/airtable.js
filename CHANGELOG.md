@@ -1,3 +1,9 @@
+# v0.5.1
+
+ * Improved handling of unexpected server errors
+ * Exports AirtableError class as Airtable.Error for use in
+   `instanceof` checks.
+
 # v0.5.0
 
  * Optional Promise-based API: if you call any method that takes a

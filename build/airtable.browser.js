@@ -57,13 +57,23 @@ var Base = Class.extend({
         } else if (statusCode === 413) {
             return new AirtableError('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
         } else if (statusCode === 422) {
-            return new AirtableError(body.error.type, body.error.message, statusCode);
+            return (function(){
+                var type = (body && body.error && body.error.type) ? body.error.type : 'UNPROCESSABLE_ENTITY';
+                var message = (body && body.error && body.error.message) ? body.error.message : 'The operation cannot be processed';
+                return new AirtableError(type, message, statusCode);
+            })();
         } else if (statusCode === 429) {
             return new AirtableError('TOO_MANY_REQUESTS', 'You have made too many requests in a short period of time. Please retry your request later', statusCode);
         }else if (statusCode === 500) {
             return new AirtableError('SERVER_ERROR', 'Try again. If the problem persists, contact support.', statusCode);
         } else if (statusCode === 503) {
             return new AirtableError('SERVICE_UNAVAILABLE', 'The service is temporarily unavailable. Please retry shortly.', statusCode);
+        } else if (statusCode >= 400) {
+            return (function(){
+                var type = (body && body.error && body.error.type) ? body.error.type : 'UNEXPECTED_ERROR';
+                var message = (body && body.error && body.error.message) ? body.error.message : 'An unexpected error occurred';
+                return new AirtableError(type, message, statusCode);
+            })();
         }
     },
 
@@ -589,6 +599,7 @@ function runAction(base, method, path, queryParams, bodyData, callback) {
             'authorization': 'Bearer ' + base._airtable._apiKey,
             'x-api-version': base._airtable._apiVersion,
             'x-airtable-application-id': base.getId(),
+            'User-Agent': 'Airtable.js',
         },
         // agentOptions are ignored when running in the browser.
         agentOptions: {
@@ -10347,6 +10358,7 @@ var Class = require('./class');
 var Base = require('./base');
 var Record = require('./record');
 var Table = require('./table');
+var AirtableError = require('./airtable_error');
 
 var Airtable = Class.extend({
     init: function(opts) {
@@ -10392,8 +10404,9 @@ Airtable.base = function(baseId) {
 Airtable.Base = Base;
 Airtable.Record = Record;
 Airtable.Table = Table;
+Airtable.Error = AirtableError;
 
 module.exports = Airtable;
 
 }).call(this,require('_process'))
-},{"./base":2,"./class":4,"./record":9,"./table":11,"_process":16,"assert":14}]},{},["airtable"]);
+},{"./airtable_error":1,"./base":2,"./class":4,"./record":9,"./table":11,"_process":16,"assert":14}]},{},["airtable"]);
