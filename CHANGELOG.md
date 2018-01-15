@@ -1,3 +1,6 @@
+# v0.5.2
+ * Support for the `cellFormat`, `userLocale`, and `timeZone` parameters
+
 # v0.5.1
 
  * Improved handling of unexpected server errors
