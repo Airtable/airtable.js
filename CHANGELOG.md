@@ -1,3 +1,7 @@
+# v0.5.3
+ * Fix User-Agent header warnings when running Chrome (#52)
+ * Fix JSON imports so webpack can bundle
+
 # v0.5.2
  * Support for the `cellFormat`, `userLocale`, and `timeZone` parameters
 
