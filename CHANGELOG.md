@@ -1,3 +1,6 @@
+# v0.5.4
+ * Upgrade `request` package to 2.85.0
+
 # v0.5.3
  * Fix User-Agent header warnings when running Chrome (#52)
  * Fix JSON imports so webpack can bundle
