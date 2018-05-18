@@ -1,3 +1,6 @@
+# v0.5.5
+ * Upgrade `lodash` package from 2.4.1 to 4.17.10
+
 # v0.5.4
  * Upgrade `request` package to 2.85.0
 
