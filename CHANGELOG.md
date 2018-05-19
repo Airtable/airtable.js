@@ -1,3 +1,6 @@
+# v0.5.6
+ * Fix crash when specifying sort direction or cellFormat options
+
 # v0.5.5
  * Upgrade `lodash` package from 2.4.1 to 4.17.10
 

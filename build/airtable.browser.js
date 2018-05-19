@@ -435,7 +435,7 @@ Query.paramValidators = {
             return (
                 _.isPlainObject(obj) &&
                 _.isString(obj.field) &&
-                (_.isUndefined(obj.direction) || _.contains(['asc', 'desc'], obj.direction))
+                (_.isUndefined(obj.direction) || _.includes(['asc', 'desc'], obj.direction))
             );
         }), 'the value for `sort` should be an array of sort objects. ' +
             'Each sort object must have a string `field` value, and an optional ' +
@@ -449,7 +449,7 @@ Query.paramValidators = {
         check(function(cellFormat) {
             return (
                 _.isString(cellFormat) &&
-                _.contains(['json', 'string'], cellFormat)
+                _.includes(['json', 'string'], cellFormat)
             );
         }, 'the value for `cellFormat` should be "json" or "string"'),
 
@@ -840,7 +840,7 @@ function check(fn, error) {
 }
 
 check.isOneOf = function isOneOf(options) {
-    return _.contains.bind(this, options);
+    return _.includes.bind(this, options);
 };
 
 check.isArrayOf = function(itemValidator) {
