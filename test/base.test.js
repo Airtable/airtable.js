@@ -1,24 +1,23 @@
 'use strict';
 
-const request = require('request');
-const { version } = require('../package.json');
-const Airtable = require('../lib/airtable');
-const Base = require('../lib/base');
-const runAction = require('../lib/run_action');
+var request = require('request');
+var version = require('../package.json').version;
+var Airtable = require('../lib/airtable');
+var Base = require('../lib/base');
+var runAction = require('../lib/run_action');
 
 jest.mock('request');
 
-
-describe('Base', () => {
-  describe('#runAction', () => {
-    it('makes requests with the right options', () => {
-      const fakeAirtable = new Airtable({
+describe('Base', function () {
+  describe('#runAction', function () {
+    it('makes requests with the right options', function () {
+      var fakeAirtable = new Airtable({
         apiKey: 'keyXyz',
         requestTimeout: 1234
       });
-      const fakeBase = fakeAirtable.base('app123');
+      var fakeBase = fakeAirtable.base('app123');
 
-      fakeBase.runAction('get', '/my_table/rec456', {}, null, () => {});
+      fakeBase.runAction('get', '/my_table/rec456', {}, null, function () {});
 
       expect(request).toHaveBeenCalledTimes(1);
       expect(request).toHaveBeenCalledWith({
@@ -36,6 +35,6 @@ describe('Base', () => {
           rejectUnauthorized: false
         }
       }, expect.any(Function));
-    })
-  })
-})
+    });
+  });
+});
