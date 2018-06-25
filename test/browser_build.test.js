@@ -1,3 +1,5 @@
+'use strict';
+
 var fs = require('fs');
 var path = require('path');
 
@@ -11,12 +13,12 @@ describe('browser build', function () {
         return;
       }
 
-      const exceptions = [
+      var exceptions = [
         /process\.env\.NODE_DEBUG/,
         /process\.env = {}/
-      ]
+      ];
 
-      const builtWithoutExceptions = exceptions.reduce(function (result, exception) {
+      var builtWithoutExceptions = exceptions.reduce(function (result, exception) {
         return result.replace(exception, '');
       }, builtJs);
 

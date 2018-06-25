@@ -1,6 +1,6 @@
-module.exports = function(grunt) {
-    'use strict';
+'use strict';
 
+module.exports = function(grunt) {
     var pkg = grunt.file.readJSON('package.json');
 
     // Project configuration.
@@ -23,7 +23,9 @@ module.exports = function(grunt) {
                     jest: true,
                     describe: true,
                     it: true,
-                    expect: true
+                    expect: true,
+                    Promise: true,
+                    __dirname: true
                 }
             }
         },
