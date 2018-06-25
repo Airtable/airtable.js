@@ -35,6 +35,8 @@ describe('Base', function () {
           rejectUnauthorized: false
         }
       }, expect.any(Function));
+
+      expect(version).toEqual(expect.stringMatching(/^\d+\.\d+\.\d+$/));
     });
   });
 });
