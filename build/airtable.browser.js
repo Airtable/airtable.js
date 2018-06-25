@@ -610,7 +610,7 @@ function runAction(base, method, path, queryParams, bodyData, callback) {
         'x-airtable-application-id': base.getId(),
     };
 
-    var userAgent = 'Airtable.js';
+    var userAgent = 'Airtable.js/' + "0.5.6";
     var isBrowser = typeof window !== 'undefined';
     // Some browsers do not allow overriding the user agent.
     // https://github.com/Airtable/airtable.js/issues/52
@@ -21007,7 +21007,6 @@ function extend() {
 }
 
 },{}],"airtable":[function(require,module,exports){
-(function (process){
 'use strict';
 
 var assert = require('assert');
@@ -21022,13 +21021,15 @@ var Airtable = Class.extend({
     init: function(opts) {
         opts = opts || {};
 
-        this._apiKey = opts.apiKey || Airtable.apiKey || Airtable.default_config.apiKey;
-        this._endpointUrl = opts.endpointUrl || Airtable.endpointUrl || Airtable.default_config.endpointUrl;
-        this._apiVersion = opts.apiVersion || Airtable.apiVersion || Airtable.default_config.apiVersion;
+        const default_config = Airtable.default_config();
+
+        this._apiKey = opts.apiKey || Airtable.apiKey || default_config.apiKey;
+        this._endpointUrl = opts.endpointUrl || Airtable.endpointUrl || default_config.endpointUrl;
+        this._apiVersion = opts.apiVersion || Airtable.apiVersion || default_config.apiVersion;
         this._apiVersionMajor = this._apiVersion.split('.')[0];
-        this._allowUnauthorizedSsl = opts.allowUnauthorizedSsl || Airtable.allowUnauthorizedSsl || Airtable.default_config.allowUnauthorizedSsl;
-        this._noRetryIfRateLimited = opts.noRetryIfRateLimited || Airtable.noRetryIfRateLimited || Airtable.default_config.noRetryIfRateLimited;
-        this.requestTimeout = opts.requestTimeout || Airtable.default_config.requestTimeout;
+        this._allowUnauthorizedSsl = opts.allowUnauthorizedSsl || Airtable.allowUnauthorizedSsl || default_config.allowUnauthorizedSsl;
+        this._noRetryIfRateLimited = opts.noRetryIfRateLimited || Airtable.noRetryIfRateLimited || default_config.noRetryIfRateLimited;
+        this.requestTimeout = opts.requestTimeout || default_config.requestTimeout;
 
         assert(this._apiKey, 'API key is required to connect to Airtable');
     },
@@ -21038,14 +21039,14 @@ var Airtable = Class.extend({
     }
 });
 
-Airtable.default_config = {
-    endpointUrl: process.env.AIRTABLE_ENDPOINT_URL || 'https://api.airtable.com',
+Airtable.default_config = () => ({
+    endpointUrl: undefined || 'https://api.airtable.com',
     apiVersion: '0.1.0',
-    apiKey: process.env.AIRTABLE_API_KEY,
+    apiKey: undefined,
     allowUnauthorizedSsl: false,
     noRetryIfRateLimited: false,
     requestTimeout: 300 * 1000, // 5 minutes
-};
+});
 
 Airtable.configure = function(opts) {
     Airtable.apiKey = opts.apiKey;
@@ -21066,5 +21067,4 @@ Airtable.Error = AirtableError;
 
 module.exports = Airtable;
 
-}).call(this,require('_process'))
-},{"./airtable_error":1,"./base":2,"./class":4,"./record":9,"./table":11,"_process":18,"assert":13}]},{},["airtable"]);
+},{"./airtable_error":1,"./base":2,"./class":4,"./record":9,"./table":11,"assert":13}]},{},["airtable"]);

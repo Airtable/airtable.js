@@ -1,9 +1,11 @@
 module.exports = function(grunt) {
     'use strict';
 
+    var pkg = grunt.file.readJSON('package.json');
+
     // Project configuration.
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: pkg,
         jshint: {
             // define the files to lint
             files: ['gruntfile.js', 'lib/**/!(class.js)*.js', 'test/*.test.js'],
@@ -30,6 +32,12 @@ module.exports = function(grunt) {
                 src: './lib/airtable.js',
                 dest: './build/airtable.browser.js',
                 options: {
+                    transform: [
+                        ['envify', {
+                            _: 'purge',
+                            npm_package_version: pkg.version,
+                        }]
+                    ],
                     preBundleCB: function(b) {
                         b.require('./lib/airtable.js', { expose: 'airtable' });
                     }
