@@ -60,6 +60,22 @@ You can also override the settings per connection:
 
 Go to https://airtable.com/api to see the interactive API documentation for your Airtable bases. It'll have examples for all operations you can perform against your bases.
 
+# Promises
+
+As of [v0.5.0](https://github.com/Airtable/airtable.js/releases/tag/v0.5.0) all of the methods that take a `done` callback will return a promise if you don't pass in a `done` callback.
+
+For example:
+
+```js
+table.select().firstPage(result => { ... })
+```
+
+is equivalent to
+
+```js
+table.select().firstPage().then(result => { ... })
+```
+
 # Where are the tests?
 
 Our tests live in a different repository and tests run on every git push.
