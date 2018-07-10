@@ -1,0 +1,2 @@
+ curl https://api.airtable.com/v0/app4YnDWdcc7p0gYa/Table%201 \
+-H "Authorization: Bearer keyvZZ3L5LFDKdwtx"
