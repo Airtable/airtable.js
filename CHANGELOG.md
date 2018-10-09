@@ -1,3 +1,8 @@
+# v0.5.7
+ * Support dotenv for loading config (#59)
+ * Improve error message is select() is called without args (#70)
+ * Update dependencies (#73)
+
 # v0.5.6
  * Fix crash when specifying sort direction or cellFormat options
 
