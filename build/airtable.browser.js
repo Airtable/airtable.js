@@ -121,7 +121,11 @@ function callbackToPromise(fn, context, callbackArgIndex) {
             fn.apply(context, arguments);
         } else {
             var args = [];
-            for (var i = 0; i < arguments.length; i++) {
+            // If an explicit callbackArgIndex is set, but the function is called
+            // with too few arguments, we want to push undefined onto args so that
+            // our constructed callback ends up at the right index.
+            var argLen = Math.max(arguments.length, callbackArgIndex);
+            for (var i = 0; i < argLen; i++) {
                 args.push(arguments[i]);
             }
             return new Promise(function(resolve, reject) {
@@ -141,7 +145,7 @@ function callbackToPromise(fn, context, callbackArgIndex) {
 module.exports = callbackToPromise;
 
 },{}],4:[function(require,module,exports){
-/*jshint strict:false */
+// jshint ignore: start
 
 /* Simple JavaScript Inheritance
  * By John Resig http://ejohn.org/
@@ -21021,7 +21025,7 @@ var Airtable = Class.extend({
     init: function(opts) {
         opts = opts || {};
 
-        const default_config = Airtable.default_config();
+        var default_config = Airtable.default_config();
 
         this._apiKey = opts.apiKey || Airtable.apiKey || default_config.apiKey;
         this._endpointUrl = opts.endpointUrl || Airtable.endpointUrl || default_config.endpointUrl;
@@ -21039,14 +21043,16 @@ var Airtable = Class.extend({
     }
 });
 
-Airtable.default_config = () => ({
-    endpointUrl: undefined || 'https://api.airtable.com',
-    apiVersion: '0.1.0',
-    apiKey: undefined,
-    allowUnauthorizedSsl: false,
-    noRetryIfRateLimited: false,
-    requestTimeout: 300 * 1000, // 5 minutes
-});
+Airtable.default_config = function () {
+    return {
+        endpointUrl: undefined || 'https://api.airtable.com',
+        apiVersion: '0.1.0',
+        apiKey: undefined,
+        allowUnauthorizedSsl: false,
+        noRetryIfRateLimited: false,
+        requestTimeout: 300 * 1000, // 5 minutes
+    };
+};
 
 Airtable.configure = function(opts) {
     Airtable.apiKey = opts.apiKey;
