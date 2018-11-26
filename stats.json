@@ -1,0 +1,23 @@
+{
+  "errors": [
+    "Entry module not found: Error: Can't resolve './src' in '/Users/janzheng/Desktop/projects/_other/airtable.js'\nresolve './src' in '/Users/janzheng/Desktop/projects/_other/airtable.js'\n  using description file: /Users/janzheng/Desktop/projects/_other/airtable.js/package.json (relative path: .)\n    using description file: /Users/janzheng/Desktop/projects/_other/airtable.js/package.json (relative path: ./src)\n      no extension\n        /Users/janzheng/Desktop/projects/_other/airtable.js/src doesn't exist\n      .wasm\n        /Users/janzheng/Desktop/projects/_other/airtable.js/src.wasm doesn't exist\n      .mjs\n        /Users/janzheng/Desktop/projects/_other/airtable.js/src.mjs doesn't exist\n      .js\n        /Users/janzheng/Desktop/projects/_other/airtable.js/src.js doesn't exist\n      .json\n        /Users/janzheng/Desktop/projects/_other/airtable.js/src.json doesn't exist\n      as directory\n        /Users/janzheng/Desktop/projects/_other/airtable.js/src doesn't exist"
+  ],
+  "warnings": [
+    "configuration\nThe 'mode' option has not been set, webpack will fallback to 'production' for this value. Set 'mode' option to 'development' or 'production' to enable defaults for each environment.\nYou can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/concepts/mode/"
+  ],
+  "version": "4.26.0",
+  "hash": "3455190a54093c77b5b2",
+  "time": 119,
+  "builtAt": 1543264925673,
+  "publicPath": "",
+  "outputPath": "/Users/janzheng/Desktop/projects/_other/airtable.js/dist",
+  "assetsByChunkName": {},
+  "assets": [],
+  "filteredAssets": 0,
+  "entrypoints": {},
+  "namedChunkGroups": {},
+  "chunks": [],
+  "modules": [],
+  "filteredModules": 0,
+  "children": []
+}
