@@ -7,11 +7,11 @@
   "scripts": {
     "pretest": "npm run lint",
     "lint": "grunt jshint",
-    "test": "jest --env node"
+    "test": "jest --env node",
+    "genlodash": "lodash include=each,isArray,keys,isPlainObject,isFunction,isUndefined,clone,map,isString,isNumber,includes,extend,every"
   },
   "dependencies": {
     "async": "1.5.2",
-    "lodash": "4.17.10",
     "request": "2.88.0",
     "xhr": "2.3.3"
   },
