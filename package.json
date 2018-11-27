@@ -10,7 +10,6 @@
     "test": "jest --env node"
   },
   "dependencies": {
-    "async": "1.5.2",
     "lodash": "4.17.10",
     "request": "2.88.0",
     "xhr": "2.3.3"
