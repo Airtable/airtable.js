@@ -1,6 +1,6 @@
 {
   "name": "airtable",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,

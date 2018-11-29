@@ -1,3 +1,7 @@
+# v0.5.8
+ * Remove `async` dependency (#76)
+ * Shrink size of browser build by about half (#76)
+
 # v0.5.7
  * Support dotenv for loading config (#59)
  * Improve error message is select() is called without args (#70)
