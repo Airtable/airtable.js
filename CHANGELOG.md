@@ -1,3 +1,6 @@
+# v0.5.9
+ * Update `lodash` dependency (#80)
+
 # v0.5.8
  * Remove `async` dependency (#76)
  * Shrink size of browser build by about half (#76)
