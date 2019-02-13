@@ -628,7 +628,7 @@ function runAction(base, method, path, queryParams, bodyData, callback) {
         'x-airtable-application-id': base.getId(),
     };
 
-    var userAgent = 'Airtable.js/' + "0.5.7";
+    var userAgent = 'Airtable.js/' + "0.5.9";
     var isBrowser = typeof window !== 'undefined';
     // Some browsers do not allow overriding the user agent.
     // https://github.com/Airtable/airtable.js/issues/52
