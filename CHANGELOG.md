@@ -1,3 +1,6 @@
+# v0.5.10
+ * Make API key less likely to be logged (#82, #83)
+
 # v0.5.9
  * Update `lodash` dependency (#80)
 
