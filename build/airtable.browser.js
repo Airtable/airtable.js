@@ -628,7 +628,7 @@ function runAction(base, method, path, queryParams, bodyData, callback) {
         'x-airtable-application-id': base.getId(),
     };
 
-    var userAgent = 'Airtable.js/' + "0.5.9";
+    var userAgent = 'Airtable.js/' + "0.5.10";
     var isBrowser = typeof window !== 'undefined';
     // Some browsers do not allow overriding the user agent.
     // https://github.com/Airtable/airtable.js/issues/52
@@ -7875,15 +7875,32 @@ var Airtable = Class.extend({
     init: function(opts) {
         opts = opts || {};
 
-        var default_config = Airtable.default_config();
+        var defaultConfig = Airtable.default_config();
 
-        this._apiKey = opts.apiKey || Airtable.apiKey || default_config.apiKey;
-        this._endpointUrl = opts.endpointUrl || Airtable.endpointUrl || default_config.endpointUrl;
-        this._apiVersion = opts.apiVersion || Airtable.apiVersion || default_config.apiVersion;
-        this._apiVersionMajor = this._apiVersion.split('.')[0];
-        this._allowUnauthorizedSsl = opts.allowUnauthorizedSsl || Airtable.allowUnauthorizedSsl || default_config.allowUnauthorizedSsl;
-        this._noRetryIfRateLimited = opts.noRetryIfRateLimited || Airtable.noRetryIfRateLimited || default_config.noRetryIfRateLimited;
-        this.requestTimeout = opts.requestTimeout || default_config.requestTimeout;
+        var apiVersion = opts.apiVersion || Airtable.apiVersion || defaultConfig.apiVersion;
+
+        Object.defineProperties(this, {
+            _apiKey: {
+                value: opts.apiKey || Airtable.apiKey || defaultConfig.apiKey,
+            },
+            _endpointUrl: {
+                value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
+            },
+            _apiVersion: {
+                value: apiVersion,
+            },
+            _apiVersionMajor: {
+                value: apiVersion.split('.')[0],
+            },
+            _allowUnauthorizedSsl: {
+                value: opts.allowUnauthorizedSsl || Airtable.allowUnauthorizedSsl || defaultConfig.allowUnauthorizedSsl,
+            },
+            _noRetryIfRateLimited: {
+                value: opts.noRetryIfRateLimited || Airtable.noRetryIfRateLimited || defaultConfig.noRetryIfRateLimited,
+            },
+        });
+
+        this.requestTimeout = opts.requestTimeout || defaultConfig.requestTimeout;
 
         assert(this._apiKey, 'API key is required to connect to Airtable');
     },
