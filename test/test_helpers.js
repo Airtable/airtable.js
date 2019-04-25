@@ -30,6 +30,40 @@ function getMockEnvironmentAsync() {
     res.json(responseBody);
   });
 
+  const singleRecordUpdate = [
+    _checkParamsMiddleware,
+    function(req, res, next) {
+      var fields = req.body.typecast ? {typecasted: true} : req.body.fields;
+
+      res.json({
+        id: req.params.recordId,
+        createdTime: FAKE_CREATED_TIME,
+        fields: fields,
+      });
+    },
+  ];
+  const batchRecordUpdate = [
+    _checkParamsMiddleware,
+    function(req, res, next) {
+      res.json({
+        records: req.body.records.map(function (record) {
+          var fields = req.body.typecast ? {typecasted: true} : record.fields;
+          return {
+            id: record.id,
+            createdTime: FAKE_CREATED_TIME,
+            fields: fields
+          };
+        }),
+      });
+    },
+  ];
+
+  app.patch('/v0/:baseId/:tableIdOrName/:recordId', singleRecordUpdate);
+  app.put('/v0/:baseId/:tableIdOrName/:recordId', singleRecordUpdate);
+
+  app.patch('/v0/:baseId/:tableIdOrName', batchRecordUpdate);
+  app.put('/v0/:baseId/:tableIdOrName', batchRecordUpdate);
+
   app.delete('/v0/:baseId/:tableIdOrName/:recordId', _checkParamsMiddleware, function (req, res, next) {
     res.json({
       id: req.params.recordId,
