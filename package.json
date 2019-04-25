@@ -1,6 +1,7 @@
 {
   "name": "airtable",
   "version": "0.5.10",
+  "license": "MIT",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
