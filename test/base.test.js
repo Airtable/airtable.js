@@ -3,8 +3,6 @@
 var request = require('request');
 var version = require('../package.json').version;
 var Airtable = require('../lib/airtable');
-var Base = require('../lib/base');
-var runAction = require('../lib/run_action');
 
 jest.mock('request');
 
