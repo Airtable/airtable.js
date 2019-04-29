@@ -32,7 +32,7 @@ function getMockEnvironmentAsync() {
 
   const singleRecordUpdate = [
     _checkParamsMiddleware,
-    function(req, res, next) {
+    function(req, res) {
       var fields = req.body.typecast ? {typecasted: true} : req.body.fields;
 
       res.json({
@@ -44,7 +44,7 @@ function getMockEnvironmentAsync() {
   ];
   const batchRecordUpdate = [
     _checkParamsMiddleware,
-    function(req, res, next) {
+    function(req, res) {
       res.json({
         records: req.body.records.map(function (record) {
           var fields = req.body.typecast ? {typecasted: true} : record.fields;
@@ -64,14 +64,14 @@ function getMockEnvironmentAsync() {
   app.patch('/v0/:baseId/:tableIdOrName', batchRecordUpdate);
   app.put('/v0/:baseId/:tableIdOrName', batchRecordUpdate);
 
-  app.delete('/v0/:baseId/:tableIdOrName/:recordId', _checkParamsMiddleware, function (req, res, next) {
+  app.delete('/v0/:baseId/:tableIdOrName/:recordId', _checkParamsMiddleware, function (req, res) {
     res.json({
       id: req.params.recordId,
       deleted: true
     });
   });
 
-  app.delete('/v0/:baseId/:tableIdOrName', _checkParamsMiddleware, function (req, res, next) {
+  app.delete('/v0/:baseId/:tableIdOrName', _checkParamsMiddleware, function (req, res) {
     res.json({
       records: req.query.records.map(function (recordId) {
         return {
