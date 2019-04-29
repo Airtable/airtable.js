@@ -13,6 +13,6 @@ describe('has', function() {
     });
 
     it('works even if the object has a property called "hasOwnProperty"', function() {
-        expect(has({hasOwnProperty: 123}, 'hasOwnProperty')).toBe(true); // jshint ignore:line
+        expect(has({hasOwnProperty: 123}, 'hasOwnProperty')).toBe(true);
     });
 });
