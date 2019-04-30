@@ -22,6 +22,7 @@ module.exports = function(grunt) {
                     setTimeout: true,
                     jest: true,
                     describe: true,
+                    beforeEach: true,
                     beforeAll: true,
                     afterAll: true,
                     it: true,
