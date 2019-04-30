@@ -66,7 +66,9 @@ describe('record creation', function () {
     return airtable
       .base('app123')
       .table('Table')
-      .create([{foo: 'boo'}])
+      .create([{
+        fields: {foo: 'boo'}
+      }])
       .then(function (createdRecords) {
         expect(createdRecords).toHaveLength(1);
         expect(createdRecords[0].id).toBe('rec0');
@@ -79,8 +81,8 @@ describe('record creation', function () {
       .base('app123')
       .table('Table')
       .create([
-        {foo: 'boo'},
-        {bar: 'yar'},
+        {fields: {foo: 'boo'}},
+        {fields: {bar: 'yar'}},
       ])
       .then(function (createdRecords) {
         expect(createdRecords).toHaveLength(2);
@@ -96,8 +98,8 @@ describe('record creation', function () {
       .base('app123')
       .table('Table')
       .create([
-        {foo: 'boo'},
-        {bar: 'yar'},
+        {fields: {foo: 'boo'}},
+        {fields: {bar: 'yar'}},
       ], function (err, createdRecords) {
         expect(err).toBeNull();
         expect(createdRecords).toHaveLength(2);
@@ -114,8 +116,8 @@ describe('record creation', function () {
       .base('app123')
       .table('Table')
       .create([
-        {foo: 'boo'},
-        {bar: 'yar'},
+        {fields: {foo: 'boo'}},
+        {fields: {bar: 'yar'}},
       ], {typecast: true})
       .then(function (createdRecords) {
         expect(createdRecords).toHaveLength(2);
