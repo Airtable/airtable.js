@@ -1,3 +1,9 @@
+# v0.6.0
+ * Add support for beta of batch record operations (#86, #88, #92)
+ * Add backoff when rate limited (#110)
+ * Shrink browser build by removing `assert` module (#101)
+ * Fix bug when calling some functions with callbacks (#103)
+
 # v0.5.10
  * Make API key less likely to be logged (#82, #83)
 
