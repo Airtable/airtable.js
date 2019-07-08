@@ -51,20 +51,18 @@ describe('objectToQueryParamString', function () {
 
         expect(objectToQueryParamString({arr: []})).toBe('');
 
-        {
-            var actual = querystring.parse(objectToQueryParamString({
-                arr: [
-                    {foo: 'boo'},
-                    {foo: 'bar', baz: 'qux'},
-                ],
-            }));
-            var expected = {
-                'arr[0][foo]': 'boo',
-                'arr[1][foo]': 'bar',
-                'arr[1][baz]': 'qux',
-            };
-            expect(actual).toEqual(expected);
-        }
+        var actual = querystring.parse(objectToQueryParamString({
+            arr: [
+                {foo: 'boo'},
+                {foo: 'bar', baz: 'qux'},
+            ],
+        }));
+        var expected = {
+            'arr[0][foo]': 'boo',
+            'arr[1][foo]': 'bar',
+            'arr[1][baz]': 'qux',
+        };
+        expect(actual).toEqual(expected);
     });
 
     it('serializes objects', function () {
