@@ -3,12 +3,12 @@
 var querystring = require('querystring');
 var objectToQueryParamString = require('../lib/object_to_query_param_string');
 
-describe('objectToQueryParamString', function () {
-    it('returns the empty string for an empty object', function () {
+describe('objectToQueryParamString', function() {
+    it('returns the empty string for an empty object', function() {
         expect(objectToQueryParamString({})).toBe('');
     });
 
-    it('serializes strings', function () {
+    it('serializes strings', function() {
         expect(objectToQueryParamString({foo: 'boo'})).toBe('foo=boo');
         expect(objectToQueryParamString({foo: 'bar baz'})).toBe('foo=bar+baz');
 
@@ -19,7 +19,7 @@ describe('objectToQueryParamString', function () {
         expect(objectToQueryParamString({foo: '🌴'})).toBe('foo=%F0%9F%8C%B4');
     });
 
-    it('serializes numbers', function () {
+    it('serializes numbers', function() {
         expect(objectToQueryParamString({n: 0})).toBe('n=0');
         expect(objectToQueryParamString({n: 1})).toBe('n=1');
         expect(objectToQueryParamString({n: 1.23})).toBe('n=1.23');
@@ -31,17 +31,17 @@ describe('objectToQueryParamString', function () {
         expect(objectToQueryParamString({n: NaN})).toBe('n=NaN');
     });
 
-    it('serializes booleans', function () {
+    it('serializes booleans', function() {
         expect(objectToQueryParamString({b: true})).toBe('b=true');
         expect(objectToQueryParamString({b: false})).toBe('b=false');
     });
 
-    it('serializes null and undefined', function () {
+    it('serializes null and undefined', function() {
         expect(objectToQueryParamString({x: null})).toBe('');
         expect(objectToQueryParamString({x: undefined})).toBe('x=');
     });
 
-    it('serializes arrays', function () {
+    it('serializes arrays', function() {
         expect(objectToQueryParamString({arr: [1]})).toBe(encodeURIComponent('arr[]') + '=1');
         expect(objectToQueryParamString({arr: [1, 2]})).toBe([
             encodeURIComponent('arr[]'), '=', '1',
@@ -65,7 +65,7 @@ describe('objectToQueryParamString', function () {
         expect(actual).toEqual(expected);
     });
 
-    it('serializes objects', function () {
+    it('serializes objects', function() {
         expect(objectToQueryParamString({obj: {foo: 'boo'}})).toBe(encodeURIComponent('obj[foo]') + '=boo');
 
         expect(objectToQueryParamString({

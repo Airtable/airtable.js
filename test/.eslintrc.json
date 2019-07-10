@@ -1,0 +1,9 @@
+{
+    "env": {
+        "jest": true,
+        "es6": true
+    },
+    "rules": {
+        "no-undefined": "off"
+    }
+}
