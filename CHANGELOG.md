@@ -1,3 +1,8 @@
+# v0.7.0
+ * Remove custom class library, shrinking the file size and improving debugging (#123)
+ * Improve an error message (#115)
+ * Update Lodash to 4.17.14 (#124)
+
 # v0.6.0
  * Add support for beta of batch record operations (#86, #88, #92)
  * Add backoff when rate limited (#110)
