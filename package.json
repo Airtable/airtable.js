@@ -19,6 +19,13 @@
   "browser": {
     "request": "xhr"
   },
+  "files": [
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE.txt",
+    "/build/airtable.browser.js",
+    "/lib/"
+  ],
   "devDependencies": {
     "body-parser": "^1.19.0",
     "envify": "^4.1.0",
