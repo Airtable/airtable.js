@@ -17,7 +17,8 @@
   },
   "main": "./lib/airtable.js",
   "browser": {
-    "request": "xhr"
+    "request": "xhr",
+    "./lib/package_version": "./lib/package_version_browser"
   },
   "files": [
     "/README.md",
