@@ -1,3 +1,7 @@
+# v0.7.1
+ * Fix a User-Agent bug in Node (#132)
+ * Stop publishing non-essential files to npm (#128)
+
 # v0.7.0
  * Remove custom class library, shrinking the file size and improving debugging (#123)
  * Improve an error message (#115)
