@@ -23,7 +23,7 @@ To install airtable.js in a node project:
 
 To use airtable.js in the browser, use [airtable.browser.js](https://github.com/Airtable/airtable.js/blob/master/build/airtable.browser.js) which is in the `build` folder.
 
-For a demo, run
+For a demo, run:
 ```
 cd test/test_files
 python -m SimpleHTTPServer
@@ -38,12 +38,12 @@ Then open http://localhost:8000/ in your browser.
 
 There are three configurable options available:
 
-  * apiKey - set the token to your secret API token. Visit [your account page](https://airtable.com/account) to create an API token.  (`AIRTABLE_API_KEY`)
-  * endpointUrl - the API endpoint to hit. You might want to override
+  * `apiKey` - set the token to your secret API token. Visit [your account page](https://airtable.com/account) to create an API token.  (`AIRTABLE_API_KEY`)
+  * `endpointUrl` - the API endpoint to hit. You might want to override
     it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`)
-  * requestTimeout - the timeout in milliseconds for requests. The default is 5 minutes (`300000`)
+  * `requestTimeout` - the timeout in milliseconds for requests. The default is 5 minutes (`300000`)
 
-You can set the options globally via Airtable.configure:
+You can set the options globally via `Airtable.configure`:
 
     Airtable.configure({ apiKey: 'YOUR_SECRET_API_KEY' })
 
@@ -62,7 +62,7 @@ Go to https://airtable.com/api to see the interactive API documentation for your
 
 # Promises
 
-As of [v0.5.0](https://github.com/Airtable/airtable.js/releases/tag/v0.5.0) all of the methods that take a `done` callback will return a promise if you don't pass in a `done` callback.
+As of [v0.5.0](https://github.com/Airtable/airtable.js/releases/tag/v0.5.0) all of the methods that take a `done` callback will return a Promise if you don't pass in a `done` callback.
 
 For example:
 
@@ -78,7 +78,7 @@ table.select().firstPage().then(result => { ... })
 
 # Where are the tests?
 
-Our tests live in a different repository and tests run on every git push.
+Our tests live in a different repository and tests run on every `git push`.
 We strive to have all of the API covered along with all API error conditions.
 If you hit something that's not right, be sure to ping us on intercom or open
-a github issue.
+a GitHub Issue.
