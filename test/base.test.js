@@ -30,7 +30,7 @@ describe('Base', function() {
                     'User-Agent': 'Airtable.js/' + version
                 },
                 agentOptions: {
-                    rejectUnauthorized: false
+                    rejectUnauthorized: true
                 }
             }, expect.any(Function));
 
