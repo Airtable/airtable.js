@@ -1,3 +1,8 @@
+# v0.7.2
+ * Properly reject unauthorized SSL certificates (#140)
+ * Minor tweaks to formatting in README (#136)
+ * Update Lodash to 4.17.15 (#141)
+
 # v0.7.1
  * Fix a User-Agent bug in Node (#132)
  * Stop publishing non-essential files to npm (#128)
