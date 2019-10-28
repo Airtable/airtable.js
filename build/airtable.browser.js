@@ -240,7 +240,7 @@ function objectToQueryParamString(obj) {
 module.exports = objectToQueryParamString;
 
 },{"lodash/forEach":163,"lodash/isArray":169,"lodash/isNil":175}],8:[function(require,module,exports){
-module.exports = "0.7.1";
+module.exports = "0.7.2";
 
 },{}],9:[function(require,module,exports){
 'use strict';
@@ -602,7 +602,7 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
         headers: headers,
         // agentOptions are ignored when running in the browser.
         agentOptions: {
-            rejectUnauthorized: base._airtable._allowUnauthorizedSsl
+            rejectUnauthorized: !base._airtable._allowUnauthorizedSsl
         },
     };
 
