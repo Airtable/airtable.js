@@ -74,7 +74,13 @@ describe('Record', function() {
                 fields: {foo: 'bar'},
             });
 
-            table._base.runAction.mockImplementationOnce(function(method, path, queryParams, bodyData, callback) {
+            table._base.runAction.mockImplementationOnce(function(
+                method,
+                path,
+                queryParams,
+                bodyData,
+                callback
+            ) {
                 callback(null, null, {
                     id: bodyData.id,
                     createdTime: '2020-04-20T16:20:00.000Z',
@@ -91,21 +97,26 @@ describe('Record', function() {
                 expect(record.get('foo')).toEqual('bar');
                 expect(record.get('baz')).toEqual('qux');
 
-                expect(table._base.runAction).toHaveBeenCalledWith('patch', '/My%20Table/rec123', {}, {
-                    fields: {baz: 'qux'}
-                }, expect.any(Function));
+                expect(table._base.runAction).toHaveBeenCalledWith(
+                    'patch',
+                    '/My%20Table/rec123',
+                    {},
+                    {
+                        fields: {baz: 'qux'},
+                    },
+                    expect.any(Function)
+                );
 
                 done();
             });
         });
 
         it('returns a promise when no callback is passed', function() {
-            return record.patchUpdate({baz: 'qux'})
-                .then(function(updatedRecord) {
-                    expect(updatedRecord).toBe(record);
-                    expect(record.get('foo')).toEqual('bar');
-                    expect(record.get('baz')).toEqual('qux');
-                });
+            return record.patchUpdate({baz: 'qux'}).then(function(updatedRecord) {
+                expect(updatedRecord).toBe(record);
+                expect(record.get('foo')).toEqual('bar');
+                expect(record.get('baz')).toEqual('qux');
+            });
         });
 
         it('aliases "updateFields"', function() {
@@ -122,7 +133,13 @@ describe('Record', function() {
                 fields: {foo: 'bar'},
             });
 
-            table._base.runAction.mockImplementationOnce(function(method, path, queryParams, bodyData, callback) {
+            table._base.runAction.mockImplementationOnce(function(
+                method,
+                path,
+                queryParams,
+                bodyData,
+                callback
+            ) {
                 callback(null, null, {
                     id: bodyData.id,
                     createdTime: '2020-04-20T16:20:00.000Z',
@@ -139,21 +156,26 @@ describe('Record', function() {
                 expect(record.get('foo')).toBeUndefined();
                 expect(record.get('baz')).toEqual('qux');
 
-                expect(table._base.runAction).toHaveBeenCalledWith('put', '/My%20Table/rec123', {}, {
-                    fields: {baz: 'qux'}
-                }, expect.any(Function));
+                expect(table._base.runAction).toHaveBeenCalledWith(
+                    'put',
+                    '/My%20Table/rec123',
+                    {},
+                    {
+                        fields: {baz: 'qux'},
+                    },
+                    expect.any(Function)
+                );
 
                 done();
             });
         });
 
         it('returns a promise when no callback is passed', function() {
-            return record.patchUpdate({baz: 'qux'})
-                .then(function(updatedRecord) {
-                    expect(updatedRecord).toBe(record);
-                    expect(record.get('foo')).toBeUndefined();
-                    expect(record.get('baz')).toEqual('qux');
-                });
+            return record.patchUpdate({baz: 'qux'}).then(function(updatedRecord) {
+                expect(updatedRecord).toBe(record);
+                expect(record.get('foo')).toBeUndefined();
+                expect(record.get('baz')).toEqual('qux');
+            });
         });
 
         it('aliases "replaceFields"', function() {
@@ -163,7 +185,13 @@ describe('Record', function() {
 
     describe('fetch', function() {
         beforeEach(function() {
-            table._base.runAction.mockImplementationOnce(function(method, path, queryParams, bodyData, callback) {
+            table._base.runAction.mockImplementationOnce(function(
+                method,
+                path,
+                queryParams,
+                bodyData,
+                callback
+            ) {
                 callback(null, null, {
                     id: 'rec123',
                     createdTime: '2020-04-20T16:20:00.000Z',
@@ -182,7 +210,13 @@ describe('Record', function() {
                 expect(record.get('foo')).toBe('bar');
                 expect(record.get('baz')).toBeUndefined();
 
-                expect(table._base.runAction).toHaveBeenCalledWith('get', '/My%20Table/rec123', {}, null, expect.any(Function));
+                expect(table._base.runAction).toHaveBeenCalledWith(
+                    'get',
+                    '/My%20Table/rec123',
+                    {},
+                    null,
+                    expect.any(Function)
+                );
 
                 done();
             });

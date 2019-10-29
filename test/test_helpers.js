@@ -51,7 +51,7 @@ function getMockEnvironmentAsync() {
                     return {
                         id: record.id,
                         createdTime: FAKE_CREATED_TIME,
-                        fields: fields
+                        fields: fields,
                     };
                 }),
             });
@@ -67,7 +67,7 @@ function getMockEnvironmentAsync() {
     app.delete('/v0/:baseId/:tableIdOrName/:recordId', _checkParamsMiddleware, function(req, res) {
         res.json({
             id: req.params.recordId,
-            deleted: true
+            deleted: true,
         });
     });
 
@@ -76,20 +76,21 @@ function getMockEnvironmentAsync() {
             records: req.query.records.map(function(recordId) {
                 return {
                     id: recordId,
-                    deleted: true
+                    deleted: true,
                 };
-            })
+            }),
         });
     });
 
-    app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars
+    app.use(function(err, req, res, next) {
         console.error(err);
         res.status(500);
         res.json({
             error: {
                 type: 'TEST_ERROR',
                 message: err.message,
-            }
+            },
         });
     });
 
@@ -113,11 +114,10 @@ function getMockEnvironmentAsync() {
 }
 
 function _checkParamsMiddleware(req, res, next) {
-    var areParamsValid = (
-        (req.get('authorization') === 'Bearer key123') &&
-    (req.params.baseId === 'app123') &&
-    (req.params.tableIdOrName === 'Table')
-    );
+    var areParamsValid =
+        req.get('authorization') === 'Bearer key123' &&
+        req.params.baseId === 'app123' &&
+        req.params.tableIdOrName === 'Table';
     if (areParamsValid) {
         next();
     } else {
