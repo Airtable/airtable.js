@@ -43,20 +43,25 @@ describe('objectToQueryParamString', function() {
 
     it('serializes arrays', function() {
         expect(objectToQueryParamString({arr: [1]})).toBe(encodeURIComponent('arr[]') + '=1');
-        expect(objectToQueryParamString({arr: [1, 2]})).toBe([
-            encodeURIComponent('arr[]'), '=', '1',
-            '&',
-            encodeURIComponent('arr[]'), '=', '2',
-        ].join(''));
+        expect(objectToQueryParamString({arr: [1, 2]})).toBe(
+            [
+                encodeURIComponent('arr[]'),
+                '=',
+                '1',
+                '&',
+                encodeURIComponent('arr[]'),
+                '=',
+                '2',
+            ].join('')
+        );
 
         expect(objectToQueryParamString({arr: []})).toBe('');
 
-        var actual = querystring.parse(objectToQueryParamString({
-            arr: [
-                {foo: 'boo'},
-                {foo: 'bar', baz: 'qux'},
-            ],
-        }));
+        var actual = querystring.parse(
+            objectToQueryParamString({
+                arr: [{foo: 'boo'}, {foo: 'bar', baz: 'qux'}],
+            })
+        );
         var expected = {
             'arr[0][foo]': 'boo',
             'arr[1][foo]': 'bar',
@@ -66,15 +71,19 @@ describe('objectToQueryParamString', function() {
     });
 
     it('serializes objects', function() {
-        expect(objectToQueryParamString({obj: {foo: 'boo'}})).toBe(encodeURIComponent('obj[foo]') + '=boo');
+        expect(objectToQueryParamString({obj: {foo: 'boo'}})).toBe(
+            encodeURIComponent('obj[foo]') + '=boo'
+        );
 
-        expect(objectToQueryParamString({
-            obj: {
-                foo: {
-                    bar: 'baz'
+        expect(
+            objectToQueryParamString({
+                obj: {
+                    foo: {
+                        bar: 'baz',
+                    },
                 },
-            }
-        })).toBe(encodeURIComponent('obj[foo][bar]') + '=baz');
+            })
+        ).toBe(encodeURIComponent('obj[foo][bar]') + '=baz');
 
         expect(objectToQueryParamString({obj: {}})).toBe('');
 
@@ -82,8 +91,10 @@ describe('objectToQueryParamString', function() {
             this.instanceProperty = prop;
         }
         Klass.prototype.prototypeProperty = 'should be ignored';
-        expect(objectToQueryParamString({
-            obj: new Klass('foo'),
-        })).toBe(encodeURIComponent('obj[instanceProperty]') + '=foo');
+        expect(
+            objectToQueryParamString({
+                obj: new Klass('foo'),
+            })
+        ).toBe(encodeURIComponent('obj[instanceProperty]') + '=foo');
     });
 });

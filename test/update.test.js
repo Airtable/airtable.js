@@ -37,26 +37,34 @@ describe('record updates', function() {
             airtable
                 .base('app123')
                 .table('Table')
-                .update('rec123', {
-                    foo: 'boo',
-                    bar: 'yar',
-                }, function(err, updatedRecord) {
-                    expect(err).toBeNull();
-                    expect(updatedRecord.id).toBe('rec123');
-                    expect(updatedRecord.get('foo')).toBe('boo');
-                    expect(updatedRecord.get('bar')).toBe('yar');
-                    done();
-                });
+                .update(
+                    'rec123',
+                    {
+                        foo: 'boo',
+                        bar: 'yar',
+                    },
+                    function(err, updatedRecord) {
+                        expect(err).toBeNull();
+                        expect(updatedRecord.id).toBe('rec123');
+                        expect(updatedRecord.get('foo')).toBe('boo');
+                        expect(updatedRecord.get('bar')).toBe('yar');
+                        done();
+                    }
+                );
         });
 
         it('can add the "typecast" parameter when updating one record', function() {
             return airtable
                 .base('app123')
                 .table('Table')
-                .update('rec123', {
-                    foo: 'boo',
-                    bar: 'yar',
-                }, {typecast: true})
+                .update(
+                    'rec123',
+                    {
+                        foo: 'boo',
+                        bar: 'yar',
+                    },
+                    {typecast: true}
+                )
                 .then(function(updatedRecord) {
                     expect(updatedRecord.id).toBe('rec123');
                     expect(updatedRecord.get('typecasted')).toBe(true);
@@ -67,10 +75,12 @@ describe('record updates', function() {
             return airtable
                 .base('app123')
                 .table('Table')
-                .update([{
-                    id: 'rec123',
-                    fields: {foo: 'boo'},
-                }])
+                .update([
+                    {
+                        id: 'rec123',
+                        fields: {foo: 'boo'},
+                    },
+                ])
                 .then(function(updatedRecords) {
                     expect(updatedRecords).toHaveLength(1);
                     expect(updatedRecords[0].id).toBe('rec123');
@@ -105,40 +115,46 @@ describe('record updates', function() {
             airtable
                 .base('app123')
                 .table('Table')
-                .update([
-                    {
-                        id: 'rec123',
-                        fields: {foo: 'boo'},
-                    },
-                    {
-                        id: 'rec456',
-                        fields: {bar: 'yar'},
-                    },
-                ], function(err, updatedRecords) {
-                    expect(err).toBeNull();
-                    expect(updatedRecords).toHaveLength(2);
-                    expect(updatedRecords[0].id).toBe('rec123');
-                    expect(updatedRecords[0].get('foo')).toBe('boo');
-                    expect(updatedRecords[1].id).toBe('rec456');
-                    expect(updatedRecords[1].get('bar')).toBe('yar');
-                    done();
-                });
+                .update(
+                    [
+                        {
+                            id: 'rec123',
+                            fields: {foo: 'boo'},
+                        },
+                        {
+                            id: 'rec456',
+                            fields: {bar: 'yar'},
+                        },
+                    ],
+                    function(err, updatedRecords) {
+                        expect(err).toBeNull();
+                        expect(updatedRecords).toHaveLength(2);
+                        expect(updatedRecords[0].id).toBe('rec123');
+                        expect(updatedRecords[0].get('foo')).toBe('boo');
+                        expect(updatedRecords[1].id).toBe('rec456');
+                        expect(updatedRecords[1].get('bar')).toBe('yar');
+                        done();
+                    }
+                );
         });
 
         it('can update two records with the "typecast" parameter', function() {
             return airtable
                 .base('app123')
                 .table('Table')
-                .update([
-                    {
-                        id: 'rec123',
-                        fields: {foo: 'boo'},
-                    },
-                    {
-                        id: 'rec456',
-                        fields: {bar: 'yar'},
-                    },
-                ], {typecast: true})
+                .update(
+                    [
+                        {
+                            id: 'rec123',
+                            fields: {foo: 'boo'},
+                        },
+                        {
+                            id: 'rec456',
+                            fields: {bar: 'yar'},
+                        },
+                    ],
+                    {typecast: true}
+                )
                 .then(function(updatedRecords) {
                     expect(updatedRecords).toHaveLength(2);
                     expect(updatedRecords[0].id).toBe('rec123');
@@ -169,10 +185,14 @@ describe('record updates', function() {
             return airtable
                 .base('app123')
                 .table('Table')
-                .replace('rec123', {
-                    foo: 'boo',
-                    bar: 'yar',
-                }, {typecast: true})
+                .replace(
+                    'rec123',
+                    {
+                        foo: 'boo',
+                        bar: 'yar',
+                    },
+                    {typecast: true}
+                )
                 .then(function(updatedRecord) {
                     expect(updatedRecord.id).toBe('rec123');
                     expect(updatedRecord.get('typecasted')).toBe(true);
@@ -183,10 +203,12 @@ describe('record updates', function() {
             return airtable
                 .base('app123')
                 .table('Table')
-                .replace([{
-                    id: 'rec123',
-                    fields: {foo: 'boo'},
-                }])
+                .replace([
+                    {
+                        id: 'rec123',
+                        fields: {foo: 'boo'},
+                    },
+                ])
                 .then(function(updatedRecords) {
                     expect(updatedRecords).toHaveLength(1);
                     expect(updatedRecords[0].id).toBe('rec123');
@@ -221,16 +243,19 @@ describe('record updates', function() {
             return airtable
                 .base('app123')
                 .table('Table')
-                .replace([
-                    {
-                        id: 'rec123',
-                        fields: {foo: 'boo'},
-                    },
-                    {
-                        id: 'rec456',
-                        fields: {bar: 'yar'},
-                    },
-                ], {typecast: true})
+                .replace(
+                    [
+                        {
+                            id: 'rec123',
+                            fields: {foo: 'boo'},
+                        },
+                        {
+                            id: 'rec456',
+                            fields: {bar: 'yar'},
+                        },
+                    ],
+                    {typecast: true}
+                )
                 .then(function(updatedRecords) {
                     expect(updatedRecords).toHaveLength(2);
                     expect(updatedRecords[0].id).toBe('rec123');

@@ -13,10 +13,7 @@ describe('browser build', function() {
                 return;
             }
 
-            var exceptions = [
-                /process\.env\.NODE_DEBUG/,
-                /process\.env = {}/
-            ];
+            var exceptions = [/process\.env\.NODE_DEBUG/, /process\.env = {}/];
 
             var builtWithoutExceptions = exceptions.reduce(function(result, exception) {
                 return result.replace(exception, '');
