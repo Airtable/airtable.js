@@ -3,9 +3,6 @@
         "browser": true,
         "node": true
     },
-    "globals": {
-        "Promise": true
-    },
     "extends": [
         "eslint:recommended"
     ],
