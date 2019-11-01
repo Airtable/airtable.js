@@ -5,13 +5,31 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var getPort = require('get-port');
 var util = require('util');
+var URLSearchParams = require('url').URLSearchParams;
 
 var FAKE_CREATED_TIME = '2020-04-20T16:20:00.000Z';
 
 function getMockEnvironmentAsync() {
     var app = express();
 
+    app.set('case sensitive routing', true);
+    app.set('query parser', string => new URLSearchParams(string));
+
     app.use(bodyParser.json());
+
+    app.use(function(req, res, next) {
+        req.app.set('most recent request', req);
+        next();
+    });
+
+    app.use(function(req, res, next) {
+        const handlerOverride = req.app.get('handler override');
+        if (handlerOverride) {
+            handlerOverride(req, res, next);
+        } else {
+            next();
+        }
+    });
 
     app.post('/v0/:baseId/:tableIdOrName', _checkParamsMiddleware, function(req, res) {
         var isCreatingJustOneRecord = !!req.body.fields;
@@ -73,13 +91,18 @@ function getMockEnvironmentAsync() {
 
     app.delete('/v0/:baseId/:tableIdOrName', _checkParamsMiddleware, function(req, res) {
         res.json({
-            records: req.query.records.map(function(recordId) {
+            records: req.query.getAll('records[]').map(function(recordId) {
                 return {
                     id: recordId,
                     deleted: true,
                 };
             }),
         });
+    });
+
+    app.use(function(req, res) {
+        res.status(404);
+        res.json({error: 'NOT_FOUND'});
     });
 
     // eslint-disable-next-line no-unused-vars
@@ -106,6 +129,7 @@ function getMockEnvironmentAsync() {
                             endpointUrl: 'http://localhost:' + testServerPort,
                         }),
                         teardownAsync: util.promisify(testServer.close.bind(testServer)),
+                        testExpressApp: app,
                     });
                 }
             });
