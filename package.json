@@ -1,6 +1,6 @@
 {
   "name": "airtable",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "license": "MIT",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
@@ -40,7 +40,8 @@
     "husky": "^3.0.9",
     "jest": "^24.9.0",
     "prettier": "^1.18.2",
-    "pretty-quick": "^2.0.0"
+    "pretty-quick": "^2.0.0",
+    "semver": "^6.3.0"
   },
   "keywords": [
     "airtable",
@@ -49,6 +50,6 @@
     "spreadsheet"
   ],
   "engines": {
-    "node": ">= 0.10.0"
+    "node": ">=10.0.0"
   }
 }

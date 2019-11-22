@@ -441,6 +441,25 @@ describe('Base', function() {
                     statusCode: 200,
                 });
             });
+
+            it("won't make requests to a server with a self-signed SSL certificate", function() {
+                return teardownAsync()
+                    .then(function() {
+                        return testHelpers.getMockEnvironmentAsync({https: true});
+                    })
+                    .then(function(env) {
+                        fakeBase = env.airtable.base('app123');
+                        teardownAsync = env.teardownAsync;
+                        testExpressApp = env.testExpressApp;
+                    })
+                    .then(function() {
+                        return expect(fakeBase.makeRequest()).rejects.toEqual({
+                            error: 'CONNECTION_ERROR',
+                            message: expect.any(String),
+                            statusCode: null,
+                        });
+                    });
+            });
         });
 
         describe('result', function() {
@@ -479,6 +498,27 @@ describe('Base', function() {
 
                 done();
             });
+        });
+
+        it("won't make requests to a server with a self-signed SSL certificate", function(done) {
+            teardownAsync()
+                .then(function() {
+                    return testHelpers.getMockEnvironmentAsync({https: true});
+                })
+                .then(function(env) {
+                    fakeBase = env.airtable.base('app123');
+                    teardownAsync = env.teardownAsync;
+                    testExpressApp = env.testExpressApp;
+
+                    fakeBase.runAction('get', '/my_table/rec456', {}, null, function(err) {
+                        expect(err).toBeTruthy();
+
+                        expect(testExpressApp.get('most recent request')).toBeFalsy();
+
+                        done();
+                    });
+                })
+                .catch(done);
         });
     });
 });

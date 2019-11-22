@@ -38,7 +38,7 @@ describe('objectToQueryParamString', function() {
 
     it('serializes null and undefined', function() {
         expect(objectToQueryParamString({x: null})).toBe('');
-        expect(objectToQueryParamString({x: undefined})).toBe('x=');
+        expect(objectToQueryParamString({x: void 0})).toBe('x=');
     });
 
     it('serializes arrays', function() {

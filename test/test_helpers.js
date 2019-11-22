@@ -1,6 +1,10 @@
 'use strict';
 
 var Airtable = require('../lib/airtable');
+var http = require('http');
+var https = require('https');
+var path = require('path');
+var fs = require('fs');
 var express = require('express');
 var bodyParser = require('body-parser');
 var getPort = require('get-port');
@@ -9,7 +13,9 @@ var URLSearchParams = require('url').URLSearchParams;
 
 var FAKE_CREATED_TIME = '2020-04-20T16:20:00.000Z';
 
-function getMockEnvironmentAsync() {
+function getMockEnvironmentAsync(options) {
+    options = options || {};
+
     var app = express();
 
     app.set('case sensitive routing', true);
@@ -119,7 +125,15 @@ function getMockEnvironmentAsync() {
 
     return getPort().then(function(testServerPort) {
         return new Promise(function(resolve, reject) {
-            var testServer = app.listen(testServerPort, function(err) {
+            var testServer;
+
+            if (options.https) {
+                testServer = https.createServer(_getHttpsServerOptions(), app);
+            } else {
+                testServer = http.createServer(app);
+            }
+
+            testServer.listen(testServerPort, function(err) {
                 if (err) {
                     reject(err);
                 } else {
@@ -147,6 +161,18 @@ function _checkParamsMiddleware(req, res, next) {
     } else {
         next(new Error('Bad parameters'));
     }
+}
+
+var _cachedHttpsServerOptions;
+function _getHttpsServerOptions() {
+    if (!_cachedHttpsServerOptions) {
+        _cachedHttpsServerOptions = {
+            key: fs.readFileSync(path.join(__dirname, 'self_signed.key')),
+            cert: fs.readFileSync(path.join(__dirname, 'self_signed.cert')),
+        };
+    }
+
+    return _cachedHttpsServerOptions;
 }
 
 module.exports = {
