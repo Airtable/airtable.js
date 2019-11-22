@@ -1,3 +1,8 @@
+# v0.8.0
+ * Require Node 10 or above
+ * Add Promise polyfill (#147)
+ * Remove `allowUnauthorizedSsl` option
+
 # v0.7.2
  * Properly reject unauthorized SSL certificates (#140)
  * Minor tweaks to formatting in README (#136)
