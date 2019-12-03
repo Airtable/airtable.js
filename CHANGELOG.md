@@ -1,3 +1,6 @@
+# v0.8.1
+ * Require Node 8 or above (down from Node 10)
+
 # v0.8.0
  * Require Node 10 or above
  * Add Promise polyfill (#147)

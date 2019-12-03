@@ -436,7 +436,7 @@ function objectToQueryParamString(obj) {
 module.exports = objectToQueryParamString;
 
 },{"lodash/forEach":168,"lodash/isArray":174,"lodash/isNil":180}],10:[function(require,module,exports){
-module.exports = "0.8.0";
+module.exports = "0.8.1";
 
 },{}],11:[function(require,module,exports){
 /* global Promise */
