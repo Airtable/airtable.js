@@ -1,6 +1,6 @@
 {
   "name": "airtable",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "license": "MIT",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
@@ -50,6 +50,6 @@
     "spreadsheet"
   ],
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=8.0.0"
   }
 }
