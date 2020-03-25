@@ -58,7 +58,7 @@ You can also override the settings per connection:
 
 # Interactive documentation
 
-Go to https://airtable.com/api to see the interactive API documentation for your Airtable bases. It'll have examples for all operations you can perform against your bases.
+Go to https://airtable.com/api to see the interactive API documentation for your Airtable bases. Once you select a base to view the API, make sure to click the the tab "Javascript" in the sandbox enviroment.  It'll have examples for all operations you can perform against your bases using this library.
 
 # Promises
 
