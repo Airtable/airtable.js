@@ -80,5 +80,5 @@ table.select().firstPage().then(result => { ... })
 
 Our tests live in a different repository and tests run on every `git push`.
 We strive to have all of the API covered along with all API error conditions.
-If you hit something that's not right, be sure to ping us on intercom or open
-a GitHub Issue.
+If you hit something that's not right, be sure to email support@airtable.com or
+open a GitHub Issue.
