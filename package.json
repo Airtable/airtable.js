@@ -6,10 +6,12 @@
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
   "scripts": {
+    "coverage": "jest --env node --coverage",
     "pretest": "npm run lint",
     "lint": "eslint .",
     "format": "prettier --write '**/*.js'",
-    "test": "jest --env node"
+    "test": "npm run coverage && npm run test-unit",
+    "test-unit": "jest --env node"
   },
   "dependencies": {
     "es6-promise": "4.2.8",
@@ -29,6 +31,16 @@
     "/build/airtable.browser.js",
     "/lib/"
   ],
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    }
+  },
   "devDependencies": {
     "body-parser": "^1.19.0",
     "envify": "^4.1.0",

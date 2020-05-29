@@ -1,3 +1,4 @@
+// istanbul ignore file
 'use strict';
 
 var Airtable = require('../lib/airtable');
