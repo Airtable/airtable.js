@@ -10,4 +10,73 @@ describe('Airtable', function() {
             expect(value).not.toEqual('keyXyz');
         });
     });
+
+    it('recognizes API key as a property of the constructor', function() {
+        try {
+            Airtable.apiKey = 'keyAbc';
+            new Airtable({});
+            new Airtable();
+        } finally {
+            delete Airtable.apiKey;
+        }
+    });
+
+    it('recognizes API key as an environment variable', function() {
+        try {
+            process.env.AIRTABLE_API_KEY = 'keyDef';
+            new Airtable({});
+            new Airtable();
+        } finally {
+            delete process.env.AIRTABLE_API_KEY;
+        }
+    });
+
+    it('throws when API key is not provided', function() {
+        expect(function() {
+            new Airtable({});
+        }).toThrow();
+
+        expect(function() {
+            new Airtable();
+        }).toThrow();
+    });
+
+    describe('configure static method', function() {
+        it('sets the apiKey', function() {
+            Airtable.configure({apiKey: 'keyGhi'});
+
+            try {
+                expect(Airtable.apiKey).toEqual('keyGhi');
+            } finally {
+                delete Airtable.apiKey;
+            }
+        });
+    });
+
+    describe('base static method', function() {
+        it('throws in the absense of an API key', function() {
+            expect(function() {
+                Airtable.base('abaseid');
+            });
+        });
+
+        it('returns a Base instance configured with the given ID', function() {
+            try {
+                Airtable.apiKey = 'keyJkl';
+                var base = Airtable.base('abaseid');
+
+                expect(base.getId()).toBe('abaseid');
+            } finally {
+                delete Airtable.apiKey;
+            }
+        });
+    });
+
+    describe('base instance method', function() {
+        it('returns a Base instance configured with the given ID', function() {
+            var base = new Airtable({apiKey: 'keyMno'}).base('anotherbaseid');
+
+            expect(base.getId()).toBe('anotherbaseid');
+        });
+    });
 });

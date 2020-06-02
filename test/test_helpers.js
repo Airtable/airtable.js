@@ -111,6 +111,7 @@ function getMockEnvironmentAsync(options) {
         res.json({error: 'NOT_FOUND'});
     });
 
+    // istanbul ignore next
     // eslint-disable-next-line no-unused-vars
     app.use(function(err, req, res, next) {
         console.error(err);
@@ -134,6 +135,7 @@ function getMockEnvironmentAsync(options) {
             }
 
             testServer.listen(testServerPort, function(err) {
+                // istanbul ignore if
                 if (err) {
                     reject(err);
                 } else {
@@ -156,6 +158,7 @@ function _checkParamsMiddleware(req, res, next) {
         req.get('authorization') === 'Bearer key123' &&
         req.params.baseId === 'app123' &&
         req.params.tableIdOrName === 'Table';
+    // istanbul ignore else
     if (areParamsValid) {
         next();
     } else {
