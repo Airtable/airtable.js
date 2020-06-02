@@ -76,9 +76,13 @@ is equivalent to
 table.select().firstPage().then(result => { ... })
 ```
 
-# Where are the tests?
+# Tests
 
-Our tests live in a different repository and tests run on every `git push`.
-We strive to have all of the API covered along with all API error conditions.
-If you hit something that's not right, be sure to email support@airtable.com or
-open a GitHub Issue.
+Tests are run via `npm run test`.
+
+We strive for 100% test coverage. Some aspects may not be testable or suitable
+for test coverage. The tooling supports ignoring specific parts of a file
+[documented here](https://github.com/istanbuljs/nyc#parsing-hints-ignoring-lines); use that as appropriate.
+
+When you run the tests a coverage report will be generated at `./coverage/lcov-report/index.html`
+which you can access in the browser for line by line reporting.
