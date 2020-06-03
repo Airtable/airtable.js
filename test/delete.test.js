@@ -4,16 +4,18 @@ var testHelpers = require('./test_helpers');
 
 describe('record deletion', function() {
     var airtable;
+    var testExpressApp;
     var teardownAsync;
 
-    beforeAll(function() {
+    beforeEach(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
             airtable = env.airtable;
+            testExpressApp = env.testExpressApp;
             teardownAsync = env.teardownAsync;
         });
     });
 
-    afterAll(function() {
+    afterEach(function() {
         return teardownAsync();
     });
 
@@ -47,6 +49,23 @@ describe('record deletion', function() {
                 expect(deletedRecords).toHaveLength(2);
                 expect(deletedRecords[0].id).toBe('rec123');
                 expect(deletedRecords[1].id).toBe('rec456');
+            });
+    });
+
+    it('can throw an error if delete fails', function(done) {
+        testExpressApp.set('handler override', function(req, res) {
+            res.status(402).json({
+                error: {message: 'foo bar'},
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .destroy(['rec123', 'rec456'])
+            .catch(function(err) {
+                expect(err).not.toBeNull();
+                done();
             });
     });
 

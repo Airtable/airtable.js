@@ -4,16 +4,18 @@ var testHelpers = require('./test_helpers');
 
 describe('record updates', function() {
     var airtable;
+    var testExpressApp;
     var teardownAsync;
 
-    beforeAll(function() {
+    beforeEach(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
             airtable = env.airtable;
+            testExpressApp = env.testExpressApp;
             teardownAsync = env.teardownAsync;
         });
     });
 
-    afterAll(function() {
+    afterEach(function() {
         return teardownAsync();
     });
 
@@ -161,6 +163,32 @@ describe('record updates', function() {
                     expect(updatedRecords[0].get('typecasted')).toBe(true);
                     expect(updatedRecords[1].id).toBe('rec456');
                     expect(updatedRecords[1].get('typecasted')).toBe(true);
+                });
+        });
+
+        it('can throw an error if update fails', function(done) {
+            testExpressApp.set('handler override', function(req, res) {
+                res.status(402).json({
+                    error: {message: 'foo bar'},
+                });
+            });
+
+            return airtable
+                .base('app123')
+                .table('Table')
+                .update([
+                    {
+                        id: 'rec123',
+                        fields: {foo: 'boo'},
+                    },
+                    {
+                        id: 'rec456',
+                        fields: {bar: 'yar'},
+                    },
+                ])
+                .catch(function(err) {
+                    expect(err).not.toBeNull();
+                    done();
                 });
         });
     });

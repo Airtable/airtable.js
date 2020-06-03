@@ -4,16 +4,18 @@ var testHelpers = require('./test_helpers');
 
 describe('record creation', function() {
     var airtable;
+    var testExpressApp;
     var teardownAsync;
 
-    beforeAll(function() {
+    beforeEach(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
             airtable = env.airtable;
+            testExpressApp = env.testExpressApp;
             teardownAsync = env.teardownAsync;
         });
     });
 
-    afterAll(function() {
+    afterEach(function() {
         return teardownAsync();
     });
 
@@ -49,6 +51,29 @@ describe('record creation', function() {
                     done();
                 }
             );
+    });
+
+    it('can throw an error if create fails', function(done) {
+        testExpressApp.set('handler override', function(req, res) {
+            res.status(402).json({
+                error: {message: 'foo bar'},
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .create(
+                {
+                    foo: 'boo',
+                    bar: 'yar',
+                },
+                {typecast: true}
+            )
+            .catch(function(err) {
+                expect(err).not.toBeNull();
+                done();
+            });
     });
 
     it('can add the "typecast" parameter when creating one record', function() {
