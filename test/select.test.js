@@ -40,6 +40,7 @@ describe('record selection', function() {
             .table('Table')
             .select()
             .eachPage(function page(records) {
+                expect(records.length).toBe(1);
                 records.forEach(function(record) {
                     expect(record.id).toBe('recordA');
                     expect(record.get('Name')).toBe('Rebecca');
@@ -114,7 +115,7 @@ describe('record selection', function() {
                 .base('app123')
                 .table('Table')
                 .select({maxRecords: 'should not be a string'});
-        }).toThrow();
+        }).toThrow(/`maxRecords` should be a number/);
     });
 
     it('selects records errors when the params are not a plain object', function() {
@@ -123,6 +124,6 @@ describe('record selection', function() {
                 .base('app123')
                 .table('Table')
                 .select('?invalid=params');
-        }).toThrow();
+        }).toThrow(/should be a plain object/);
     });
 });
