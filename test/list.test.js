@@ -94,7 +94,8 @@ describe('list records', function() {
             .base('app123')
             .table('Table')
             .list(50, 'offset000', function(err, records, offset) {
-                expect(err).not.toBeNull();
+                expect(err.statusCode).toBe(402);
+                expect(err.message).toBe('foo bar');
                 expect(records).toBeUndefined();
                 expect(offset).toBeUndefined();
                 done();
@@ -175,10 +176,10 @@ describe('list records', function() {
             .base('app123')
             .table('Table')
             .forEach(
-                {opts: 'arepassedalong'},
                 function() {},
                 function(err) {
-                    expect(err).not.toBeNull();
+                    expect(err.statusCode).toBe(402);
+                    expect(err.message).toBe('foo bar');
                     done();
                 }
             );

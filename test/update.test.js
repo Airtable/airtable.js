@@ -187,7 +187,8 @@ describe('record updates', function() {
                     },
                 ])
                 .catch(function(err) {
-                    expect(err).not.toBeNull();
+                    expect(err.statusCode).toBe(402);
+                    expect(err.message).toBe('foo bar');
                     done();
                 });
         });

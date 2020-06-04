@@ -64,7 +64,8 @@ describe('record deletion', function() {
             .table('Table')
             .destroy(['rec123', 'rec456'])
             .catch(function(err) {
-                expect(err).not.toBeNull();
+                expect(err.statusCode).toBe(402);
+                expect(err.message).toBe('foo bar');
                 done();
             });
     });
