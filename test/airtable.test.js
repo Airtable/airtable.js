@@ -60,12 +60,14 @@ describe('Airtable', function() {
             });
         });
 
-        it('returns a Base instance configured with the given ID', function() {
+        it('returns a Base function configured with the given base and access to tables', function() {
             try {
                 Airtable.apiKey = 'keyJkl';
-                var base = Airtable.base('abaseid');
+                var baseFn = Airtable.base('abaseid');
 
-                expect(base.getId()).toBe('abaseid');
+                expect(baseFn.getId()).toBe('abaseid');
+                expect(baseFn('atablename').name).toBe('atablename');
+                expect(baseFn('atablename').id).toBe(null);
             } finally {
                 delete Airtable.apiKey;
             }

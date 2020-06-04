@@ -9,13 +9,14 @@ describe('Base', function() {
     var teardownAsync;
     var testExpressApp;
     var fakeBase;
+    var baseId = 'app123';
 
     beforeEach(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
             airtable = env.airtable;
             teardownAsync = env.teardownAsync;
             testExpressApp = env.testExpressApp;
-            fakeBase = airtable.base('app123');
+            fakeBase = airtable.base(baseId);
         });
     });
 
@@ -519,6 +520,12 @@ describe('Base', function() {
                     });
                 })
                 .catch(done);
+        });
+    });
+
+    describe('#getId', function() {
+        it('gets the id', function() {
+            expect(fakeBase.getId()).toBe(baseId);
         });
     });
 });
