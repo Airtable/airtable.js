@@ -103,20 +103,25 @@ describe('list records', function() {
     });
 
     it('iterates through each record with opts', function(done) {
-        var json = {
-            records: [
-                {
-                    id: 'recordA',
-                    fields: {Name: 'Rebecca'},
-                    createdTime: '2020-04-20T16:20:00.000Z',
-                },
-            ],
-        };
+        var iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
             expect(req.url).toBe('/v0/app123/Table/?limit=100&opts=arepassedalong');
-            res.json(json);
+            res.json({
+                records: [
+                    {
+                        id: 'recordA',
+                        fields: {Name: 'Rebecca'},
+                        createdTime: '2020-04-20T16:20:00.000Z',
+                    },
+                    {
+                        id: 'recordB',
+                        fields: {Name: 'Mike'},
+                        createdTime: '2020-04-20T16:20:00.000Z',
+                    },
+                ],
+            });
         });
 
         return airtable
@@ -125,16 +130,24 @@ describe('list records', function() {
             .forEach(
                 {opts: 'arepassedalong'},
                 function(record) {
-                    expect(record.getId()).toBe('recordA');
-                    expect(record.get('Name')).toBe('Rebecca');
+                    if (iterationCounter === 0) {
+                        expect(record.getId()).toBe('recordA');
+                        expect(record.get('Name')).toBe('Rebecca');
+                    } else if (iterationCounter === 1) {
+                        expect(record.getId()).toBe('recordB');
+                        expect(record.get('Name')).toBe('Mike');
+                    }
+                    iterationCounter++;
                 },
                 function() {
+                    expect(iterationCounter).toBe(2);
                     done();
                 }
             );
     });
 
     it('iterates through each record without opts', function(done) {
+        var iterationCounter = 0;
         var json = {
             records: [
                 {
@@ -158,8 +171,36 @@ describe('list records', function() {
                 function(record) {
                     expect(record.getId()).toBe('recordA');
                     expect(record.get('Name')).toBe('Rebecca');
+                    iterationCounter++;
                 },
                 function() {
+                    expect(iterationCounter).toBe(1);
+                    done();
+                }
+            );
+    });
+
+    it('iterates through records without any records', function(done) {
+        var iterationCounter = 0;
+        var json = {
+            records: [],
+        };
+
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('GET');
+            expect(req.url).toBe('/v0/app123/Table/?limit=100');
+            res.json(json);
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .forEach(
+                function() {
+                    iterationCounter++;
+                },
+                function() {
+                    expect(iterationCounter).toBe(0);
                     done();
                 }
             );
@@ -186,43 +227,55 @@ describe('list records', function() {
     });
 
     it('iterates through each record and handles pagination', function(done) {
-        var json = {
-            records: [
-                {
-                    id: 'recordA',
-                    fields: {Name: 'Rebecca'},
-                    createdTime: '2020-04-20T16:20:00.000Z',
-                },
-            ],
-            offset: 'offset123',
-        };
+        var iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table/?limit=100&opts=arepassedalong');
-            res.json(json);
+            expect(req.url).toBe('/v0/app123/Table/?limit=100');
+            res.json({
+                records: [
+                    {
+                        id: 'recordA',
+                        fields: {Name: 'Rebecca'},
+                        createdTime: '2020-04-20T16:20:00.000Z',
+                    },
+                ],
+                offset: 'offset123',
+            });
         });
 
         return airtable
             .base('app123')
             .table('Table')
             .forEach(
-                {opts: 'arepassedalong'},
                 function(record) {
-                    expect(record.getId()).toBe('recordA');
-                    expect(record.get('Name')).toBe('Rebecca');
+                    if (iterationCounter === 0) {
+                        expect(record.getId()).toBe('recordA');
+                        expect(record.get('Name')).toBe('Rebecca');
 
-                    // Reset API response to handle the paginated call
-                    testExpressApp.set('handler override', function(req, res) {
-                        expect(req.method).toBe('GET');
-                        expect(req.url).toBe(
-                            '/v0/app123/Table/?limit=100&offset=offset123&opts=arepassedalong'
-                        );
-                        delete json.offset;
-                        res.json(json);
-                    });
+                        testExpressApp.set('handler override', function(req, res) {
+                            expect(req.method).toBe('GET');
+                            expect(req.url).toBe('/v0/app123/Table/?limit=100&offset=offset123');
+                            // Don't include an offset in second page of results
+                            // to indicate that it is the final page of results
+                            res.json({
+                                records: [
+                                    {
+                                        id: 'recordB',
+                                        fields: {Name: 'Mike'},
+                                        createdTime: '2020-04-20T16:20:00.000Z',
+                                    },
+                                ],
+                            });
+                        });
+                    } else if (iterationCounter === 1) {
+                        expect(record.getId()).toBe('recordB');
+                        expect(record.get('Name')).toBe('Mike');
+                    }
+                    iterationCounter++;
                 },
                 function() {
+                    expect(iterationCounter).toBe(2);
                     done();
                 }
             );
