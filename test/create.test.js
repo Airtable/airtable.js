@@ -70,11 +70,16 @@ describe('record creation', function() {
                 },
                 {typecast: true}
             )
-            .catch(function(err) {
-                expect(err.statusCode).toBe(402);
-                expect(err.message).toBe('foo bar');
-                done();
-            });
+            .then(
+                function() {
+                    throw new Error('Promise unexpectly fufilled.');
+                },
+                function(err) {
+                    expect(err.statusCode).toBe(402);
+                    expect(err.message).toBe('foo bar');
+                    done();
+                }
+            );
     });
 
     it('can add the "typecast" parameter when creating one record', function() {

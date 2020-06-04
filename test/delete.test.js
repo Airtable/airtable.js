@@ -63,11 +63,16 @@ describe('record deletion', function() {
             .base('app123')
             .table('Table')
             .destroy(['rec123', 'rec456'])
-            .catch(function(err) {
-                expect(err.statusCode).toBe(402);
-                expect(err.message).toBe('foo bar');
-                done();
-            });
+            .then(
+                function() {
+                    throw new Error('Promise unexpectly fufilled.');
+                },
+                function(err) {
+                    expect(err.statusCode).toBe(402);
+                    expect(err.message).toBe('foo bar');
+                    done();
+                }
+            );
     });
 
     it('can delete multiple records and call a callback', function(done) {

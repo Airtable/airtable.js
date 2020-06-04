@@ -186,11 +186,16 @@ describe('record updates', function() {
                         fields: {bar: 'yar'},
                     },
                 ])
-                .catch(function(err) {
-                    expect(err.statusCode).toBe(402);
-                    expect(err.message).toBe('foo bar');
-                    done();
-                });
+                .then(
+                    function() {
+                        throw new Error('Promise unexpectly fufilled.');
+                    },
+                    function(err) {
+                        expect(err.statusCode).toBe(402);
+                        expect(err.message).toBe('foo bar');
+                        done();
+                    }
+                );
         });
     });
 
