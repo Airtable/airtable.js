@@ -15,10 +15,8 @@ describe('AirtableError', function() {
         });
 
         it('includes the provided `statusCode` value', function() {
-            var error = new AirtableError(null, null, 'value of statusCode parameter');
-            expect(error.toString()).toEqual(
-                expect.stringContaining('value of statusCode parameter')
-            );
+            var error = new AirtableError(null, null, 404);
+            expect(error.toString()).toEqual(expect.stringContaining('404'));
         });
     });
 });
