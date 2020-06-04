@@ -39,7 +39,7 @@ describe('record selection', function() {
             .base('app123')
             .table('Table')
             .select()
-            .eachPage(function page(records, fetchNextPage) {
+            .eachPage(function page(records) {
                 records.forEach(function(record) {
                     expect(record.id).toBe('recordA');
                     expect(record.get('Name')).toBe('Rebecca');
@@ -70,7 +70,7 @@ describe('record selection', function() {
             .base('app123')
             .table('Table')
             .select({maxRecords: 50, sort: [{field: 'Name', direction: 'desc'}]})
-            .eachPage(function page(records, fetchNextPage) {
+            .eachPage(function page(records) {
                 records.forEach(function(record) {
                     expect(record.id).toBe('recordA');
                     expect(record.get('Name')).toBe('Rebecca');
@@ -99,7 +99,7 @@ describe('record selection', function() {
             .base('app123')
             .table('Table')
             .select({ignoredParam: 'ignore me'}, {anotherIgnored: 'param'})
-            .eachPage(function page(records, fetchNextPage) {
+            .eachPage(function page(records) {
                 records.forEach(function(record) {
                     expect(record.id).toBe('recordA');
                     expect(record.get('Name')).toBe('Rebecca');
