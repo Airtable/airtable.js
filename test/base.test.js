@@ -162,6 +162,21 @@ describe('Base', function() {
                         expect(value === 'bar' || value === 'baz').toBeTruthy();
                     });
             });
+
+            it('allows headers with custom user agent', function() {
+                return fakeBase
+                    .makeRequest({
+                        headers: {
+                            Authorization: 'foo',
+                            'X-Airtable-User-Agent': 'bazz',
+                        },
+                    })
+                    .then(function() {
+                        const req = testExpressApp.get('most recent request');
+                        expect(req.get('authorization')).toEqual('foo');
+                        expect(req.get('user-agent')).toEqual('bazz');
+                    });
+            });
         });
 
         describe('request body', function() {
