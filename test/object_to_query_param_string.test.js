@@ -43,6 +43,7 @@ describe('objectToQueryParamString', function() {
 
     it('serializes arrays', function() {
         expect(objectToQueryParamString({arr: [1]})).toBe(encodeURIComponent('arr[]') + '=1');
+        expect(objectToQueryParamString({'arr[]': [1]})).toBe(encodeURIComponent('arr[]') + '=1');
         expect(objectToQueryParamString({arr: [1, 2]})).toBe(
             [
                 encodeURIComponent('arr[]'),
