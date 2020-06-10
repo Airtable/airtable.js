@@ -4,16 +4,18 @@ var testHelpers = require('./test_helpers');
 
 describe('record creation', function() {
     var airtable;
+    var testExpressApp;
     var teardownAsync;
 
-    beforeAll(function() {
+    beforeEach(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
             airtable = env.airtable;
+            testExpressApp = env.testExpressApp;
             teardownAsync = env.teardownAsync;
         });
     });
 
-    afterAll(function() {
+    afterEach(function() {
         return teardownAsync();
     });
 
@@ -46,6 +48,35 @@ describe('record creation', function() {
                     expect(createdRecord.id).toBe('rec0');
                     expect(createdRecord.get('foo')).toBe('boo');
                     expect(createdRecord.get('bar')).toBe('yar');
+                    done();
+                }
+            );
+    });
+
+    it('can throw an error if create fails', function(done) {
+        testExpressApp.set('handler override', function(req, res) {
+            res.status(402).json({
+                error: {message: 'foo bar'},
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .create(
+                {
+                    foo: 'boo',
+                    bar: 'yar',
+                },
+                {typecast: true}
+            )
+            .then(
+                function() {
+                    throw new Error('Promise unexpectly fufilled.');
+                },
+                function(err) {
+                    expect(err.statusCode).toBe(402);
+                    expect(err.message).toBe('foo bar');
                     done();
                 }
             );
