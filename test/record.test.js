@@ -65,6 +65,26 @@ describe('Record', function() {
         });
     });
 
+    describe('set', function() {
+        var record;
+        beforeEach(function() {
+            record = new Record(table, null, {
+                id: 'rec123',
+                fields: {foo: 'bar'},
+            });
+        });
+
+        it('sets a new value', function() {
+            record.set('bing', 'sing');
+            expect(record.get('bing')).toBe('sing');
+        });
+
+        it('re-sets an existing value', function() {
+            record.set('foo', 'pig');
+            expect(record.get('foo')).toBe('pig');
+        });
+    });
+
     describe('patchUpdate', function() {
         var record;
 
@@ -150,6 +170,30 @@ describe('Record', function() {
 
         it('patch-updates the record and calls a callback', function(done) {
             record.putUpdate({baz: 'qux'}, function(err, updatedRecord) {
+                expect(err).toBeNull();
+
+                expect(updatedRecord).toBe(record);
+                expect(record.get('foo')).toBeUndefined();
+                expect(record.get('baz')).toEqual('qux');
+
+                expect(table._base.runAction).toHaveBeenCalledWith(
+                    'put',
+                    '/My%20Table/rec123',
+                    {},
+                    {
+                        fields: {baz: 'qux'},
+                    },
+                    expect.any(Function)
+                );
+
+                done();
+            });
+        });
+
+        it('saves the record and calls a callback', function(done) {
+            record.set('foo', undefined); // eslint-disable-line no-undefined
+            record.set('baz', 'qux');
+            record.save(function(err, updatedRecord) {
                 expect(err).toBeNull();
 
                 expect(updatedRecord).toBe(record);
