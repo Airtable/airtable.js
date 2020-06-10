@@ -24,7 +24,8 @@ describe('Airtable', function() {
         plusPlus(1);
         expect(x).toBe(2);
         expect(console.warn).toHaveBeenCalledTimes(1);
-        plusPlus(1);
+        plusPlus(7);
+        expect(x).toBe(8);
         expect(console.warn).toHaveBeenCalledTimes(1);
     });
 });
