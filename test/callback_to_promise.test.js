@@ -22,12 +22,12 @@ describe('callbackToPromise', function() {
 
     it('lets a function return a promise that can resolve', function() {
         var wrapped = callbackToPromise(returnThisPlusValue, 1);
-        expect(wrapped(2)).resolves.toBe(3);
+        return expect(wrapped(2)).resolves.toBe(3);
     });
 
     it('lets a function return a promise that can reject', function() {
         var wrapped = callbackToPromise(rejectValue, 1);
-        expect(wrapped(2)).rejects.toThrow(/reject this value/);
+        return expect(wrapped(2)).rejects.toThrow(/reject this value/);
     });
 
     it('maintains the ability to call a function with a callback', function(done) {
@@ -59,6 +59,6 @@ describe('callbackToPromise', function() {
 
     it('can allow the user to explicately identify the index of the callback', function() {
         var wrapped = callbackToPromise(returnThisPlusValue, 1, 1);
-        expect(wrapped(2)).resolves.toBe(3);
+        return expect(wrapped(2)).resolves.toBe(3);
     });
 });
