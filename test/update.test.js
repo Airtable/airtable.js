@@ -90,6 +90,32 @@ describe('record updates', function() {
                 });
         });
 
+        it('can throw an error if a single record update fails', function(done) {
+            testExpressApp.set('handler override', function(req, res) {
+                res.status(402).json({
+                    error: {message: 'foo bar'},
+                });
+            });
+
+            return airtable
+                .base('app123')
+                .table('Table')
+                .update('rec123', {
+                    foo: 'boo',
+                    bar: 'yar',
+                })
+                .then(
+                    function() {
+                        throw new Error('Promise unexpectly fufilled.');
+                    },
+                    function(err) {
+                        expect(err.statusCode).toBe(402);
+                        expect(err.message).toBe('foo bar');
+                        done();
+                    }
+                );
+        });
+
         it('can update two records', function() {
             return airtable
                 .base('app123')
@@ -166,7 +192,7 @@ describe('record updates', function() {
                 });
         });
 
-        it('can throw an error if update fails', function(done) {
+        it('can throw an error if a multi-record update fails', function(done) {
             testExpressApp.set('handler override', function(req, res) {
                 res.status(402).json({
                     error: {message: 'foo bar'},
@@ -231,6 +257,32 @@ describe('record updates', function() {
                     expect(updatedRecord.id).toBe('rec123');
                     expect(updatedRecord.get('typecasted')).toBe(true);
                 });
+        });
+
+        it('can throw an error if a single record replace fails', function(done) {
+            testExpressApp.set('handler override', function(req, res) {
+                res.status(402).json({
+                    error: {message: 'foo bar'},
+                });
+            });
+
+            return airtable
+                .base('app123')
+                .table('Table')
+                .replace('rec123', {
+                    foo: 'boo',
+                    bar: 'yar',
+                })
+                .then(
+                    function() {
+                        throw new Error('Promise unexpectly fufilled.');
+                    },
+                    function(err) {
+                        expect(err.statusCode).toBe(402);
+                        expect(err.message).toBe('foo bar');
+                        done();
+                    }
+                );
         });
 
         it('can update one record with an array', function() {
