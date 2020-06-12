@@ -7,6 +7,14 @@ describe('callbackToPromise', function() {
         callback(null, this + value);
     }
 
+    function returnThisPlusUpToThreeValues(v1, v2, v3, callback) {
+        callback(null, this + v1 + (v2 || 0) + (v3 || 0));
+    }
+
+    function rejectValue(value, callback) {
+        callback(new Error('I reject this value'));
+    }
+
     function sum() {
         var callback = arguments[arguments.length - 1];
         var result = 0;
@@ -16,9 +24,14 @@ describe('callbackToPromise', function() {
         callback(null, result);
     }
 
-    it('lets a function return a promise', function() {
+    it('lets a function return a promise that can resolve', function() {
         var wrapped = callbackToPromise(returnThisPlusValue, 1);
-        expect(wrapped(2)).resolves.toBe(3);
+        return expect(wrapped(2)).resolves.toBe(3);
+    });
+
+    it('lets a function return a promise that can reject', function() {
+        var wrapped = callbackToPromise(rejectValue, 1);
+        return expect(wrapped(2)).rejects.toThrow(/reject this value/);
     });
 
     it('maintains the ability to call a function with a callback', function(done) {
@@ -46,5 +59,20 @@ describe('callbackToPromise', function() {
                 });
             });
         });
+    });
+
+    it('can allow the user to explicitly identify the index of the callback', function() {
+        var wrapped = callbackToPromise(returnThisPlusUpToThreeValues, 1, 3);
+        return expect(wrapped(2, 3, 4)).resolves.toBe(10);
+    });
+
+    it('can allow the user to explicitly identify the index of the callback with too few arguments', function() {
+        var wrapped = callbackToPromise(returnThisPlusUpToThreeValues, 1, 3);
+        return expect(wrapped(2)).resolves.toBe(3);
+    });
+
+    it('can allow the user to explicitly identify the index of the callback with too many arguments', function() {
+        var wrapped = callbackToPromise(sum, 1, 3);
+        return expect(wrapped(2, 3, 4, 5)).resolves.toBe(14);
     });
 });
