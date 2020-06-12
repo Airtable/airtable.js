@@ -64,4 +64,36 @@ describe('record retrival', function() {
                 }
             );
     });
+
+    it('can find after a retry if rate limited', function(done) {
+        var apiCallCount = 0;
+        var recordId = 'record1';
+
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('GET');
+            expect(req.url).toBe('/v0/app123/Table/record1?');
+            if (apiCallCount === 0) {
+                res.status(429).json({
+                    error: {message: 'Over rate limit'},
+                });
+            } else if (apiCallCount === 1) {
+                res.json({
+                    id: req.params.recordId,
+                    fields: {Name: 'Rebecca'},
+                    createdTime: '2020-04-20T16:20:00.000Z',
+                });
+            }
+            apiCallCount++;
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .find('record1')
+            .then(function(foundRecord) {
+                expect(foundRecord.id).toBe(recordId);
+                expect(foundRecord.get('Name')).toBe('Rebecca');
+                done();
+            });
+    });
 });
