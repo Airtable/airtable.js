@@ -69,6 +69,31 @@ describe('record retrival', function() {
             });
     });
 
+    it('set the correct headers in a browser', function() {
+        global.window = {};
+        var recordId = 'record1';
+
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('GET');
+            expect(req.url).toBe('/v0/app123/Table/record1?');
+            expect(req.get('x-airtable-user-agent')).toMatch(/Airtable.js/);
+            res.json({
+                id: req.params.recordId,
+                fields: {Name: 'Rebecca'},
+                createdTime: '2020-04-20T16:20:00.000Z',
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .find(recordId)
+            .then(function(foundRecord) {
+                expect(foundRecord.id).toBe(recordId);
+                expect(foundRecord.get('Name')).toBe('Rebecca');
+            });
+    });
+
     it('can handle an error', function() {
         testExpressApp.set('handler override', function(req, res) {
             res.status(402).json({
