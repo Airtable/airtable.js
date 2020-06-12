@@ -140,7 +140,7 @@ describe('record retrival', function() {
         return airtable
             .base('app123')
             .table('Table')
-            .find('record1')
+            .find(recordId)
             .then(function(foundRecord) {
                 expect(foundRecord.id).toBe(recordId);
                 expect(foundRecord.get('Name')).toBe('Rebecca');
