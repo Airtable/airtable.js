@@ -16,7 +16,7 @@ describe('record retrival', function() {
     });
 
     afterAll(function() {
-        delete global.x;
+        delete global.window;
         return teardownAsync();
     });
 
