@@ -16,12 +16,10 @@
   "dependencies": {
     "es6-promise": "4.2.8",
     "lodash": "4.17.15",
-    "request": "2.88.0",
-    "xhr": "2.3.3"
+    "node-fetch": "^2.6.0"
   },
   "main": "./lib/airtable.js",
   "browser": {
-    "request": "xhr",
     "./lib/package_version": "./lib/package_version_browser"
   },
   "files": [
