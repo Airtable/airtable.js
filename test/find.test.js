@@ -146,4 +146,28 @@ describe('record retrival', function() {
                 expect(foundRecord.get('Name')).toBe('Rebecca');
             });
     });
+
+    it('can timeout if the servers are slow', function(done) {
+        var recordId = 'record1';
+
+        testExpressApp.set('handler override', function(req) {
+            expect(req.method).toBe('GET');
+            expect(req.url).toBe('/v0/app123/Table/record1?');
+            // Timeout before returning a response
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .find(recordId)
+            .then(
+                function() {
+                    throw new Error('Promise unexpectedly fufilled.');
+                },
+                function(err) {
+                    expect(err.message).toMatch(/aborted/);
+                    done();
+                }
+            );
+    });
 });
