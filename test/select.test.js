@@ -199,41 +199,41 @@ describe('record selection', function() {
             .base('app123')
             .table('Table')
             .select()
-            .eachPage(
-                function page(records, fetchNextPage) {
-                    if (iterationCounter === 0) {
-                        expect(records.length).toBe(1);
-                        records.forEach(function(record) {
-                            expect(record.id).toBe('recordA');
-                            expect(record.get('Name')).toBe('Rebecca');
-                        });
+            .eachPage(function page(records, fetchNextPage) {
+                if (iterationCounter === 0) {
+                    expect(records.length).toBe(1);
+                    records.forEach(function(record) {
+                        expect(record.id).toBe('recordA');
+                        expect(record.get('Name')).toBe('Rebecca');
+                    });
 
-                        testExpressApp.set('handler override', function(req, res) {
-                            expect(req.method).toBe('GET');
-                            expect(req.url).toBe('/v0/app123/Table?offset=offsetABC');
-                            res.json({
-                                records: [
-                                    {
-                                        id: 'recordB',
-                                        fields: {Name: 'Clinton'},
-                                        createdTime: '2020-04-20T16:20:00.000Z',
-                                    },
-                                ],
-                            });
+                    testExpressApp.set('handler override', function(req, res) {
+                        expect(req.method).toBe('GET');
+                        expect(req.url).toBe('/v0/app123/Table?offset=offsetABC');
+                        res.json({
+                            records: [
+                                {
+                                    id: 'recordB',
+                                    fields: {Name: 'Clinton'},
+                                    createdTime: '2020-04-20T16:20:00.000Z',
+                                },
+                            ],
                         });
-                    } else if (iterationCounter === 1) {
-                        expect(records.length).toBe(1);
-                        records.forEach(function(record) {
-                            expect(record.id).toBe('recordB');
-                            expect(record.get('Name')).toBe('Clinton');
-                        });
-                    }
-                    iterationCounter++;
-                    fetchNextPage();
-                }).then(function() {
-                    expect(iterationCounter).toBe(2);
-                    done();
-                });
+                    });
+                } else if (iterationCounter === 1) {
+                    expect(records.length).toBe(1);
+                    records.forEach(function(record) {
+                        expect(record.id).toBe('recordB');
+                        expect(record.get('Name')).toBe('Clinton');
+                    });
+                }
+                iterationCounter++;
+                fetchNextPage();
+            })
+            .then(function() {
+                expect(iterationCounter).toBe(2);
+                done();
+            });
     });
 
     it('selects records and paginates the selection with a done function', function(done) {
@@ -302,7 +302,7 @@ describe('record selection', function() {
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
             expect(req.url).toBe(
-                '/v0/app123/Table?maxRecords=50&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc'
+                '/v0/app123/Table?maxRecords=50&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc&cellFormat=json'
             );
             res.json({
                 records: [
@@ -319,7 +319,11 @@ describe('record selection', function() {
         return airtable
             .base('app123')
             .table('Table')
-            .select({maxRecords: 50, sort: [{field: 'Name', direction: 'desc'}]})
+            .select({
+                maxRecords: 50,
+                sort: [{field: 'Name', direction: 'desc'}],
+                cellFormat: 'json',
+            })
             .eachPage(function page(records) {
                 records.forEach(function(record) {
                     expect(record.id).toBe('recordA');
