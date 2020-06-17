@@ -40,6 +40,28 @@ describe('record deletion', function() {
             });
     });
 
+    it('can throw an error if a single record delete fails', function() {
+        testExpressApp.set('handler override', function(req, res) {
+            res.status(402).json({
+                error: {message: 'foo bar'},
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .destroy('rec123')
+            .then(
+                function() {
+                    throw new Error('Promise unexpectedly fufilled.');
+                },
+                function(err) {
+                    expect(err.statusCode).toBe(402);
+                    expect(err.message).toBe('foo bar');
+                }
+            );
+    });
+
     it('can delete multiple records', function() {
         return airtable
             .base('app123')
@@ -52,7 +74,7 @@ describe('record deletion', function() {
             });
     });
 
-    it('can throw an error if delete fails', function(done) {
+    it('can throw an error if a multi-record delete fails', function() {
         testExpressApp.set('handler override', function(req, res) {
             res.status(402).json({
                 error: {message: 'foo bar'},
@@ -65,12 +87,11 @@ describe('record deletion', function() {
             .destroy(['rec123', 'rec456'])
             .then(
                 function() {
-                    throw new Error('Promise unexpectly fufilled.');
+                    throw new Error('Promise unexpectedly fufilled.');
                 },
                 function(err) {
                     expect(err.statusCode).toBe(402);
                     expect(err.message).toBe('foo bar');
-                    done();
                 }
             );
     });

@@ -1,19 +1,26 @@
 'use strict';
 
 var Record = require('../lib/record');
+var testHelpers = require('./test_helpers');
 
 describe('Record', function() {
+    var airtable;
     var table;
+    var teardownAsync;
+    var testExpressApp;
+    var baseId = 'app123';
 
     beforeEach(function() {
-        table = {
-            _base: {
-                runAction: jest.fn(),
-            },
-            _urlEncodedNameOrId: function() {
-                return 'My%20Table';
-            },
-        };
+        return testHelpers.getMockEnvironmentAsync().then(function(env) {
+            airtable = env.airtable;
+            teardownAsync = env.teardownAsync;
+            testExpressApp = env.testExpressApp;
+            table = airtable.base(baseId).table('Table');
+        });
+    });
+
+    afterEach(function() {
+        return teardownAsync();
     });
 
     it('can be initialized with a record ID and no data', function() {
@@ -65,6 +72,26 @@ describe('Record', function() {
         });
     });
 
+    describe('set', function() {
+        var record;
+        beforeEach(function() {
+            record = new Record(table, null, {
+                id: 'rec123',
+                fields: {foo: 'bar'},
+            });
+        });
+
+        it('sets a new value', function() {
+            record.set('bing', 'sing');
+            expect(record.get('bing')).toBe('sing');
+        });
+
+        it('re-sets an existing value', function() {
+            record.set('foo', 'pig');
+            expect(record.get('foo')).toBe('pig');
+        });
+    });
+
     describe('patchUpdate', function() {
         var record;
 
@@ -74,17 +101,14 @@ describe('Record', function() {
                 fields: {foo: 'bar'},
             });
 
-            table._base.runAction.mockImplementationOnce(function(
-                method,
-                path,
-                queryParams,
-                bodyData,
-                callback
-            ) {
-                callback(null, null, {
-                    id: bodyData.id,
+            testExpressApp.set('handler override', function(req, res) {
+                expect(req.method).toBe('PATCH');
+                expect(req.url).toBe('/v0/app123/Table/rec123?');
+                expect(req.body).toStrictEqual({fields: {baz: 'qux'}});
+                res.json({
+                    id: req.params.recordId,
+                    fields: {foo: 'bar', baz: 'qux'},
                     createdTime: '2020-04-20T16:20:00.000Z',
-                    fields: Object.assign({foo: 'bar'}, bodyData.fields),
                 });
             });
         });
@@ -96,17 +120,6 @@ describe('Record', function() {
                 expect(updatedRecord).toBe(record);
                 expect(record.get('foo')).toEqual('bar');
                 expect(record.get('baz')).toEqual('qux');
-
-                expect(table._base.runAction).toHaveBeenCalledWith(
-                    'patch',
-                    '/My%20Table/rec123',
-                    {},
-                    {
-                        fields: {baz: 'qux'},
-                    },
-                    expect.any(Function)
-                );
-
                 done();
             });
         });
@@ -133,17 +146,14 @@ describe('Record', function() {
                 fields: {foo: 'bar'},
             });
 
-            table._base.runAction.mockImplementationOnce(function(
-                method,
-                path,
-                queryParams,
-                bodyData,
-                callback
-            ) {
-                callback(null, null, {
-                    id: bodyData.id,
+            testExpressApp.set('handler override', function(req, res) {
+                expect(req.method).toBe('PUT');
+                expect(req.url).toBe('/v0/app123/Table/rec123?');
+                expect(req.body).toStrictEqual({fields: {baz: 'qux'}});
+                res.json({
+                    id: req.params.recordId,
+                    fields: {baz: 'qux'},
                     createdTime: '2020-04-20T16:20:00.000Z',
-                    fields: Object.assign(bodyData.fields),
                 });
             });
         });
@@ -155,23 +165,25 @@ describe('Record', function() {
                 expect(updatedRecord).toBe(record);
                 expect(record.get('foo')).toBeUndefined();
                 expect(record.get('baz')).toEqual('qux');
+                done();
+            });
+        });
 
-                expect(table._base.runAction).toHaveBeenCalledWith(
-                    'put',
-                    '/My%20Table/rec123',
-                    {},
-                    {
-                        fields: {baz: 'qux'},
-                    },
-                    expect.any(Function)
-                );
+        it('saves the record and calls a callback', function(done) {
+            record.set('foo', undefined); // eslint-disable-line no-undefined
+            record.set('baz', 'qux');
+            record.save(function(err, updatedRecord) {
+                expect(err).toBeNull();
 
+                expect(updatedRecord).toBe(record);
+                expect(record.get('foo')).toBeUndefined();
+                expect(record.get('baz')).toEqual('qux');
                 done();
             });
         });
 
         it('returns a promise when no callback is passed', function() {
-            return record.patchUpdate({baz: 'qux'}).then(function(updatedRecord) {
+            return record.putUpdate({baz: 'qux'}).then(function(updatedRecord) {
                 expect(updatedRecord).toBe(record);
                 expect(record.get('foo')).toBeUndefined();
                 expect(record.get('baz')).toEqual('qux');
@@ -185,17 +197,13 @@ describe('Record', function() {
 
     describe('fetch', function() {
         beforeEach(function() {
-            table._base.runAction.mockImplementationOnce(function(
-                method,
-                path,
-                queryParams,
-                bodyData,
-                callback
-            ) {
-                callback(null, null, {
-                    id: 'rec123',
-                    createdTime: '2020-04-20T16:20:00.000Z',
+            testExpressApp.set('handler override', function(req, res) {
+                expect(req.method).toBe('GET');
+                expect(req.url).toBe('/v0/app123/Table/rec123?');
+                res.json({
+                    id: req.params.recordId,
                     fields: {foo: 'bar'},
+                    createdTime: '2020-04-20T16:20:00.000Z',
                 });
             });
         });
@@ -205,19 +213,9 @@ describe('Record', function() {
 
             record.fetch(function(err, fetchedRecord) {
                 expect(err).toBeNull();
-
                 expect(fetchedRecord).toBe(record);
                 expect(record.get('foo')).toBe('bar');
                 expect(record.get('baz')).toBeUndefined();
-
-                expect(table._base.runAction).toHaveBeenCalledWith(
-                    'get',
-                    '/My%20Table/rec123',
-                    {},
-                    null,
-                    expect.any(Function)
-                );
-
                 done();
             });
         });

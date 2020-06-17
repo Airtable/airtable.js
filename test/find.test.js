@@ -41,4 +41,27 @@ describe('record retrival', function() {
                 expect(foundRecord.get('Name')).toBe('Rebecca');
             });
     });
+
+    it('can handle an error', function(done) {
+        testExpressApp.set('handler override', function(req, res) {
+            res.status(402).json({
+                error: {message: 'foo bar'},
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .find('recabcd')
+            .then(
+                function() {
+                    throw new Error('Promise unexpectly fufilled.');
+                },
+                function(err) {
+                    expect(err.statusCode).toBe(402);
+                    expect(err.message).toBe('foo bar');
+                    done();
+                }
+            );
+    });
 });
