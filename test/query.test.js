@@ -3,12 +3,6 @@
 var Query = require('../lib/query');
 
 describe('Query', function() {
-    it('throws an error on validating invalid params', function() {
-        return expect(() => {
-            Query.validateParams('?param!=object');
-        }).toThrow(/to be an object/);
-    });
-
     it('validates cellFormat params', function() {
         var validParams = {cellFormat: 'json'};
         expect(Query.validateParams(validParams).validParams).toStrictEqual(validParams);
