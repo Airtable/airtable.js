@@ -69,7 +69,7 @@ describe('record retrival', function() {
             });
     });
 
-    it('can handle an error', function(done) {
+    it('can handle an error', function() {
         testExpressApp.set('handler override', function(req, res) {
             res.status(402).json({
                 error: {message: 'foo bar'},
@@ -87,12 +87,11 @@ describe('record retrival', function() {
                 function(err) {
                     expect(err.statusCode).toBe(402);
                     expect(err.message).toBe('foo bar');
-                    done();
                 }
             );
     });
 
-    it('can find after a retry if rate limited', function(done) {
+    it('can find after a retry if rate limited', function() {
         var apiCallCount = 0;
         var recordId = 'record1';
 
@@ -120,7 +119,6 @@ describe('record retrival', function() {
             .then(function(foundRecord) {
                 expect(foundRecord.id).toBe(recordId);
                 expect(foundRecord.get('Name')).toBe('Rebecca');
-                done();
             });
     });
 });
