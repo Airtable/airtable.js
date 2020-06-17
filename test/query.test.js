@@ -3,12 +3,6 @@
 var Query = require('../lib/query');
 
 describe('Query', function() {
-    it('throws an error with params is not a plain object', function() {
-        return expect(() => {
-            new Query('table', '?params!=object');
-        }).toThrow(/to be an object/);
-    });
-
     it('throws an error with invalid parameter value', function() {
         return expect(() => {
             new Query('table', {maxRecords: '5'});
