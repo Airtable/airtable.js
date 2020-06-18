@@ -7,7 +7,7 @@ describe('record retrival', function() {
     var testExpressApp;
     var teardownAsync;
 
-    beforeAll(function() {
+    beforeEach(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
             airtable = env.airtable;
             testExpressApp = env.testExpressApp;
@@ -15,7 +15,7 @@ describe('record retrival', function() {
         });
     });
 
-    afterAll(function() {
+    afterEach(function() {
         delete global.window;
         return teardownAsync();
     });

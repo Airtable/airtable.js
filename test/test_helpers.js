@@ -143,7 +143,7 @@ function getMockEnvironmentAsync(options) {
                         airtable: new Airtable({
                             apiKey: 'key123',
                             endpointUrl: 'http://localhost:' + testServerPort,
-                            requestTimeout: 100,
+                            requestTimeout: 1000,
                         }),
                         teardownAsync: util.promisify(testServer.close.bind(testServer)),
                         testExpressApp: app,
