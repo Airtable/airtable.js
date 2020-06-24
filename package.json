@@ -21,6 +21,8 @@
   },
   "main": "./lib/airtable.js",
   "browser": {
+    "node-fetch": false,
+    "abort-controller": false,
     "./lib/package_version": "./lib/package_version_browser"
   },
   "files": [
