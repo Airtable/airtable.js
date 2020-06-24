@@ -85,7 +85,6 @@ describe('Base', function() {
                     })
                     .then(function() {
                         const {query} = testExpressApp.get('most recent request');
-                        console.log(query);
                         expect(query.getAll('foo')).toEqual(['bar']);
                         expect(query.getAll('arr[]')).toEqual(['one', 'two']);
                         expect(query.getAll('obj[baz]')).toEqual(['qux']);
