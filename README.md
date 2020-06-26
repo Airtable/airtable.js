@@ -18,6 +18,7 @@ To install airtable.js in a node project:
 
     npm install airtable
 
+Airtable.js should work with Node 10 and above.
 
 ### Browser
 
@@ -33,6 +34,8 @@ Edit `test/test_files/index.html` - put your `BASE_ID` and `API_KEY` (Be careful
 
 Then open http://localhost:8000/ in your browser.
 
+Airtable.js should work with browsers supported by Airtable App.
+See the [techincal requirements](https://support.airtable.com/hc/en-us/articles/217990018) for more details.
 
 # Configuration
 
