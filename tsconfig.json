@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "rootDir": "lib",
+        "outDir": "build/dist",
+        "noImplicitAny": false,
+        "strict": false
+    }
+}

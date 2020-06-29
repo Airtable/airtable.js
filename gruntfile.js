@@ -3,9 +3,13 @@
 module.exports = function(grunt) {
     var pkg = grunt.file.readJSON('package.json');
 
-    // Project configuration.
     grunt.initConfig({
         pkg: pkg,
+        ts: {
+            default: {
+                tsconfig: './tsconfig.json',
+            },
+        },
         browserify: {
             client: {
                 src: './lib/airtable.js',
@@ -29,4 +33,6 @@ module.exports = function(grunt) {
     });
 
     grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-ts');
+    grunt.registerTask('default', ['ts']);
 };
