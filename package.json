@@ -12,7 +12,8 @@
     "format": "prettier --write '**/*.js'",
     "test": "npm run coverage",
     "test-unit": "jest --env node",
-    "compile": "rm -rf build/dist/* && tsc"
+    "compile": "rm -rf build/dist/* && tsc",
+    "browserify": "npm run compile; grunt browserify"
   },
   "dependencies": {
     "@types/node": "^14.0.14",
