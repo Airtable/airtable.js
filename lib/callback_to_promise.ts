@@ -10,6 +10,7 @@ function callbackToPromise(fn, context, callbackArgIndex) {
     return function() {
         var thisCallbackArgIndex;
         if (callbackArgIndex === void 0) {
+            // istanbul ignore next
             thisCallbackArgIndex = arguments.length > 0 ? arguments.length - 1 : 0;
         } else {
             thisCallbackArgIndex = callbackArgIndex;

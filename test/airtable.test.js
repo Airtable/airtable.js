@@ -1,6 +1,6 @@
 'use strict';
 
-var Airtable = require('../lib/airtable');
+var Airtable = require('../build/dist/lib/airtable');
 
 describe('Airtable', function() {
     it("doesn't include the API key as an enumerable property", function() {

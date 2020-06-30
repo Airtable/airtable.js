@@ -1,6 +1,6 @@
 'use strict';
 
-var deprecate = require('../lib/deprecate');
+var deprecate = require('../build/dist/lib/deprecate');
 
 describe('Airtable', function() {
     var x;

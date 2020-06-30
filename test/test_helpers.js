@@ -1,6 +1,6 @@
 'use strict';
 
-var Airtable = require('../lib/airtable');
+var Airtable = require('../build/dist/lib/airtable');
 var http = require('http');
 var https = require('https');
 var path = require('path');

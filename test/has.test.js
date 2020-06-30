@@ -1,6 +1,6 @@
 'use strict';
 
-var has = require('../lib/has');
+var has = require('../build/dist/lib/has');
 
 describe('has', function() {
     it('returns true if the object has the property as an own property, false otherwise', function() {

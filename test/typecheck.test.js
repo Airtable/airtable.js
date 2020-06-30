@@ -1,6 +1,6 @@
 'use strict';
 
-var check = require('../lib/typecheck');
+var check = require('../build/dist/lib/typecheck');
 var isNumber = require('lodash/isNumber');
 
 describe('check', function() {

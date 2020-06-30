@@ -2,10 +2,12 @@
     "compilerOptions": {
         "target": "ES5",
         "module": "commonjs",
+        "resolveJsonModule": true,
         "esModuleInterop": true,
-        "rootDir": "lib",
+        "sourceMap": true,
         "outDir": "build/dist",
         "noImplicitAny": false,
         "strict": false
-    }
+    },
+    "include": ["lib/**/*.ts", "package.json", "lib/internal_config.json" ]
 }
