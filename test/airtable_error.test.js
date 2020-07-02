@@ -1,6 +1,6 @@
 'use strict';
 
-var AirtableError = require('../build/dist/lib/airtable_error');
+var AirtableError = require('../lib/airtable_error');
 
 describe('AirtableError', function() {
     describe('#toString', function() {

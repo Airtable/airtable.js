@@ -1,6 +1,6 @@
 'use strict';
 
-var Record = require('../build/dist/lib/record');
+var Record = require('../lib/record');
 var testHelpers = require('./test_helpers');
 
 describe('Record', function() {

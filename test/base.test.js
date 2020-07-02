@@ -1,6 +1,6 @@
 'use strict';
 
-var Airtable = require('../build/dist/lib/airtable');
+var Airtable = require('../lib/airtable');
 var version = require('../package.json').version;
 var testHelpers = require('./test_helpers');
 

@@ -7,7 +7,7 @@ module.exports = function(grunt) {
         pkg: pkg,
         browserify: {
             client: {
-                src: './build/dist/lib/airtable.js',
+                src: './lib/airtable.js',
                 dest: './build/airtable.browser.js',
                 options: {
                     transform: [
@@ -20,7 +20,7 @@ module.exports = function(grunt) {
                         ],
                     ],
                     preBundleCB: function(b) {
-                        b.require('./build/dist/lib/airtable.js', {expose: 'airtable'});
+                        b.require('./lib/airtable.js', {expose: 'airtable'});
                     },
                 },
             },

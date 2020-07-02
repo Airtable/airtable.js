@@ -4,10 +4,9 @@
         "module": "commonjs",
         "resolveJsonModule": true,
         "esModuleInterop": true,
-        "sourceMap": true,
-        "outDir": "build/dist",
+        "outDir": "lib",
         "noImplicitAny": false,
         "strict": false
     },
-    "include": ["lib/**/*.ts", "package.json", "lib/internal_config.json" ]
+    "include": ["src/**/*.ts", "src/internal_config.json" ]
 }

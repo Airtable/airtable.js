@@ -1,7 +1,7 @@
 'use strict';
 
 var querystring = require('querystring');
-var objectToQueryParamString = require('../build/dist/lib/object_to_query_param_string');
+var objectToQueryParamString = require('../lib/object_to_query_param_string');
 
 describe('objectToQueryParamString', function() {
     it('returns the empty string for an empty object', function() {
