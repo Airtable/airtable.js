@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "es6-promise": "4.2.8",
-    "lodash": "4.17.15",
+    "lodash": "4.17.19",
     "request": "2.88.0",
     "xhr": "2.3.3"
   },
