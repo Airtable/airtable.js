@@ -1,17 +1,4 @@
 require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-// istanbul ignore file
-if (typeof window === 'undefined') {
-    module.exports = require('abort-controller');
-} else {
-    if ('signal' in new Request('')) {
-        module.exports = window.AbortController;
-    } else {
-        var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
-        module.exports = polyfill.AbortController;
-    }
-}
-
-},{"abort-controller":20,"abortcontroller-polyfill/dist/cjs-ponyfill":19}],2:[function(require,module,exports){
 'use strict';
 
 function AirtableError(error, message, statusCode) {
@@ -32,17 +19,17 @@ AirtableError.prototype.toString = function() {
 
 module.exports = AirtableError;
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 'use strict';
 
 var forEach = require('lodash/forEach');
 var get = require('lodash/get');
 var assign = require('lodash/assign');
 var isPlainObject = require('lodash/isPlainObject');
-var fetch = require('./fetch');
-var AbortController = require('./abort-controller');
 
-var objectToQueryParamString = require('./object_to_query_param_string');
+// This will become require('xhr') in the browser.
+var request = require('request');
+
 var AirtableError = require('./airtable_error');
 var Table = require('./table');
 var HttpHeaders = require('./http_headers');
@@ -69,76 +56,59 @@ Base.prototype.makeRequest = function(options) {
 
     var method = get(options, 'method', 'GET').toUpperCase();
 
-    var url =
-        this._airtable._endpointUrl +
-        '/v' +
-        this._airtable._apiVersionMajor +
-        '/' +
-        this._id +
-        get(options, 'path', '/') +
-        '?' +
-        objectToQueryParamString(get(options, 'qs', {}));
-
-    var controller = new AbortController();
-
     var requestOptions = {
         method: method,
+        url:
+            this._airtable._endpointUrl +
+            '/v' +
+            this._airtable._apiVersionMajor +
+            '/' +
+            this._id +
+            get(options, 'path', '/'),
+        qs: get(options, 'qs', {}),
         headers: this._getRequestHeaders(get(options, 'headers', {})),
-        signal: controller.signal,
+        json: true,
+        timeout: this._airtable.requestTimeout,
     };
-
     if ('body' in options && _canRequestMethodIncludeBody(method)) {
-        requestOptions.body = JSON.stringify(options.body);
+        requestOptions.body = options.body;
     }
 
-    var timeout = setTimeout(function() {
-        controller.abort();
-    }, this._airtable.requestTimeout);
-
     return new Promise(function(resolve, reject) {
-        fetch(url, requestOptions)
-            .then(function(resp) {
-                clearTimeout(timeout);
-                resp.statusCode = resp.status;
-                if (resp.status === 429 && !that._airtable._noRetryIfRateLimited) {
-                    var numAttempts = get(options, '_numAttempts', 0);
-                    var backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
-                    setTimeout(function() {
-                        var newOptions = assign({}, options, {
-                            _numAttempts: numAttempts + 1,
-                        });
-                        that.makeRequest(newOptions)
-                            .then(resolve)
-                            .catch(reject);
-                    }, backoffDelayMs);
-                } else {
-                    resp.json()
-                        .then(function(body) {
-                            var err =
-                                that._checkStatusForError(resp.status, body) ||
-                                _getErrorForNonObjectBody(resp.status, body);
+        request(requestOptions, function(err, response, body) {
+            if (!err && response.statusCode === 429 && !that._airtable._noRetryIfRateLimited) {
+                var numAttempts = get(options, '_numAttempts', 0);
+                var backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
+                setTimeout(function() {
+                    var newOptions = assign({}, options, {
+                        _numAttempts: numAttempts + 1,
+                    });
+                    that.makeRequest(newOptions)
+                        .then(resolve)
+                        .catch(reject);
+                }, backoffDelayMs);
+                return;
+            }
 
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve({
-                                    statusCode: resp.status,
-                                    headers: resp.headers,
-                                    body: body,
-                                });
-                            }
-                        })
-                        .catch(function() {
-                            var err = _getErrorForNonObjectBody(resp.status);
-                            reject(err);
-                        });
-                }
-            })
-            .catch(function(err) {
-                clearTimeout(timeout);
+            if (err) {
                 err = new AirtableError('CONNECTION_ERROR', err.message, null);
+            } else {
+                err =
+                    that._checkStatusForError(response.statusCode, body) ||
+                    _getErrorForNonObjectBody(response.statusCode, body);
+            }
+
+            if (err) {
                 reject(err);
+                return;
+            }
+
+            resolve({
+                statusCode: response.statusCode,
+                headers: response.headers,
+                body: body,
             });
+        });
     });
 };
 
@@ -152,7 +122,6 @@ Base.prototype._getRequestHeaders = function(headers) {
 
     result.set('Authorization', 'Bearer ' + this._airtable._apiKey);
     result.set('User-Agent', userAgent);
-    result.set('Content-Type', 'application/json');
     forEach(headers, function(headerValue, headerKey) {
         result.set(headerKey, headerValue);
     });
@@ -264,7 +233,7 @@ function _getErrorForNonObjectBody(statusCode, body) {
 
 module.exports = Base;
 
-},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./promise":13,"./run_action":16,"./table":17,"lodash/assign":164,"lodash/forEach":168,"lodash/get":169,"lodash/isPlainObject":184}],4:[function(require,module,exports){
+},{"./airtable_error":1,"./exponential_backoff_with_jitter":5,"./http_headers":7,"./package_version":10,"./promise":11,"./run_action":14,"./table":15,"lodash/assign":164,"lodash/forEach":168,"lodash/get":169,"lodash/isPlainObject":184,"request":203}],3:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./promise');
@@ -312,7 +281,7 @@ function callbackToPromise(fn, context, callbackArgIndex) {
 
 module.exports = callbackToPromise;
 
-},{"./promise":13}],5:[function(require,module,exports){
+},{"./promise":11}],4:[function(require,module,exports){
 'use strict';
 
 var didWarnForDeprecation = {};
@@ -340,7 +309,7 @@ function deprecate(fn, key, message) {
 
 module.exports = deprecate;
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var internalConfig = require('./internal_config.json');
 
 // "Full Jitter" algorithm taken from https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
@@ -357,13 +326,7 @@ function exponentialBackoffWithJitter(numberOfRetries) {
 
 module.exports = exponentialBackoffWithJitter;
 
-},{"./internal_config.json":10}],7:[function(require,module,exports){
-var fetch = require('node-fetch');
-
-// istanbul ignore next
-module.exports = typeof window === 'undefined' ? fetch : window.fetch;
-
-},{"node-fetch":20}],8:[function(require,module,exports){
+},{"./internal_config.json":8}],6:[function(require,module,exports){
 'use strict';
 
 function has(object, property) {
@@ -372,7 +335,7 @@ function has(object, property) {
 
 module.exports = has;
 
-},{}],9:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var forEach = require('lodash/forEach');
 
 var isBrowser = typeof window !== 'undefined';
@@ -399,7 +362,6 @@ HttpHeaders.prototype.toJSON = function() {
     var result = {};
     forEach(this._headersByLowercasedKey, function(headerDefinition, lowercasedKey) {
         var headerKey;
-        /* istanbul ignore next */
         if (isBrowser && lowercasedKey === 'user-agent') {
             // Some browsers do not allow overriding the user agent.
             // https://github.com/Airtable/airtable.js/issues/52
@@ -415,13 +377,13 @@ HttpHeaders.prototype.toJSON = function() {
 
 module.exports = HttpHeaders;
 
-},{"lodash/forEach":168}],10:[function(require,module,exports){
+},{"lodash/forEach":168}],8:[function(require,module,exports){
 module.exports={
     "INITIAL_RETRY_DELAY_IF_RATE_LIMITED": 5000,
     "MAX_RETRY_DELAY_IF_RATE_LIMITED": 600000
 }
 
-},{}],11:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var isArray = require('lodash/isArray');
@@ -473,17 +435,16 @@ function objectToQueryParamString(obj) {
 
 module.exports = objectToQueryParamString;
 
-},{"lodash/forEach":168,"lodash/isArray":174,"lodash/isNil":180}],12:[function(require,module,exports){
+},{"lodash/forEach":168,"lodash/isArray":174,"lodash/isNil":180}],10:[function(require,module,exports){
 module.exports = "0.8.1";
 
-},{}],13:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /* global Promise */
 var polyfill = require('es6-promise');
 
-// istanbul ignore next
 module.exports = typeof Promise === 'undefined' ? polyfill.Promise : Promise;
 
-},{"es6-promise":21}],14:[function(require,module,exports){
+},{"es6-promise":18}],12:[function(require,module,exports){
 'use strict';
 
 var isPlainObject = require('lodash/isPlainObject');
@@ -504,11 +465,19 @@ var has = require('./has');
 /**
  * Builds a query object. Won't fetch until `firstPage` or
  * or `eachPage` is called.
- *
- * Params should be validated prior to being passed to Query
- * with `Query.validateParams`.
  */
 function Query(table, params) {
+    if (!isPlainObject(params)) {
+        throw new Error('Expected query options to be an object');
+    }
+
+    forEach(keys(params), function(key) {
+        var value = params[key];
+        if (!Query.paramValidators[key] || !Query.paramValidators[key](value).pass) {
+            throw new Error('Invalid parameter for Query: ' + key);
+        }
+    });
+
     this._table = table;
     this._params = params;
 
@@ -570,7 +539,9 @@ function eachPage(pageCallback, done) {
                     next = inner;
                 } else {
                     next = function() {
-                        done(null);
+                        if (done) {
+                            done(null);
+                        }
                     };
                 }
 
@@ -649,14 +620,16 @@ Query.paramValidators = {
 /**
  * Validates the parameters for passing to the Query constructor.
  *
- * @params {object} params parameters to validate
- *
  * @return an object with two keys:
  *  validParams: the object that should be passed to the constructor.
  *  ignoredKeys: a list of keys that will be ignored.
  *  errors: a list of error messages.
  */
 Query.validateParams = function validateParams(params) {
+    if (!isPlainObject(params)) {
+        throw new Error('Expected query params to be an object');
+    }
+
     var validParams = {};
     var ignoredKeys = [];
     var errors = [];
@@ -685,7 +658,7 @@ Query.validateParams = function validateParams(params) {
 
 module.exports = Query;
 
-},{"./callback_to_promise":4,"./has":8,"./record":15,"./typecheck":18,"lodash/clone":165,"lodash/forEach":168,"lodash/includes":172,"lodash/isFunction":177,"lodash/isNumber":181,"lodash/isPlainObject":184,"lodash/isString":186,"lodash/keys":189,"lodash/map":191}],15:[function(require,module,exports){
+},{"./callback_to_promise":3,"./has":6,"./record":13,"./typecheck":16,"lodash/clone":165,"lodash/forEach":168,"lodash/includes":172,"lodash/isFunction":177,"lodash/isNumber":181,"lodash/isPlainObject":184,"lodash/isString":186,"lodash/keys":189,"lodash/map":191}],13:[function(require,module,exports){
 'use strict';
 
 var assign = require('lodash/assign');
@@ -826,14 +799,15 @@ Record.prototype.setRawJson = function(rawJson) {
 
 module.exports = Record;
 
-},{"./callback_to_promise":4,"lodash/assign":164}],16:[function(require,module,exports){
+},{"./callback_to_promise":3,"lodash/assign":164}],14:[function(require,module,exports){
 'use strict';
 
 var exponentialBackoffWithJitter = require('./exponential_backoff_with_jitter');
 var objectToQueryParamString = require('./object_to_query_param_string');
 var packageVersion = require('./package_version');
-var fetch = require('./fetch');
-var AbortController = require('./abort-controller');
+
+// This will become require('xhr') in the browser.
+var request = require('request');
 
 var userAgent = 'Airtable.js/' + packageVersion;
 
@@ -852,7 +826,6 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
         authorization: 'Bearer ' + base._airtable._apiKey,
         'x-api-version': base._airtable._apiVersion,
         'x-airtable-application-id': base.getId(),
-        'content-type': 'application/json',
     };
     var isBrowser = typeof window !== 'undefined';
     // Some browsers do not allow overriding the user agent.
@@ -863,48 +836,40 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
         headers['User-Agent'] = userAgent;
     }
 
-    var controller = new AbortController();
     var options = {
         method: method.toUpperCase(),
+        url: url,
+        json: true,
+        timeout: base._airtable.requestTimeout,
         headers: headers,
-        signal: controller.signal,
     };
 
     if (bodyData !== null) {
-        options.body = JSON.stringify(bodyData);
+        options.body = bodyData;
     }
 
-    var timeout = setTimeout(function() {
-        controller.abort();
-    }, base._airtable.requestTimeout);
+    request(options, function(error, resp, body) {
+        if (error) {
+            callback(error, resp, body);
+            return;
+        }
 
-    fetch(url, options)
-        .then(function(resp) {
-            clearTimeout(timeout);
-            if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {
-                var backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
-                setTimeout(function() {
-                    runAction(base, method, path, queryParams, bodyData, callback, numAttempts + 1);
-                }, backoffDelayMs);
-            } else {
-                resp.json()
-                    .then(function(body) {
-                        var error = base._checkStatusForError(resp.status, body);
-                        resp.statusCode = resp.status;
-                        callback(error, resp, body);
-                    })
-                    .catch(callback);
-            }
-        })
-        .catch(function(error) {
-            clearTimeout(timeout);
-            callback(error);
-        });
+        if (resp.statusCode === 429 && !base._airtable._noRetryIfRateLimited) {
+            var backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
+            setTimeout(function() {
+                runAction(base, method, path, queryParams, bodyData, callback, numAttempts + 1);
+            }, backoffDelayMs);
+            return;
+        }
+
+        error = base._checkStatusForError(resp.statusCode, body);
+        callback(error, resp, body);
+    });
 }
 
 module.exports = runAction;
 
-},{"./abort-controller":1,"./exponential_backoff_with_jitter":6,"./fetch":7,"./object_to_query_param_string":11,"./package_version":12}],17:[function(require,module,exports){
+},{"./exponential_backoff_with_jitter":5,"./object_to_query_param_string":9,"./package_version":10,"request":203}],15:[function(require,module,exports){
 'use strict';
 
 var isArray = require('lodash/isArray');
@@ -1178,7 +1143,7 @@ Table.prototype._forEachRecord = function(opts, callback, done) {
 
 module.exports = Table;
 
-},{"./callback_to_promise":4,"./deprecate":5,"./query":14,"./record":15,"lodash/assign":164,"lodash/forEach":168,"lodash/isArray":174,"lodash/isPlainObject":184,"lodash/map":191}],18:[function(require,module,exports){
+},{"./callback_to_promise":3,"./deprecate":4,"./query":12,"./record":13,"lodash/assign":164,"lodash/forEach":168,"lodash/isArray":174,"lodash/isPlainObject":184,"lodash/map":191}],16:[function(require,module,exports){
 'use strict';
 
 var includes = require('lodash/includes');
@@ -1206,458 +1171,193 @@ check.isArrayOf = function(itemValidator) {
 
 module.exports = check;
 
-},{"lodash/includes":172,"lodash/isArray":174}],19:[function(require,module,exports){
-'use strict';
+},{"lodash/includes":172,"lodash/isArray":174}],17:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
 
-Object.defineProperty(exports, '__esModule', { value: true });
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
 
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
 }
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
 }
-
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-function _inherits(subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function");
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) _setPrototypeOf(subClass, superClass);
-}
-
-function _getPrototypeOf(o) {
-  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-    return o.__proto__ || Object.getPrototypeOf(o);
-  };
-  return _getPrototypeOf(o);
-}
-
-function _setPrototypeOf(o, p) {
-  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-    o.__proto__ = p;
-    return o;
-  };
-
-  return _setPrototypeOf(o, p);
-}
-
-function _assertThisInitialized(self) {
-  if (self === void 0) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return self;
-}
-
-function _possibleConstructorReturn(self, call) {
-  if (call && (typeof call === "object" || typeof call === "function")) {
-    return call;
-  }
-
-  return _assertThisInitialized(self);
-}
-
-function _superPropBase(object, property) {
-  while (!Object.prototype.hasOwnProperty.call(object, property)) {
-    object = _getPrototypeOf(object);
-    if (object === null) break;
-  }
-
-  return object;
-}
-
-function _get(target, property, receiver) {
-  if (typeof Reflect !== "undefined" && Reflect.get) {
-    _get = Reflect.get;
-  } else {
-    _get = function _get(target, property, receiver) {
-      var base = _superPropBase(target, property);
-
-      if (!base) return;
-      var desc = Object.getOwnPropertyDescriptor(base, property);
-
-      if (desc.get) {
-        return desc.get.call(receiver);
-      }
-
-      return desc.value;
-    };
-  }
-
-  return _get(target, property, receiver || target);
-}
-
-var Emitter =
-/*#__PURE__*/
-function () {
-  function Emitter() {
-    _classCallCheck(this, Emitter);
-
-    Object.defineProperty(this, 'listeners', {
-      value: {},
-      writable: true,
-      configurable: true
-    });
-  }
-
-  _createClass(Emitter, [{
-    key: "addEventListener",
-    value: function addEventListener(type, callback) {
-      if (!(type in this.listeners)) {
-        this.listeners[type] = [];
-      }
-
-      this.listeners[type].push(callback);
-    }
-  }, {
-    key: "removeEventListener",
-    value: function removeEventListener(type, callback) {
-      if (!(type in this.listeners)) {
-        return;
-      }
-
-      var stack = this.listeners[type];
-
-      for (var i = 0, l = stack.length; i < l; i++) {
-        if (stack[i] === callback) {
-          stack.splice(i, 1);
-          return;
-        }
-      }
-    }
-  }, {
-    key: "dispatchEvent",
-    value: function dispatchEvent(event) {
-      var _this = this;
-
-      if (!(event.type in this.listeners)) {
-        return;
-      }
-
-      var debounce = function debounce(callback) {
-        setTimeout(function () {
-          return callback.call(_this, event);
-        });
-      };
-
-      var stack = this.listeners[event.type];
-
-      for (var i = 0, l = stack.length; i < l; i++) {
-        debounce(stack[i]);
-      }
-
-      return !event.defaultPrevented;
-    }
-  }]);
-
-  return Emitter;
-}();
-
-var AbortSignal =
-/*#__PURE__*/
-function (_Emitter) {
-  _inherits(AbortSignal, _Emitter);
-
-  function AbortSignal() {
-    var _this2;
-
-    _classCallCheck(this, AbortSignal);
-
-    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(AbortSignal).call(this)); // Some versions of babel does not transpile super() correctly for IE <= 10, if the parent
-    // constructor has failed to run, then "this.listeners" will still be undefined and then we call
-    // the parent constructor directly instead as a workaround. For general details, see babel bug:
-    // https://github.com/babel/babel/issues/3041
-    // This hack was added as a fix for the issue described here:
-    // https://github.com/Financial-Times/polyfill-library/pull/59#issuecomment-477558042
-
-    if (!_this2.listeners) {
-      Emitter.call(_assertThisInitialized(_this2));
-    } // Compared to assignment, Object.defineProperty makes properties non-enumerable by default and
-    // we want Object.keys(new AbortController().signal) to be [] for compat with the native impl
-
-
-    Object.defineProperty(_assertThisInitialized(_this2), 'aborted', {
-      value: false,
-      writable: true,
-      configurable: true
-    });
-    Object.defineProperty(_assertThisInitialized(_this2), 'onabort', {
-      value: null,
-      writable: true,
-      configurable: true
-    });
-    return _this2;
-  }
-
-  _createClass(AbortSignal, [{
-    key: "toString",
-    value: function toString() {
-      return '[object AbortSignal]';
-    }
-  }, {
-    key: "dispatchEvent",
-    value: function dispatchEvent(event) {
-      if (event.type === 'abort') {
-        this.aborted = true;
-
-        if (typeof this.onabort === 'function') {
-          this.onabort.call(this, event);
-        }
-      }
-
-      _get(_getPrototypeOf(AbortSignal.prototype), "dispatchEvent", this).call(this, event);
-    }
-  }]);
-
-  return AbortSignal;
-}(Emitter);
-var AbortController =
-/*#__PURE__*/
-function () {
-  function AbortController() {
-    _classCallCheck(this, AbortController);
-
-    // Compared to assignment, Object.defineProperty makes properties non-enumerable by default and
-    // we want Object.keys(new AbortController()) to be [] for compat with the native impl
-    Object.defineProperty(this, 'signal', {
-      value: new AbortSignal(),
-      writable: true,
-      configurable: true
-    });
-  }
-
-  _createClass(AbortController, [{
-    key: "abort",
-    value: function abort() {
-      var event;
-
-      try {
-        event = new Event('abort');
-      } catch (e) {
-        if (typeof document !== 'undefined') {
-          if (!document.createEvent) {
-            // For Internet Explorer 8:
-            event = document.createEventObject();
-            event.type = 'abort';
-          } else {
-            // For Internet Explorer 11:
-            event = document.createEvent('Event');
-            event.initEvent('abort', false, false);
-          }
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
         } else {
-          // Fallback where document isn't available:
-          event = {
-            type: 'abort',
-            bubbles: false,
-            cancelable: false
-          };
+            cachedSetTimeout = defaultSetTimout;
         }
-      }
-
-      this.signal.dispatchEvent(event);
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
     }
-  }, {
-    key: "toString",
-    value: function toString() {
-      return '[object AbortController]';
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
     }
-  }]);
-
-  return AbortController;
-}();
-
-if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-  // These are necessary to make sure that we get correct output for:
-  // Object.prototype.toString.call(new AbortController())
-  AbortController.prototype[Symbol.toStringTag] = 'AbortController';
-  AbortSignal.prototype[Symbol.toStringTag] = 'AbortSignal';
-}
-
-function polyfillNeeded(self) {
-  if (self.__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL) {
-    console.log('__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL=true is set, will force install polyfill');
-    return true;
-  } // Note that the "unfetch" minimal fetch polyfill defines fetch() without
-  // defining window.Request, and this polyfill need to work on top of unfetch
-  // so the below feature detection needs the !self.AbortController part.
-  // The Request.prototype check is also needed because Safari versions 11.1.2
-  // up to and including 12.1.x has a window.AbortController present but still
-  // does NOT correctly implement abortable fetch:
-  // https://bugs.webkit.org/show_bug.cgi?id=174980#c2
-
-
-  return typeof self.Request === 'function' && !self.Request.prototype.hasOwnProperty('signal') || !self.AbortController;
-}
-
-/**
- * Note: the "fetch.Request" default value is available for fetch imported from
- * the "node-fetch" package and not in browsers. This is OK since browsers
- * will be importing umd-polyfill.js from that path "self" is passed the
- * decorator so the default value will not be used (because browsers that define
- * fetch also has Request). One quirky setup where self.fetch exists but
- * self.Request does not is when the "unfetch" minimal fetch polyfill is used
- * on top of IE11; for this case the browser will try to use the fetch.Request
- * default value which in turn will be undefined but then then "if (Request)"
- * will ensure that you get a patched fetch but still no Request (as expected).
- * @param {fetch, Request = fetch.Request}
- * @returns {fetch: abortableFetch, Request: AbortableRequest}
- */
-
-function abortableFetchDecorator(patchTargets) {
-  if ('function' === typeof patchTargets) {
-    patchTargets = {
-      fetch: patchTargets
-    };
-  }
-
-  var _patchTargets = patchTargets,
-      fetch = _patchTargets.fetch,
-      _patchTargets$Request = _patchTargets.Request,
-      NativeRequest = _patchTargets$Request === void 0 ? fetch.Request : _patchTargets$Request,
-      NativeAbortController = _patchTargets.AbortController,
-      _patchTargets$__FORCE = _patchTargets.__FORCE_INSTALL_ABORTCONTROLLER_POLYFILL,
-      __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL = _patchTargets$__FORCE === void 0 ? false : _patchTargets$__FORCE;
-
-  if (!polyfillNeeded({
-    fetch: fetch,
-    Request: NativeRequest,
-    AbortController: NativeAbortController,
-    __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL: __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL
-  })) {
-    return {
-      fetch: fetch,
-      Request: Request
-    };
-  }
-
-  var Request = NativeRequest; // Note that the "unfetch" minimal fetch polyfill defines fetch() without
-  // defining window.Request, and this polyfill need to work on top of unfetch
-  // hence we only patch it if it's available. Also we don't patch it if signal
-  // is already available on the Request prototype because in this case support
-  // is present and the patching below can cause a crash since it assigns to
-  // request.signal which is technically a read-only property. This latter error
-  // happens when you run the main5.js node-fetch example in the repo
-  // "abortcontroller-polyfill-examples". The exact error is:
-  //   request.signal = init.signal;
-  //   ^
-  // TypeError: Cannot set property signal of #<Request> which has only a getter
-
-  if (Request && !Request.prototype.hasOwnProperty('signal') || __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL) {
-    Request = function Request(input, init) {
-      var signal;
-
-      if (init && init.signal) {
-        signal = init.signal; // Never pass init.signal to the native Request implementation when the polyfill has
-        // been installed because if we're running on top of a browser with a
-        // working native AbortController (i.e. the polyfill was installed due to
-        // __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL being set), then passing our
-        // fake AbortSignal to the native fetch will trigger:
-        // TypeError: Failed to construct 'Request': member signal is not of type AbortSignal.
-
-        delete init.signal;
-      }
-
-      var request = new NativeRequest(input, init);
-
-      if (signal) {
-        Object.defineProperty(request, 'signal', {
-          writable: false,
-          enumerable: false,
-          configurable: true,
-          value: signal
-        });
-      }
-
-      return request;
-    };
-
-    Request.prototype = NativeRequest.prototype;
-  }
-
-  var realFetch = fetch;
-
-  var abortableFetch = function abortableFetch(input, init) {
-    var signal = Request && Request.prototype.isPrototypeOf(input) ? input.signal : init ? init.signal : undefined;
-
-    if (signal) {
-      var abortError;
-
-      try {
-        abortError = new DOMException('Aborted', 'AbortError');
-      } catch (err) {
-        // IE 11 does not support calling the DOMException constructor, use a
-        // regular error object on it instead.
-        abortError = new Error('Aborted');
-        abortError.name = 'AbortError';
-      } // Return early if already aborted, thus avoiding making an HTTP request
-
-
-      if (signal.aborted) {
-        return Promise.reject(abortError);
-      } // Turn an event into a promise, reject it once `abort` is dispatched
-
-
-      var cancellation = new Promise(function (_, reject) {
-        signal.addEventListener('abort', function () {
-          return reject(abortError);
-        }, {
-          once: true
-        });
-      });
-
-      if (init && init.signal) {
-        // Never pass .signal to the native implementation when the polyfill has
-        // been installed because if we're running on top of a browser with a
-        // working native AbortController (i.e. the polyfill was installed due to
-        // __FORCE_INSTALL_ABORTCONTROLLER_POLYFILL being set), then passing our
-        // fake AbortSignal to the native fetch will trigger:
-        // TypeError: Failed to execute 'fetch' on 'Window': member signal is not of type AbortSignal.
-        delete init.signal;
-      } // Return the fastest promise (don't need to wait for request to finish)
-
-
-      return Promise.race([cancellation, realFetch(input, init)]);
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
     }
 
-    return realFetch(input, init);
-  };
 
-  return {
-    fetch: abortableFetch,
-    Request: Request
-  };
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
 }
 
-exports.AbortController = AbortController;
-exports.AbortSignal = AbortSignal;
-exports.abortableFetch = abortableFetchDecorator;
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
 
-},{}],20:[function(require,module,exports){
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
 
-},{}],21:[function(require,module,exports){
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],18:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -2835,7 +2535,89 @@ return Promise$1;
 
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":201}],22:[function(require,module,exports){
+},{"_process":17}],19:[function(require,module,exports){
+var isFunction = require('is-function')
+
+module.exports = forEach
+
+var toString = Object.prototype.toString
+var hasOwnProperty = Object.prototype.hasOwnProperty
+
+function forEach(list, iterator, context) {
+    if (!isFunction(iterator)) {
+        throw new TypeError('iterator must be a function')
+    }
+
+    if (arguments.length < 3) {
+        context = this
+    }
+    
+    if (toString.call(list) === '[object Array]')
+        forEachArray(list, iterator, context)
+    else if (typeof list === 'string')
+        forEachString(list, iterator, context)
+    else
+        forEachObject(list, iterator, context)
+}
+
+function forEachArray(array, iterator, context) {
+    for (var i = 0, len = array.length; i < len; i++) {
+        if (hasOwnProperty.call(array, i)) {
+            iterator.call(context, array[i], i, array)
+        }
+    }
+}
+
+function forEachString(string, iterator, context) {
+    for (var i = 0, len = string.length; i < len; i++) {
+        // no such thing as a sparse string.
+        iterator.call(context, string.charAt(i), i, string)
+    }
+}
+
+function forEachObject(object, iterator, context) {
+    for (var k in object) {
+        if (hasOwnProperty.call(object, k)) {
+            iterator.call(context, object[k], k, object)
+        }
+    }
+}
+
+},{"is-function":21}],20:[function(require,module,exports){
+(function (global){
+var win;
+
+if (typeof window !== "undefined") {
+    win = window;
+} else if (typeof global !== "undefined") {
+    win = global;
+} else if (typeof self !== "undefined"){
+    win = self;
+} else {
+    win = {};
+}
+
+module.exports = win;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],21:[function(require,module,exports){
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+
+},{}],22:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -8122,190 +7904,316 @@ function values(object) {
 module.exports = values;
 
 },{"./_baseValues":79,"./keys":189}],201:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
+var trim = require('trim')
+  , forEach = require('for-each')
+  , isArray = function(arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    }
 
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
+module.exports = function (headers) {
+  if (!headers)
+    return {}
 
-var cachedSetTimeout;
-var cachedClearTimeout;
+  var result = {}
 
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
+  forEach(
+      trim(headers).split('\n')
+    , function (row) {
+        var index = row.indexOf(':')
+          , key = trim(row.slice(0, index)).toLowerCase()
+          , value = trim(row.slice(index + 1))
+
+        if (typeof(result[key]) === 'undefined') {
+          result[key] = value
+        } else if (isArray(result[key])) {
+          result[key].push(value)
         } else {
-            cachedSetTimeout = defaultSetTimout;
+          result[key] = [ result[key], value ]
         }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
+      }
+  )
 
-
+  return result
 }
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
+},{"for-each":19,"trim":202}],202:[function(require,module,exports){
 
+exports = module.exports = trim;
 
-
+function trim(str){
+  return str.replace(/^\s*|\s*$/g, '');
 }
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
 
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
+exports.left = function(str){
+  return str.replace(/^\s*/, '');
+};
+
+exports.right = function(str){
+  return str.replace(/\s*$/, '');
+};
+
+},{}],203:[function(require,module,exports){
+"use strict";
+var window = require("global/window")
+var isFunction = require("is-function")
+var parseHeaders = require("parse-headers")
+var xtend = require("xtend")
+
+module.exports = createXHR
+createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
+createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
+
+forEachArray(["get", "put", "post", "patch", "head", "delete"], function(method) {
+    createXHR[method === "delete" ? "del" : method] = function(uri, options, callback) {
+        options = initParams(uri, options, callback)
+        options.method = method.toUpperCase()
+        return _createXHR(options)
     }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
+})
+
+function forEachArray(array, iterator) {
+    for (var i = 0; i < array.length; i++) {
+        iterator(array[i])
+    }
+}
+
+function isEmpty(obj){
+    for(var i in obj){
+        if(obj.hasOwnProperty(i)) return false
+    }
+    return true
+}
+
+function initParams(uri, options, callback) {
+    var params = uri
+
+    if (isFunction(options)) {
+        callback = options
+        if (typeof uri === "string") {
+            params = {uri:uri}
+        }
     } else {
-        queueIndex = -1;
+        params = xtend(options, {uri: uri})
     }
-    if (queue.length) {
-        drainQueue();
-    }
+
+    params.callback = callback
+    return params
 }
 
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
+function createXHR(uri, options, callback) {
+    options = initParams(uri, options, callback)
+    return _createXHR(options)
+}
 
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
+function _createXHR(options) {
+    if(typeof options.callback === "undefined"){
+        throw new Error("callback argument missing")
+    }
+
+    var called = false
+    var callback = function cbOnce(err, response, body){
+        if(!called){
+            called = true
+            options.callback(err, response, body)
+        }
+    }
+
+    function readystatechange() {
+        if (xhr.readyState === 4) {
+            loadFunc()
+        }
+    }
+
+    function getBody() {
+        // Chrome with requestType=blob throws errors arround when even testing access to responseText
+        var body = undefined
+
+        if (xhr.response) {
+            body = xhr.response
+        } else {
+            body = xhr.responseText || getXml(xhr)
+        }
+
+        if (isJson) {
+            try {
+                body = JSON.parse(body)
+            } catch (e) {}
+        }
+
+        return body
+    }
+
+    function errorFunc(evt) {
+        clearTimeout(timeoutTimer)
+        if(!(evt instanceof Error)){
+            evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
+        }
+        evt.statusCode = 0
+        return callback(evt, failureResponse)
+    }
+
+    // will load the data & process the response in a special response object
+    function loadFunc() {
+        if (aborted) return
+        var status
+        clearTimeout(timeoutTimer)
+        if(options.useXDR && xhr.status===undefined) {
+            //IE8 CORS GET successful response doesn't have a status field, but body is fine
+            status = 200
+        } else {
+            status = (xhr.status === 1223 ? 204 : xhr.status)
+        }
+        var response = failureResponse
+        var err = null
+
+        if (status !== 0){
+            response = {
+                body: getBody(),
+                statusCode: status,
+                method: method,
+                headers: {},
+                url: uri,
+                rawRequest: xhr
+            }
+            if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
+                response.headers = parseHeaders(xhr.getAllResponseHeaders())
+            }
+        } else {
+            err = new Error("Internal XMLHttpRequest Error")
+        }
+        return callback(err, response, response.body)
+    }
+
+    var xhr = options.xhr || null
+
+    if (!xhr) {
+        if (options.cors || options.useXDR) {
+            xhr = new createXHR.XDomainRequest()
+        }else{
+            xhr = new createXHR.XMLHttpRequest()
+        }
+    }
+
+    var key
+    var aborted
+    var uri = xhr.url = options.uri || options.url
+    var method = xhr.method = options.method || "GET"
+    var body = options.body || options.data
+    var headers = xhr.headers = options.headers || {}
+    var sync = !!options.sync
+    var isJson = false
+    var timeoutTimer
+    var failureResponse = {
+        body: undefined,
+        headers: {},
+        statusCode: 0,
+        method: method,
+        url: uri,
+        rawRequest: xhr
+    }
+
+    if ("json" in options && options.json !== false) {
+        isJson = true
+        headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
+        if (method !== "GET" && method !== "HEAD") {
+            headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
+            body = JSON.stringify(options.json === true ? body : options.json)
+        }
+    }
+
+    xhr.onreadystatechange = readystatechange
+    xhr.onload = loadFunc
+    xhr.onerror = errorFunc
+    // IE9 must have onprogress be set to a unique function.
+    xhr.onprogress = function () {
+        // IE must die
+    }
+    xhr.onabort = function(){
+        aborted = true;
+    }
+    xhr.ontimeout = errorFunc
+    xhr.open(method, uri, !sync, options.username, options.password)
+    //has to be after open
+    if(!sync) {
+        xhr.withCredentials = !!options.withCredentials
+    }
+    // Cannot set timeout with sync request
+    // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
+    // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
+    if (!sync && options.timeout > 0 ) {
+        timeoutTimer = setTimeout(function(){
+            if (aborted) return
+            aborted = true//IE9 may still call readystatechange
+            xhr.abort("timeout")
+            var e = new Error("XMLHttpRequest timeout")
+            e.code = "ETIMEDOUT"
+            errorFunc(e)
+        }, options.timeout )
+    }
+
+    if (xhr.setRequestHeader) {
+        for(key in headers){
+            if(headers.hasOwnProperty(key)){
+                xhr.setRequestHeader(key, headers[key])
             }
         }
-        queueIndex = -1;
-        len = queue.length;
+    } else if (options.headers && !isEmpty(options.headers)) {
+        throw new Error("Headers cannot be set on an XDomainRequest object")
     }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
+
+    if ("responseType" in options) {
+        xhr.responseType = options.responseType
+    }
+
+    if ("beforeSend" in options &&
+        typeof options.beforeSend === "function"
+    ) {
+        options.beforeSend(xhr)
+    }
+
+    // Microsoft Edge browser sends "undefined" when send is called with undefined value.
+    // XMLHttpRequest spec says to pass null as body to indicate no body
+    // See https://github.com/naugtur/xhr/issues/100.
+    xhr.send(body || null)
+
+    return xhr
+
+
 }
 
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
+function getXml(xhr) {
+    if (xhr.responseType === "document") {
+        return xhr.responseXML
     }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
+    var firefoxBugTakenEffect = xhr.status === 204 && xhr.responseXML && xhr.responseXML.documentElement.nodeName === "parsererror"
+    if (xhr.responseType === "" && !firefoxBugTakenEffect) {
+        return xhr.responseXML
     }
-};
 
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
+    return null
 }
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
 
 function noop() {}
 
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
+},{"global/window":20,"is-function":21,"parse-headers":201,"xtend":204}],204:[function(require,module,exports){
+module.exports = extend
 
-process.listeners = function (name) { return [] }
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
+function extend() {
+    var target = {}
 
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i]
+
+        for (var key in source) {
+            if (hasOwnProperty.call(source, key)) {
+                target[key] = source[key]
+            }
+        }
+    }
+
+    return target
+}
 
 },{}],"airtable":[function(require,module,exports){
 'use strict';
@@ -8382,4 +8290,4 @@ Airtable.Error = AirtableError;
 
 module.exports = Airtable;
 
-},{"./airtable_error":2,"./base":3,"./record":15,"./table":17}]},{},["airtable"]);
+},{"./airtable_error":1,"./base":2,"./record":13,"./table":15}]},{},["airtable"]);
