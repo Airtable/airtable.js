@@ -18,7 +18,7 @@ To install airtable.js in a node project:
 
     npm install airtable
 
-Airtable.js is compatible work with Node 10 and above.
+Airtable.js is compatible with Node 10 and above.
 
 ### Browser
 
