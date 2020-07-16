@@ -34,7 +34,7 @@ Edit `test/test_files/index.html` - put your `BASE_ID` and `API_KEY` (Be careful
 
 Then open http://localhost:8000/ in your browser.
 
-Airtable.js is compatiable with browsers supported by Airtable App.
+Airtable.js is compatible with browsers supported by the Airtable web app.
 See the [techincal requirements](https://support.airtable.com/hc/en-us/articles/217990018) for more details.
 
 # Configuration
