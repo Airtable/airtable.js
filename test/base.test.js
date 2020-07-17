@@ -539,6 +539,18 @@ describe('Base', function() {
             });
         });
 
+        it('makes requests GET requests with empty bodies', function(done) {
+            expect(version).toEqual(expect.stringMatching(/^\d+\.\d+\.\d+$/));
+
+            fakeBase.runAction('get', '/my_table/rec456', {}, {}, function() {
+                const req = testExpressApp.get('most recent request');
+                expect(req.method).toEqual('GET');
+                expect(req.path).toEqual('/v0/app123/my_table/rec456');
+
+                done();
+            });
+        });
+
         it("won't make requests to a server with a self-signed SSL certificate", function(done) {
             teardownAsync()
                 .then(function() {
