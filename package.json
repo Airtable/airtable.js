@@ -12,7 +12,9 @@
     "lint": "eslint .",
     "format": "prettier --write '**/*.js'",
     "test": "npm run coverage && npm run test-unit",
-    "test-unit": "jest --env node"
+    "test-unit": "jest --env node",
+    "prepare": "npm run build",
+    "prerelease": "npm run build"
   },
   "dependencies": {
     "axios": "^0.19.2",
