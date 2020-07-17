@@ -5,7 +5,7 @@
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
-  "types": "dist/index.d.ts",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "cross-env NODE_ENV=production BABEL_ENV=production tsc --outDir dist --declarationDir dist --declaration true && rollup -c",
     "coverage": "jest --env node --coverage",
