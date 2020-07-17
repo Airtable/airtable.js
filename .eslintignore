@@ -1,3 +1,9 @@
-/node_modules/
-/build/airtable.browser.js
-/test/test_files/airtable.browser.js
+.git
+.npmrc
+.yarnrc
+build
+dist
+node_modules
+coverage
+config
+styleguide
