@@ -1,6 +1,3 @@
-// var Record = require('./record');
-// var Table = require('./table');
-// var AirtableError = require('./airtable_error');
 import Base from './base'
 import { merge } from 'lodash'
 
