@@ -152,6 +152,23 @@ describe('record selection', function() {
             });
     });
 
+    it('handles errors without JSON bodies when selecting  all records', function(done) {
+        testExpressApp.set('handler override', function(req, res) {
+            res.status(404).end();
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .select()
+            .all(function(err, result) {
+                expect(err.statusCode).toBe(404);
+                expect(err.message).toBe('Could not find what you are looking for');
+                expect(result).toBeNull();
+                done();
+            });
+    });
+
     it('all errors on the first invalid parameter', function() {
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
