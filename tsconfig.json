@@ -8,5 +8,5 @@
         "noImplicitAny": false,
         "strict": false
     },
-    "include": ["src/**/*.ts", "src/internal_config.json" ]
+    "include": ["src/**/*.ts", "src/internal_config.json"]
 }
