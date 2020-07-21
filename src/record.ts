@@ -1,47 +1,83 @@
-'use strict';
+import assign from 'lodash/assign';
+import callbackToPromise from './callback_to_promise';
+import Table from './table';
 
-var assign = require('lodash/assign');
-
-var callbackToPromise = require('./callback_to_promise');
-
-function Record(table, recordId, recordJson) {
-    this._table = table;
-    this.id = recordId || recordJson.id;
-    this.setRawJson(recordJson);
-
-    this.save = callbackToPromise(save, this);
-    this.patchUpdate = callbackToPromise(patchUpdate, this);
-    this.putUpdate = callbackToPromise(putUpdate, this);
-    this.destroy = callbackToPromise(destroy, this);
-    this.fetch = callbackToPromise(fetch, this);
-
-    this.updateFields = this.patchUpdate;
-    this.replaceFields = this.putUpdate;
+interface RecordCallback {
+    (error: null, record: Record): void;
+    (error: any): void;
 }
 
-Record.prototype.getId = function() {
-    return this.id;
-};
+interface RecordActionMethod {
+    (): Promise<Record>;
+    (done: RecordCallback): void;
+}
 
-Record.prototype.get = function(columnName) {
-    return this.fields[columnName];
-};
+interface RecordChangeMethod {
+    (cellValuesByName: any, done: RecordCallback): void;
+    (cellValuesByName: any, opts: any, done: RecordCallback): void;
+    (cellValuesByName: any, opts?: any): Promise<Record>;
+}
 
-Record.prototype.set = function(columnName, columnValue) {
-    this.fields[columnName] = columnValue;
-};
+class Record {
+    readonly _table: Table;
+    _rawJson: any;
 
-function save(done) {
+    readonly id: string;
+    fields: any;
+
+    readonly save: RecordActionMethod;
+    readonly patchUpdate: RecordChangeMethod;
+    readonly putUpdate: RecordChangeMethod;
+    readonly destroy: RecordActionMethod;
+    readonly fetch: RecordActionMethod;
+
+    readonly updateFields: RecordChangeMethod;
+    readonly replaceFields: RecordChangeMethod;
+
+    constructor(table: Table, recordId: string, recordJson?: any) {
+        this._table = table;
+        this.id = recordId || recordJson.id;
+        this.setRawJson(recordJson);
+
+        this.save = callbackToPromise(save, this);
+        this.patchUpdate = callbackToPromise(patchUpdate, this);
+        this.putUpdate = callbackToPromise(putUpdate, this);
+        this.destroy = callbackToPromise(destroy, this);
+        this.fetch = callbackToPromise(fetch, this);
+
+        this.updateFields = this.patchUpdate;
+        this.replaceFields = this.putUpdate;
+    }
+
+    getId() {
+        return this.id;
+    }
+
+    get(columnName: string) {
+        return this.fields[columnName];
+    }
+
+    set(columnName: string, columnValue: any) {
+        this.fields[columnName] = columnValue;
+    }
+
+    setRawJson(rawJson: any) {
+        this._rawJson = rawJson;
+        this.fields = (this._rawJson && this._rawJson.fields) || {};
+    }
+}
+
+function save(this: Record, done: RecordCallback) {
     this.putUpdate(this.fields, done);
 }
 
-function patchUpdate(cellValuesByName, opts, done) {
-    var that = this;
+function patchUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) {
+    const that = this;
     if (!done) {
         done = opts;
         opts = {};
     }
-    var updateBody = assign(
+    const updateBody = assign(
         {
             fields: cellValuesByName,
         },
@@ -50,10 +86,10 @@ function patchUpdate(cellValuesByName, opts, done) {
 
     this._table._base.runAction(
         'patch',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
+        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
         {},
         updateBody,
-        function(err, response, results) {
+        (err, response, results) => {
             if (err) {
                 done(err);
                 return;
@@ -65,13 +101,13 @@ function patchUpdate(cellValuesByName, opts, done) {
     );
 }
 
-function putUpdate(cellValuesByName, opts, done) {
-    var that = this;
+function putUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) {
+    const that = this;
     if (!done) {
         done = opts;
         opts = {};
     }
-    var updateBody = assign(
+    const updateBody = assign(
         {
             fields: cellValuesByName,
         },
@@ -79,10 +115,10 @@ function putUpdate(cellValuesByName, opts, done) {
     );
     this._table._base.runAction(
         'put',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
+        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
         {},
         updateBody,
-        function(err, response, results) {
+        (err, response, results) => {
             if (err) {
                 done(err);
                 return;
@@ -94,14 +130,14 @@ function putUpdate(cellValuesByName, opts, done) {
     );
 }
 
-function destroy(done) {
-    var that = this;
+function destroy(this: Record, done: RecordCallback) {
+    const that = this;
     this._table._base.runAction(
         'delete',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
+        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
         {},
         null,
-        function(err) {
+        err => {
             if (err) {
                 done(err);
                 return;
@@ -112,14 +148,14 @@ function destroy(done) {
     );
 }
 
-function fetch(done) {
-    var that = this;
+function fetch(this: Record, done: RecordCallback) {
+    const that = this;
     this._table._base.runAction(
         'get',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
+        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
         {},
         null,
-        function(err, response, results) {
+        (err, response, results) => {
             if (err) {
                 done(err);
                 return;
@@ -131,9 +167,4 @@ function fetch(done) {
     );
 }
 
-Record.prototype.setRawJson = function(rawJson) {
-    this._rawJson = rawJson;
-    this.fields = (this._rawJson && this._rawJson.fields) || {};
-};
-
-module.exports = Record;
+export = Record;

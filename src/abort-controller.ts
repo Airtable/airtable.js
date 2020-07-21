@@ -1,11 +1,14 @@
 // istanbul ignore file
+let AbortController: new () => AbortController;
 if (typeof window === 'undefined') {
-    module.exports = require('abort-controller');
+    AbortController = require('abort-controller');
 } else {
     if ('signal' in new Request('')) {
-        module.exports = window.AbortController;
+        AbortController = window.AbortController;
     } else {
-        var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
-        module.exports = polyfill.AbortController;
+        const polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
+        AbortController = polyfill.AbortController;
     }
 }
+
+export = AbortController;

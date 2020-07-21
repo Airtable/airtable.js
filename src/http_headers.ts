@@ -1,41 +1,45 @@
-var forEach = require('lodash/forEach');
+import forEach from 'lodash/forEach';
 
-var isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== 'undefined';
 
-function HttpHeaders() {
-    this._headersByLowercasedKey = {};
-}
+class HttpHeaders {
+    _headersByLowercasedKey;
 
-HttpHeaders.prototype.set = function(headerKey, headerValue) {
-    var lowercasedKey = headerKey.toLowerCase();
-
-    if (lowercasedKey === 'x-airtable-user-agent') {
-        lowercasedKey = 'user-agent';
-        headerKey = 'User-Agent';
+    constructor() {
+        this._headersByLowercasedKey = {};
     }
 
-    this._headersByLowercasedKey[lowercasedKey] = {
-        headerKey: headerKey,
-        headerValue: headerValue,
-    };
-};
+    set(headerKey, headerValue) {
+        let lowercasedKey = headerKey.toLowerCase();
 
-HttpHeaders.prototype.toJSON = function() {
-    var result = {};
-    forEach(this._headersByLowercasedKey, function(headerDefinition, lowercasedKey) {
-        var headerKey;
-        /* istanbul ignore next */
-        if (isBrowser && lowercasedKey === 'user-agent') {
-            // Some browsers do not allow overriding the user agent.
-            // https://github.com/Airtable/airtable.js/issues/52
-            headerKey = 'X-Airtable-User-Agent';
-        } else {
-            headerKey = headerDefinition.headerKey;
+        if (lowercasedKey === 'x-airtable-user-agent') {
+            lowercasedKey = 'user-agent';
+            headerKey = 'User-Agent';
         }
 
-        result[headerKey] = headerDefinition.headerValue;
-    });
-    return result;
-};
+        this._headersByLowercasedKey[lowercasedKey] = {
+            headerKey,
+            headerValue,
+        };
+    }
 
-module.exports = HttpHeaders;
+    toJSON() {
+        const result = {};
+        forEach(this._headersByLowercasedKey, (headerDefinition, lowercasedKey) => {
+            let headerKey;
+            /* istanbul ignore next */
+            if (isBrowser && lowercasedKey === 'user-agent') {
+                // Some browsers do not allow overriding the user agent.
+                // https://github.com/Airtable/airtable.js/issues/52
+                headerKey = 'X-Airtable-User-Agent';
+            } else {
+                headerKey = headerDefinition.headerKey;
+            }
+
+            result[headerKey] = headerDefinition.headerValue;
+        });
+        return result;
+    }
+}
+
+export = HttpHeaders;

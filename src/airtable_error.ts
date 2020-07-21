@@ -1,19 +1,23 @@
-'use strict';
+class AirtableError {
+    error;
+    message;
+    statusCode;
 
-function AirtableError(error, message, statusCode) {
-    this.error = error;
-    this.message = message;
-    this.statusCode = statusCode;
+    constructor(error, message, statusCode) {
+        this.error = error;
+        this.message = message;
+        this.statusCode = statusCode;
+    }
+
+    toString() {
+        return [
+            this.message,
+            '(',
+            this.error,
+            ')',
+            this.statusCode ? `[Http code ${this.statusCode}]` : '',
+        ].join('');
+    }
 }
 
-AirtableError.prototype.toString = function() {
-    return [
-        this.message,
-        '(',
-        this.error,
-        ')',
-        this.statusCode ? '[Http code ' + this.statusCode + ']' : '',
-    ].join('');
-};
-
-module.exports = AirtableError;
+export = AirtableError;

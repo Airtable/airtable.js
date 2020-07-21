@@ -1,4 +1,4 @@
-var fetch = require('node-fetch');
+import nodeFetch from 'node-fetch';
 
 // istanbul ignore next
-module.exports = typeof window === 'undefined' ? fetch : window.fetch;
+export = typeof window === 'undefined' ? (nodeFetch as typeof fetch) : fetch;
