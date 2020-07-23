@@ -86,8 +86,7 @@ describe('Base', function() {
                     .then(function() {
                         const {query} = testExpressApp.get('most recent request');
                         expect(query.getAll('foo')).toEqual(['bar']);
-                        expect(query.getAll('arr[0]')).toEqual(['one']);
-                        expect(query.getAll('arr[1]')).toEqual(['two']);
+                        expect(query.getAll('arr[]')).toEqual(['one', 'two']);
                         expect(query.getAll('obj[baz]')).toEqual(['qux']);
                     });
             });
@@ -221,7 +220,7 @@ describe('Base', function() {
         describe('error handling', function() {
             it('handles 401s', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(401).end();
+                    res.status(401).json({});
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -233,7 +232,9 @@ describe('Base', function() {
 
             it('handles 403s', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(403).end();
+                    res.status(403)
+                        .json({})
+                        .end();
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -245,7 +246,9 @@ describe('Base', function() {
 
             it('handles 404s without an error message', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(404).end();
+                    res.status(404)
+                        .json({})
+                        .end();
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -273,7 +276,9 @@ describe('Base', function() {
 
             it('handles 413s', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(413).end();
+                    res.status(413)
+                        .json({})
+                        .end();
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -285,7 +290,9 @@ describe('Base', function() {
 
             it('handles 422s without a type or message', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(422).end();
+                    res.status(422)
+                        .json({})
+                        .end();
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -329,7 +336,9 @@ describe('Base', function() {
 
             it('handles 429s immediately when retries are turned off', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(429).end();
+                    res.status(429)
+                        .json({})
+                        .end();
                 });
 
                 var base = new Airtable({
@@ -346,32 +355,26 @@ describe('Base', function() {
             });
 
             it('retries 429s until success', function() {
-                const realSetTimeout = setTimeout;
-
-                jest.useFakeTimers();
-
                 let numberOfRequests = 0;
                 testExpressApp.set('handler override', (req, res) => {
                     numberOfRequests++;
-                    if (numberOfRequests < 3) {
+                    if (numberOfRequests < 2) {
                         res.status(429).end();
-                        realSetTimeout(() => {
-                            jest.runAllTimers();
-                        }, 10);
                     } else {
                         res.json({foo: 'bar'});
                     }
                 });
 
                 return fakeBase.makeRequest().then(function() {
-                    expect(numberOfRequests).toEqual(3);
-                    jest.useRealTimers();
+                    expect(numberOfRequests).toEqual(2);
                 });
             });
 
             it('handles 500s', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(500).end();
+                    res.status(500)
+                        .json({})
+                        .end();
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -383,7 +386,9 @@ describe('Base', function() {
 
             it('handles 503s', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(503).end();
+                    res.status(503)
+                        .json({})
+                        .end();
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -395,7 +400,9 @@ describe('Base', function() {
 
             it('handles other 4xx errors without a type or message', function() {
                 testExpressApp.set('handler override', (req, res) => {
-                    res.status(402).end();
+                    res.status(402)
+                        .json({})
+                        .end();
                 });
 
                 return expect(fakeBase.makeRequest()).rejects.toEqual({
@@ -476,6 +483,22 @@ describe('Base', function() {
                         });
                     });
             });
+
+            it('will timeout if the server takes a long time to respond', function(done) {
+                testExpressApp.set('handler override', function() {
+                    // Timeout before returning a response
+                });
+
+                return fakeBase.makeRequest().then(
+                    function() {
+                        throw new Error('Promise unexpectedly fufilled.');
+                    },
+                    function(err) {
+                        expect(err.message).toMatch(/aborted/);
+                        done();
+                    }
+                );
+            });
         });
 
         describe('result', function() {
@@ -511,6 +534,33 @@ describe('Base', function() {
                 expect(req.get('x-api-version')).toEqual('0.1.0');
                 expect(req.get('x-airtable-application-id')).toEqual('app123');
                 expect(req.get('user-agent')).toEqual('Airtable.js/' + version);
+
+                done();
+            });
+        });
+
+        it('exposes the body of the request directly on the response', function(done) {
+            testExpressApp.set('handler override', function(req, res) {
+                res.json({
+                    fizz: 'buzz',
+                });
+            });
+
+            fakeBase.runAction('get', '/', {}, null, function(err, res, body) {
+                expect(err).toBeNull();
+                expect(res.body.fizz).toBe('buzz');
+                expect(body.fizz).toBe('buzz');
+                done();
+            });
+        });
+
+        it('makes requests GET requests with empty bodies', function(done) {
+            expect(version).toEqual(expect.stringMatching(/^\d+\.\d+\.\d+$/));
+
+            fakeBase.runAction('get', '/my_table/rec456', {}, {}, function() {
+                const req = testExpressApp.get('most recent request');
+                expect(req.method).toEqual('GET');
+                expect(req.path).toEqual('/v0/app123/my_table/rec456');
 
                 done();
             });

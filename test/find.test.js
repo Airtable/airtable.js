@@ -7,7 +7,7 @@ describe('record retrival', function() {
     var testExpressApp;
     var teardownAsync;
 
-    beforeAll(function() {
+    beforeEach(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
             airtable = env.airtable;
             testExpressApp = env.testExpressApp;
@@ -15,7 +15,7 @@ describe('record retrival', function() {
         });
     });
 
-    afterAll(function() {
+    afterEach(function() {
         delete global.window;
         return teardownAsync();
     });
@@ -27,6 +27,31 @@ describe('record retrival', function() {
             expect(req.method).toBe('GET');
             expect(req.url).toBe('/v0/app123/Table/record1?');
             expect(req.get('user-agent')).toMatch(/Airtable.js/);
+            res.json({
+                id: req.params.recordId,
+                fields: {Name: 'Rebecca'},
+                createdTime: '2020-04-20T16:20:00.000Z',
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .find(recordId)
+            .then(function(foundRecord) {
+                expect(foundRecord.id).toBe(recordId);
+                expect(foundRecord.get('Name')).toBe('Rebecca');
+            });
+    });
+
+    it('set the correct headers in a browser', function() {
+        global.window = {};
+        var recordId = 'record1';
+
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('GET');
+            expect(req.url).toBe('/v0/app123/Table/record1?');
+            expect(req.get('x-airtable-user-agent')).toMatch(/Airtable.js/);
             res.json({
                 id: req.params.recordId,
                 fields: {Name: 'Rebecca'},
@@ -115,10 +140,34 @@ describe('record retrival', function() {
         return airtable
             .base('app123')
             .table('Table')
-            .find('record1')
+            .find(recordId)
             .then(function(foundRecord) {
                 expect(foundRecord.id).toBe(recordId);
                 expect(foundRecord.get('Name')).toBe('Rebecca');
             });
+    });
+
+    it('can timeout if the servers are slow', function(done) {
+        var recordId = 'record1';
+
+        testExpressApp.set('handler override', function(req) {
+            expect(req.method).toBe('GET');
+            expect(req.url).toBe('/v0/app123/Table/record1?');
+            // Timeout before returning a response
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .find(recordId)
+            .then(
+                function() {
+                    throw new Error('Promise unexpectedly fufilled.');
+                },
+                function(err) {
+                    expect(err.message).toMatch(/aborted/);
+                    done();
+                }
+            );
     });
 });
