@@ -16,7 +16,6 @@
   "dependencies": {
     "abort-controller": "^3.0.0",
     "abortcontroller-polyfill": "^1.4.0",
-    "es6-promise": "4.2.8",
     "lodash": "4.17.15",
     "node-fetch": "^2.6.0"
   },

@@ -108,5 +108,8 @@
         "space-unary-ops": "warn",
         "spaced-comment": "warn",
         "yoda": "warn"
+    },
+    "globals": {
+        "Promise": "writable"
     }
 }
