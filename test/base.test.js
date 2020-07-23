@@ -539,6 +539,21 @@ describe('Base', function() {
             });
         });
 
+        it('exposes the body of the request directly on the response', function(done) {
+            testExpressApp.set('handler override', function(req, res) {
+                res.json({
+                    fizz: 'buzz',
+                });
+            });
+
+            fakeBase.runAction('get', '/', {}, null, function(err, res, body) {
+                expect(err).toBeNull();
+                expect(res.body.fizz).toBe('buzz');
+                expect(body.fizz).toBe('buzz');
+                done();
+            });
+        });
+
         it('makes requests GET requests with empty bodies', function(done) {
             expect(version).toEqual(expect.stringMatching(/^\d+\.\d+\.\d+$/));
 
