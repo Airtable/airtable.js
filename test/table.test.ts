@@ -59,10 +59,10 @@ describe('Table', function () {
   })
 
   describe('list()', () => {
-    it('auto-paginates through the list of pages', async () => {
+    it('auto-paginates through the list of records', async () => {
       let count = 0
-      for await (const page of table.list({ pageSize: 1 })) {
-        expect(page.length).toBeGreaterThan(0)
+      for await (const records of table.list({ pageSize: 1 })) {
+        expect(records.length).toBeGreaterThan(0)
         count++
       }
       expect(count).toBeGreaterThan(0)
