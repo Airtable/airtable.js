@@ -5,7 +5,7 @@
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
-  "types": "dist/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --outDir dist --declarationDir dist --declaration true && rollup -c",
     "coverage": "jest --env node --coverage",
@@ -15,7 +15,6 @@
     "test-unit": "jest --env node",
     "prepare": "npm run build",
     "prerelease": "npm run build",
-    "postinstall": "npm run build",
     "copy": "cp -R dist examples/next/lib && cp -R dist examples/nuxt/lib",
     "serve:next": "npm run copy && cd examples/next && npm i && npm run build && npm run start",
     "serve:nuxt": "npm run copy && cd examples/nuxt && npm i && npm run build && npm run start"
