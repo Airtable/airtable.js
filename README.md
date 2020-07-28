@@ -76,6 +76,20 @@ for await (const records of table.list({ maxResult: 10 })) {
 }
 ```
 
+# Examples
+
+Two examples are provided. The first is a Next.js project and the second is a Nuxt project. Both
+examples use the basic `Project tracker` example that Airtable provides when creating an account.
+
+To start the Next project, you will need to copy `.env.development` to `.env.development.local` and
+add the API key and the base ID that you will be using. Then, run `npm run serve:next`.
+
+To start the Nuxt project, you will need to prepend the API key and the base ID to the `dev` script:
+
+```sh
+AIRTABLE_API_KEY=... AIRTABLE_BASE_ID=... npm run serve:nuxt
+```
+
 # Tests
 
 Tests are run via `npm run test`.
