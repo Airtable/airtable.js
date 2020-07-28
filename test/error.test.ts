@@ -44,6 +44,10 @@ const deleteRecords = async () => {
   await table.deleteRecords(['123', '456'])
 }
 
+const deleteRecordUnexpected = async () => {
+  await table.deleteRecords(['lol'])
+}
+
 const tests = [
   [list, TABLE_PATH, 'get'],
   [records, TABLE_PATH, 'get'],
@@ -88,5 +92,13 @@ describe('Errors', () => {
         scope.done()
       })
     })
+  })
+
+  it('returns an unexpected error for deleteRecordUnexpected', async () => {
+    try {
+      await deleteRecordUnexpected()
+    } catch (error) {
+      expect(error.status).toEqual(-1)
+    }
   })
 })
