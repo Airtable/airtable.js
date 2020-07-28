@@ -9,7 +9,7 @@ import sortResponse from '../fixtures/records.sort.json'
 import createRequestBody from '../fixtures/records.create.json'
 import updateRequestBody from '../fixtures/records.update.json'
 import { matches } from 'lodash'
-import { QueryParams } from '../../src/types/table.types'
+import { QueryParams } from '../../src/types'
 
 const BASE_ID = 'abc'
 const TABLE_NAME = 'My Table'
@@ -31,7 +31,13 @@ export function start(): ScopeAndPath {
 
   return deleteRecords(
     updateRecords(
-      createRecords(findRecord(paginatedRecords(queryRecords(allRecords(scope, TABLE_PATH)))))
+      createRecords(
+        deleteRecord(
+          updateRecord(
+            createRecord(findRecord(paginatedRecords(queryRecords(allRecords(scope, TABLE_PATH)))))
+          )
+        )
+      )
     )
   )
 }
@@ -118,13 +124,33 @@ export function findRecord({ scope, path }: ScopeAndPath): ScopeAndPath {
   return { scope, path }
 }
 
+export function createRecord({ scope, path }: ScopeAndPath): ScopeAndPath {
+  scope.post(path, matches([createRequestBody[0]])).reply(200, { records: [createRequestBody[0]] })
+  return { scope, path }
+}
+
 export function createRecords({ scope, path }: ScopeAndPath): ScopeAndPath {
   scope.post(path, matches(createRequestBody)).reply(200, { records: createRequestBody })
   return { scope, path }
 }
 
+export function updateRecord({ scope, path }: ScopeAndPath): ScopeAndPath {
+  scope.patch(path, matches([updateRequestBody[0]])).reply(200, {
+    records: [updateRequestBody[0]],
+  })
+  return { scope, path }
+}
+
 export function updateRecords({ scope, path }: ScopeAndPath): ScopeAndPath {
   scope.patch(path, matches(updateRequestBody)).reply(200, { records: updateRequestBody })
+  return { scope, path }
+}
+
+export function deleteRecord({ scope, path }: ScopeAndPath): ScopeAndPath {
+  const ids = ['recABcLKRaQWszKp']
+  scope.delete(path, matches(ids)).reply(200, {
+    records: recordsResponse.records.filter((record) => ids.includes(record.id)),
+  })
   return { scope, path }
 }
 
