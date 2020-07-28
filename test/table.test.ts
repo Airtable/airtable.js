@@ -77,22 +77,43 @@ describe('Table', function () {
     })
   })
 
+  describe('createRecord', () => {
+    it('creates a single record', async () => {
+      const { records } = await table.createRecord(createRequestBody[0])
+      expect(records).toEqual([createRequestBody[0]])
+    })
+  })
+
   describe('createRecords', () => {
-    it('create a batch of records', async () => {
+    it('creates a batch of records', async () => {
       const { records } = await table.createRecords(createRequestBody)
       expect(records).toEqual(createRequestBody)
     })
   })
 
+  describe('updateRecord', () => {
+    it('updates a single record', async () => {
+      const { records } = await table.updateRecord(updateRequestBody[0])
+      expect(records).toEqual([updateRequestBody[0]])
+    })
+  })
+
   describe('updateRecords', () => {
-    it('create a batch of records', async () => {
+    it('updates a batch of records', async () => {
       const { records } = await table.updateRecords(updateRequestBody)
       expect(records).toEqual(updateRequestBody)
     })
   })
 
-  describe('deletRecords', () => {
-    it('create a batch of records', async () => {
+  describe('deleteRecords', () => {
+    it('deletes a single records', async () => {
+      const { records } = await table.deleteRecord('recABcLKRaQWszKp')
+      expect(records.length).toEqual(1)
+    })
+  })
+
+  describe('deleteRecords', () => {
+    it('deletes a batch of records', async () => {
       const { records } = await table.deleteRecords(['recABcLKRaQWszKp', 'recAtELIMS1xJOTI'])
       expect(records.length).toEqual(2)
     })
