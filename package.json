@@ -7,7 +7,7 @@
   "private": false,
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "cross-env NODE_ENV=production BABEL_ENV=production tsc --outDir dist --declarationDir dist --declaration true && rollup -c",
+    "build": "tsc --outDir dist --declarationDir dist --declaration true && rollup -c",
     "coverage": "jest --env node --coverage",
     "lint": "eslint .",
     "format": "prettier --write '**/*.js'",
@@ -92,7 +92,6 @@
     "babel-loader": "^8.1.0",
     "babel-plugin-named-asset-import": "^0.3.6",
     "body-parser": "^1.19.0",
-    "cross-env": "^7.0.2",
     "envify": "^4.1.0",
     "eslint": "^7.5.0",
     "eslint-config-airbnb": "^18.2.0",
