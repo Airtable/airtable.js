@@ -36,7 +36,7 @@ export const AirtableError = class extends AbstractAirtableError {
 // Handle 400
 export const UnexpectedError = class extends AbstractAirtableError {
   constructor(message?: string) {
-    super(message ?? 'An unexpected error occurred', 400, 'ERROR')
+    super(message || 'An unexpected error occurred', 400, 'ERROR')
   }
 }
 
@@ -44,7 +44,7 @@ export const UnexpectedError = class extends AbstractAirtableError {
 export const AuthenticationRequiredError = class extends AbstractAirtableError {
   constructor(message?: string) {
     super(
-      message ?? 'You should provide a valid key to perform this operation',
+      message || 'You should provide a valid key to perform this operation',
       401,
       'AUTHENTICATION_REQUIRED'
     )
@@ -54,7 +54,7 @@ export const AuthenticationRequiredError = class extends AbstractAirtableError {
 // Handle 403
 export const NotAuthorizedError = class extends AbstractAirtableError {
   constructor(message?: string) {
-    super(message ?? 'You are not authorized to perform this operation', 403, 'NOT_AUTHORIZED')
+    super(message || 'You are not authorized to perform this operation', 403, 'NOT_AUTHORIZED')
   }
 }
 
@@ -75,7 +75,7 @@ export const RequestTooLargeError = class extends AbstractAirtableError {
 // Handle 422
 export const CannotProcessOperationError = class extends AbstractAirtableError {
   constructor(message?: string) {
-    super(message ?? 'The operation cannot be processed', 422, 'CANNOT_PROCESS_OPERATION')
+    super(message || 'The operation cannot be processed', 422, 'CANNOT_PROCESS_OPERATION')
   }
 }
 
