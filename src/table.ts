@@ -1,19 +1,22 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import { createError } from './error'
 import { BaseOptions } from './base'
 import * as rax from 'retry-axios'
 import qs from 'qs'
 import {
   QueryParams,
-  TableRecord,
+  Record,
   CreateRecordsInput,
   UpdateRecordsInput,
   DeleteRecordsInput,
-  TableRecordReponse,
-  DeleteTableRecordResponse,
-  UpdatedTableRecordResponse,
-  CreatedTableRecordReponse,
-} from './types/table.types'
+  TableRecordResponse,
+  DeleteRecordResponse,
+  UpdatedRecordResponse,
+  CreatedRecordResponse,
+  CreateRecordInput,
+  UpdateRecordInput,
+  DeleteRecordInput,
+} from './types'
 
 rax.attach(axios)
 
@@ -22,24 +25,54 @@ export type TableOptions = BaseOptions & {
 }
 
 export default class Table {
-  constructor(readonly name: string, private readonly options: TableOptions) {}
+  #axiosConfig: AxiosRequestConfig
+  /**
+   * Creates an instance of Table
+   * @param name The name of the table to access
+   * @param options
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   */
+  constructor(readonly name: string, private readonly options: TableOptions) {
+    this.#axiosConfig = {
+      timeout: this.options.requestTimeout,
+      headers: {
+        Authorization: `Bearer ${this.options.apiKey}`,
+      },
+      raxConfig: {
+        retry: 3,
+      },
+    }
+  }
+
   private get baseUrl() {
     return `${this.options.endpointUrl}/v${this.options.apiVersionMajor}/${encodeURIComponent(
       this.options.baseId
     )}/${encodeURIComponent(this.name)}`
   }
 
-  async records(params: QueryParams = {}, offset?: string): Promise<TableRecordReponse> {
+  /**
+   * Retrieves the list of records in the table
+   * @param params Parameters to query the API
+   * @param offset The offset for the next set of records to fetch
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Fetch the records
+   * await table.records()
+   */
+  async records(params: QueryParams = {}, offset?: string): Promise<TableRecordResponse> {
     try {
-      const { data } = await axios.get<TableRecordReponse>(this.baseUrl, {
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-        },
+      const { data } = await axios.get<TableRecordResponse>(this.baseUrl, {
+        ...this.#axiosConfig,
         params: offset ? { offset, ...params } : params,
         paramsSerializer: (param) => qs.stringify(param),
-        raxConfig: {
-          retry: 3,
-        },
       })
       return data
     } catch (error) {
@@ -48,7 +81,25 @@ export default class Table {
     }
   }
 
-  async *list(params: QueryParams = {}): AsyncGenerator<TableRecord[], void, unknown> {
+  /**
+   * Automatically paginates and retrieves a list of records
+   * @param params Parameters to query the API
+   * @example
+   *
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Fetch ten records and iterate until the end or until a condition is met.
+   * for await (const record in table.list({ maxResult: 10 })) {
+   *  if (record.id === 'MY_RECORD_ID) {
+   *    // ...
+   *    break;
+   *  }
+   * }
+   */
+  async *list(params: QueryParams = {}): AsyncGenerator<Record[], void, unknown> {
     let result = await this.records(params)
     yield result.records
 
@@ -58,17 +109,22 @@ export default class Table {
     }
   }
 
-  async findRecord(id: string): Promise<TableRecord> {
+  /**
+   * Searches a record in the table
+   * @param id The id of the record
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Find the record
+   * await table.findRecord('record_id')
+   * ```
+   */
+  async findRecord(id: string): Promise<Record> {
     try {
-      const { data } = await axios.get<TableRecord>(`${this.baseUrl}/${id}`, {
-        timeout: this.options.requestTimeout,
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-        },
-        raxConfig: {
-          retry: 3,
-        },
-      })
+      const { data } = await axios.get<Record>(`${this.baseUrl}/${id}`, this.#axiosConfig)
       return data
     } catch (error) {
       const { response } = error as AxiosError
@@ -76,17 +132,56 @@ export default class Table {
     }
   }
 
-  async createRecords(records: CreateRecordsInput): Promise<CreatedTableRecordReponse> {
+  /**
+   * Creates a single record in the table
+   * @param records The record to create
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Create the record
+   * await table.createRecord({
+   *  fields: {
+   *    "Name": "Coffee Deluxe",
+   *    "Price": "$0.00"
+   *  }
+   * })
+   */
+  async createRecord(record: CreateRecordInput): Promise<CreatedRecordResponse> {
+    return this.createRecords([record])
+  }
+
+  /**
+   * Creates a batch of records in the table
+   * @param records The records to create
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Create the record
+   * await table.createRecords([{
+   *  fields: {
+   *    "Name": "Coffee Deluxe",
+   *    "Price": "$0.00"
+   *  }
+   * }, {
+   *  fields: {
+   *    "Name": "Coffee Max",
+   *    "Price": "$0.00"
+   *  }
+   * }])
+   */
+  async createRecords(records: CreateRecordsInput): Promise<CreatedRecordResponse> {
     try {
-      const { data } = await axios.post<CreatedTableRecordReponse>(`${this.baseUrl}`, records, {
-        timeout: this.options.requestTimeout,
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-        },
-        raxConfig: {
-          retry: 3,
-        },
-      })
+      const { data } = await axios.post<CreatedRecordResponse>(
+        `${this.baseUrl}`,
+        records,
+        this.#axiosConfig
+      )
       return data
     } catch (error) {
       const { response } = error as AxiosError
@@ -94,17 +189,60 @@ export default class Table {
     }
   }
 
-  async updateRecords(records: UpdateRecordsInput): Promise<UpdatedTableRecordResponse> {
+  /**
+   * Updates a single record in the table
+   * @param records The record to update
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Create the record
+   * await table.updateRecord({
+   *  id: 'record_id',
+   *  fields: {
+   *    "Name": "Coffee Deluxe",
+   *    "Price": "$0.00"
+   *  }
+   * })
+   *
+   */
+  async updateRecord(record: UpdateRecordInput): Promise<CreatedRecordResponse> {
+    return this.updateRecords([record])
+  }
+
+  /**
+   * Updates a batch of records in the table
+   * @param records The records to update
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Update the records
+   * await table.updateRecords([{
+   * id: 'record_id'
+   *  fields: {
+   *    "Name": "Coffee Deluxe",
+   *    "Price": "$0.00"
+   *  }
+   * }, {
+   * id: 'record_id_2'
+   *  fields: {
+   *    "Name": "Coffee Max",
+   *    "Price": "$0.00"
+   *  }
+   * }])
+   */
+  async updateRecords(records: UpdateRecordsInput): Promise<UpdatedRecordResponse> {
     try {
-      const { data } = await axios.patch<UpdatedTableRecordResponse>(`${this.baseUrl}`, records, {
-        timeout: this.options.requestTimeout,
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-        },
-        raxConfig: {
-          retry: 3,
-        },
-      })
+      const { data } = await axios.patch<UpdatedRecordResponse>(
+        `${this.baseUrl}`,
+        records,
+        this.#axiosConfig
+      )
       return data
     } catch (error) {
       const { response } = error as AxiosError
@@ -112,16 +250,38 @@ export default class Table {
     }
   }
 
-  async deleteRecords(records: DeleteRecordsInput): Promise<DeleteTableRecordResponse> {
+  /**
+   * Removes a single record from the table.
+   * @param record The record to delete
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Delete the records
+   * await table.deleteRecord('record_id')
+   */
+  async deleteRecord(record: DeleteRecordInput): Promise<DeleteRecordResponse> {
+    return this.deleteRecords([record])
+  }
+
+  /**
+   * Removes a batch of records from the table.
+   * @param records The records to delete
+   * @example
+   *
+   * // Create the base
+   * const base = Airtable({ apiKey: 'MY_API_KEY' }).base('BASE_ID')
+   * // Create the table
+   * const table = base.table('My Table')
+   * // Delete the records
+   * await table.deleteRecords(['record_id', 'record_id_2'])
+   */
+  async deleteRecords(records: DeleteRecordsInput): Promise<DeleteRecordResponse> {
     try {
-      const { data } = await axios.delete<DeleteTableRecordResponse>(`${this.baseUrl}`, {
-        timeout: this.options.requestTimeout,
-        headers: {
-          Authorization: `Bearer ${this.options.apiKey}`,
-        },
-        raxConfig: {
-          retry: 3,
-        },
+      const { data } = await axios.delete<DeleteRecordResponse>(`${this.baseUrl}`, {
+        ...this.#axiosConfig,
         data: records,
       })
       return data
