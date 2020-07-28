@@ -15,6 +15,7 @@
     "test-unit": "jest --env node",
     "prepare": "npm run build",
     "prerelease": "npm run build",
+    "postinstall": "npm run build",
     "copy": "cp -R dist examples/next/lib && cp -R dist examples/nuxt/lib",
     "serve:next": "npm run copy && cd examples/next && npm i && npm run build && npm run start",
     "serve:nuxt": "npm run copy && cd examples/nuxt && npm i && npm run build && npm run start"
