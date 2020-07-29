@@ -1,4 +1,4 @@
-import nock, { Scope } from 'nock'
+import nock from 'nock'
 import * as RecordsServer from './records.server'
 
 const BASE_ID = 'abc'

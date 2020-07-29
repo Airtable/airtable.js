@@ -77,7 +77,7 @@ export default class Table {
       return data
     } catch (error) {
       const { response } = error as AxiosError
-      throw createError(response?.status!, response?.statusText!)
+      throw createError(response?.status, response?.statusText)
     }
   }
 
@@ -128,7 +128,7 @@ export default class Table {
       return data
     } catch (error) {
       const { response } = error as AxiosError
-      throw createError(response?.status!, response?.statusText!)
+      throw createError(response?.status, response?.statusText)
     }
   }
 
@@ -185,7 +185,7 @@ export default class Table {
       return data
     } catch (error) {
       const { response } = error as AxiosError
-      throw createError(response?.status!, response?.statusText!)
+      throw createError(response?.status, response?.statusText)
     }
   }
 
@@ -246,7 +246,7 @@ export default class Table {
       return data
     } catch (error) {
       const { response } = error as AxiosError
-      throw createError(response?.status!, response?.statusText!)
+      throw createError(response?.status, response?.statusText)
     }
   }
 
@@ -287,7 +287,7 @@ export default class Table {
       return data
     } catch (error) {
       const { response } = error as AxiosError
-      throw createError(response?.status!, response?.statusText!)
+      throw createError(response?.status, response?.statusText)
     }
   }
 }

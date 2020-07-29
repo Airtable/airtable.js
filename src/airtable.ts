@@ -57,7 +57,9 @@ export default class Airtable {
    * Configures Airtable API
    * @param options The options to configure Airtable
    */
-  static configure(options: AirtableOptions) {
+  static configure(
+    options: AirtableOptions
+  ): Partial<Pick<AirtableConfig, 'endpointUrl' | 'apiKey' | 'requestTimeout'>> {
     const {
       apiVersion,
       endpointUrl,
@@ -77,14 +79,18 @@ export default class Airtable {
    * Returns an instance of `Base`
    * @param id The base id
    */
-  base(id: string) {
-    return new Base(id, { ...this.options, apiVersionMajor: Airtable.apiVersionMajor! })
+  base(id: string): Base {
+    return new Base(id, {
+      ...this.options,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      apiVersionMajor: Airtable.apiVersionMajor!,
+    })
   }
   /**
    * Returns an instance of `Base`
    * @param id The base id
    */
-  static base(id: string) {
+  static base(id: string): Base {
     const { endpointUrl, apiKey, requestTimeout } = Airtable
     return new Airtable({
       endpointUrl,

@@ -120,7 +120,8 @@ export const ServiceUnavailableError = class extends AbstractAirtableError {
   }
 }
 
-export function createError(status: number, message?: string) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function createError(status?: number, message?: string) {
   switch (status) {
     case 401:
       return new AuthenticationRequiredError()
@@ -141,7 +142,7 @@ export function createError(status: number, message?: string) {
     case 503:
       return new ServiceUnavailableError()
     default:
-      if (status >= 400) {
+      if (status && status >= 400) {
         return message ? new UnexpectedError(message) : new UnexpectedError()
       }
 

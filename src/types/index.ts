@@ -16,7 +16,7 @@ export type QueryParams = {
 }
 
 export type Field = {
-  [x: string]: any
+  [x: string]: unknown
 }
 
 export type Record = {

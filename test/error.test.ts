@@ -21,7 +21,8 @@ const base = airtable.base(BASE_ID)
 const table = base.table(TABLE_NAME)
 
 const list = async () => {
-  for await (const page of table.list()) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  for await (const _page of table.list()) {
   }
 }
 
