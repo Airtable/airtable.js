@@ -6,7 +6,8 @@
         "esModuleInterop": true,
         "outDir": "lib",
         "noImplicitAny": false,
-        "strict": false
+        "strict": false,
+        "sourceMap": true
     },
     "include": ["src/**/*.ts", "src/internal_config.json"]
 }

@@ -18,8 +18,8 @@ const userAgent = `Airtable.js/${packageVersion}`;
 type BaseRequestOptions = {
     method?: string;
     path?: string;
-    qs?: {};
-    headers?: {};
+    qs?: any;
+    headers?: any;
     body?: any;
     _numAttempts?: number;
 };
