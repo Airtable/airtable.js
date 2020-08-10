@@ -1,4 +1,4 @@
- import exponentialBackoffWithJitter from './exponential_backoff_with_jitter';
+import exponentialBackoffWithJitter from './exponential_backoff_with_jitter';
 import objectToQueryParamString from './object_to_query_param_string';
 import packageVersion from './package_version';
 import fetch from './fetch';
