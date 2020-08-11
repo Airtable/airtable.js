@@ -15,46 +15,48 @@ export type QueryParams = {
   userLocal?: string
 }
 
-export type Field = {
-  [x: string]: unknown
-}
+export type Field<T> = T extends unknown
+  ? T
+  : {
+      [x: string]: unknown
+    }
 
-export type Record = {
+export type Record<T> = {
   id: string
-  fields: Field[]
+  fields: Field<T>
   createdTime: string
 }
 
-export type CreateRecordInput = {
-  fields: Field
+export type CreateRecordInput<T> = {
+  fields: Field<T>
 }
 
-export type CreateRecordsInput = Array<{
-  fields: Field
+export type CreateRecordsInput<T> = Array<{
+  fields: Field<T>
 }>
 
-export type UpdateRecordInput = {
+export type UpdateRecordInput<T> = {
   id: string
-  fields: Field
+  fields: Field<T>
 }
 
-export type UpdateRecordsInput = Array<{
+export type UpdateRecordsInput<T> = Array<{
   id: string
-  fields: Field
+  fields: Field<T>
 }>
 
 export type DeleteRecordInput = string
 
 export type DeleteRecordsInput = string[]
 
-export type TableRecordResponse = {
-  records: Record[]
+export type TableRecordResponse<T> = {
+  records: Record<T>[]
   offset?: string
 }
 
-export type CreatedRecordResponse = Omit<TableRecordResponse, 'offset'>
+export type CreatedRecordResponse<T> = Omit<TableRecordResponse<T>, 'offset'>
 
-export type UpdatedRecordResponse = Omit<TableRecordResponse, 'offset'>
+export type UpdatedRecordResponse<T> = Omit<TableRecordResponse<T>, 'offset'>
 
 export type DeleteRecordResponse = {
   records: Array<{

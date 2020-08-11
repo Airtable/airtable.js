@@ -67,9 +67,12 @@ export default class Table {
    * // Fetch the records
    * await table.records()
    */
-  async records(params: QueryParams = {}, offset?: string): Promise<TableRecordResponse> {
+  async records<T = unknown>(
+    params: QueryParams = {},
+    offset?: string
+  ): Promise<TableRecordResponse<T>> {
     try {
-      const { data } = await axios.get<TableRecordResponse>(this.baseUrl, {
+      const { data } = await axios.get<TableRecordResponse<T>>(this.baseUrl, {
         ...this.#axiosConfig,
         params: offset ? { offset, ...params } : params,
         paramsSerializer: (param) => qs.stringify(param),
@@ -99,12 +102,12 @@ export default class Table {
    *  }
    * }
    */
-  async *list(params: QueryParams = {}): AsyncGenerator<Record[], void, unknown> {
-    let result = await this.records(params)
+  async *list<T = unknown>(params: QueryParams = {}): AsyncGenerator<Record<T>[], void, unknown> {
+    let result = await this.records<T>(params)
     yield result.records
 
     while (result?.offset) {
-      result = await this.records(params, result?.offset)
+      result = await this.records<T>(params, result?.offset)
       yield result.records
     }
   }
@@ -122,9 +125,9 @@ export default class Table {
    * await table.findRecord('record_id')
    * ```
    */
-  async findRecord(id: string): Promise<Record> {
+  async findRecord<T = unknown>(id: string): Promise<Record<T>> {
     try {
-      const { data } = await axios.get<Record>(`${this.baseUrl}/${id}`, this.#axiosConfig)
+      const { data } = await axios.get<Record<T>>(`${this.baseUrl}/${id}`, this.#axiosConfig)
       return data
     } catch (error) {
       const { response } = error as AxiosError
@@ -149,7 +152,9 @@ export default class Table {
    *  }
    * })
    */
-  async createRecord(record: CreateRecordInput): Promise<CreatedRecordResponse> {
+  async createRecord<T = unknown, U = unknown>(
+    record: CreateRecordInput<T>
+  ): Promise<CreatedRecordResponse<U>> {
     return this.createRecords([record])
   }
 
@@ -175,9 +180,11 @@ export default class Table {
    *  }
    * }])
    */
-  async createRecords(records: CreateRecordsInput): Promise<CreatedRecordResponse> {
+  async createRecords<T = unknown, U = unknown>(
+    records: CreateRecordsInput<T>
+  ): Promise<CreatedRecordResponse<U>> {
     try {
-      const { data } = await axios.post<CreatedRecordResponse>(
+      const { data } = await axios.post<CreatedRecordResponse<U>>(
         `${this.baseUrl}`,
         records,
         this.#axiosConfig
@@ -208,7 +215,9 @@ export default class Table {
    * })
    *
    */
-  async updateRecord(record: UpdateRecordInput): Promise<CreatedRecordResponse> {
+  async updateRecord<T = unknown, U = unknown>(
+    record: UpdateRecordInput<T>
+  ): Promise<CreatedRecordResponse<U>> {
     return this.updateRecords([record])
   }
 
@@ -236,9 +245,11 @@ export default class Table {
    *  }
    * }])
    */
-  async updateRecords(records: UpdateRecordsInput): Promise<UpdatedRecordResponse> {
+  async updateRecords<T = unknown, U = unknown>(
+    records: UpdateRecordsInput<T>
+  ): Promise<UpdatedRecordResponse<U>> {
     try {
-      const { data } = await axios.patch<UpdatedRecordResponse>(
+      const { data } = await axios.patch<UpdatedRecordResponse<U>>(
         `${this.baseUrl}`,
         records,
         this.#axiosConfig
