@@ -36,7 +36,7 @@ Then open http://localhost:8000/ in your browser.
 
 Airtable.js is compatible with browsers supported by the Airtable web app with
 the exception of Safari 10.0. Airtable.js supports Safari 10.1 and higher.
-See the [techincal requirements](https://support.airtable.com/hc/en-us/articles/217990018) for more details.
+See the [technical requirements](https://support.airtable.com/hc/en-us/articles/217990018) for more details.
 
 # Configuration
 
