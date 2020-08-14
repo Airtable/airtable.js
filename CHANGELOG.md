@@ -4,6 +4,7 @@
  * Increase test coverage of library to 100% (#190, #188, #187, #186, #185, #184, #183 #182, #181, #178, #177, #176, #175)
  * Enable CI (#173, #190)
  * Improve README (#164)
+ * Remove support for Safari 10.0
 
 # v0.8.1
  * Require Node 8 or above (down from Node 10)
