@@ -7,7 +7,8 @@
         "outDir": "lib",
         "noImplicitAny": false,
         "strict": false,
-        "sourceMap": true
+        "sourceMap": true,
+        "declaration": true
     },
     "include": ["src/**/*.ts", "src/internal_config.json"]
 }
