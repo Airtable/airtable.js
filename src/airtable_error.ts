@@ -1,9 +1,9 @@
 class AirtableError {
-    error;
-    message;
-    statusCode;
+    error: string;
+    message: string;
+    statusCode: number;
 
-    constructor(error, message, statusCode) {
+    constructor(error: string, message: string, statusCode: number) {
         this.error = error;
         this.message = message;
         this.statusCode = statusCode;
