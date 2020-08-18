@@ -125,12 +125,11 @@ function eachPage(this: Query, pageCallback: PageCallback, done: DoneCallback) {
         throw new Error('The second parameter to `eachPage` must be a function or undefined');
     }
 
-    const that = this;
     const path = `/${this._table._urlEncodedNameOrId()}`;
     const params = clone(this._params);
 
     const inner = () => {
-        that._table._base.runAction('get', path, params, null, (err, response, result) => {
+        this._table._base.runAction('get', path, params, null, (err, response, result) => {
             if (err) {
                 done(err, null);
             } else {
@@ -145,7 +144,7 @@ function eachPage(this: Query, pageCallback: PageCallback, done: DoneCallback) {
                 }
 
                 const records = map(result.records, recordJson => {
-                    return new Record(that._table, null, recordJson);
+                    return new Record(this._table, null, recordJson);
                 });
 
                 pageCallback(records, next);

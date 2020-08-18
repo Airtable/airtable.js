@@ -72,7 +72,6 @@ function save(this: Record, done: RecordCallback) {
 }
 
 function patchUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) {
-    const that = this;
     if (!done) {
         done = opts;
         opts = {};
@@ -95,14 +94,13 @@ function patchUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback
                 return;
             }
 
-            that.setRawJson(results);
-            done(null, that);
+            this.setRawJson(results);
+            done(null, this);
         }
     );
 }
 
 function putUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) {
-    const that = this;
     if (!done) {
         done = opts;
         opts = {};
@@ -124,14 +122,13 @@ function putUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) 
                 return;
             }
 
-            that.setRawJson(results);
-            done(null, that);
+            this.setRawJson(results);
+            done(null, this);
         }
     );
 }
 
 function destroy(this: Record, done: RecordCallback) {
-    const that = this;
     this._table._base.runAction(
         'delete',
         `/${this._table._urlEncodedNameOrId()}/${this.id}`,
@@ -143,13 +140,12 @@ function destroy(this: Record, done: RecordCallback) {
                 return;
             }
 
-            done(null, that);
+            done(null, this);
         }
     );
 }
 
 function fetch(this: Record, done: RecordCallback) {
-    const that = this;
     this._table._base.runAction(
         'get',
         `/${this._table._urlEncodedNameOrId()}/${this.id}`,
@@ -161,8 +157,8 @@ function fetch(this: Record, done: RecordCallback) {
                 return;
             }
 
-            that.setRawJson(results);
-            done(null, that);
+            this.setRawJson(results);
+            done(null, this);
         }
     );
 }

@@ -38,8 +38,6 @@ class Base {
     }
 
     makeRequest(options: BaseRequestOptions) {
-        const that = this;
-
         options = options || {};
 
         const method = get(options, 'method', 'GET').toUpperCase();
@@ -69,14 +67,14 @@ class Base {
                 .then((resp: Response & {statusCode: Response['status']}) => {
                     clearTimeout(timeout);
                     resp.statusCode = resp.status;
-                    if (resp.status === 429 && !that._airtable._noRetryIfRateLimited) {
+                    if (resp.status === 429 && !this._airtable._noRetryIfRateLimited) {
                         const numAttempts = get(options, '_numAttempts', 0);
                         const backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
                         setTimeout(() => {
                             const newOptions = assign({}, options, {
                                 _numAttempts: numAttempts + 1,
                             });
-                            that.makeRequest(newOptions)
+                            this.makeRequest(newOptions)
                                 .then(resolve)
                                 .catch(reject);
                         }, backoffDelayMs);
@@ -84,7 +82,7 @@ class Base {
                         resp.json()
                             .then(body => {
                                 const err =
-                                    that._checkStatusForError(resp.status, body) ||
+                                    this._checkStatusForError(resp.status, body) ||
                                     _getErrorForNonObjectBody(resp.status, body);
 
                                 if (err) {

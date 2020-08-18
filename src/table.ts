@@ -160,7 +160,6 @@ class Table {
         done: RecordCollectionCallback
     ): void;
     _createRecords(recordsData, optionalParameters, done?) {
-        const that = this;
         const isCreatingMultipleRecords = isArray(recordsData);
 
         if (!done) {
@@ -176,7 +175,7 @@ class Table {
         assign(requestData, optionalParameters);
         this._base.runAction(
             'post',
-            `/${that._urlEncodedNameOrId()}/`,
+            `/${this._urlEncodedNameOrId()}/`,
             {},
             requestData,
             (err, resp, body) => {
@@ -188,10 +187,10 @@ class Table {
                 let result;
                 if (isCreatingMultipleRecords) {
                     result = body.records.map(record => {
-                        return new Record(that, record.id, record);
+                        return new Record(this, record.id, record);
                     });
                 } else {
-                    result = new Record(that, body.id, body);
+                    result = new Record(this, body.id, body);
                 }
                 done(null, result);
             }
@@ -232,7 +231,6 @@ class Table {
         let opts;
 
         if (isArray(recordsDataOrRecordId)) {
-            const that = this;
             const recordsData = recordsDataOrRecordId;
             opts = isPlainObject(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
             done = optsOrDone || recordDataOrOptsOrDone;
@@ -251,7 +249,7 @@ class Table {
                     }
 
                     const result = records.map(record => {
-                        return new Record(that, record.id, record);
+                        return new Record(this, record.id, record);
                     });
                     done(null, result);
                 }
@@ -275,7 +273,6 @@ class Table {
     _destroyRecord(recordIds: string[], done: RecordCollectionCallback): void;
     _destroyRecord(recordIdsOrId, done) {
         if (isArray(recordIdsOrId)) {
-            const that = this;
             const queryParams = {records: recordIdsOrId};
             this._base.runAction(
                 'delete',
@@ -289,7 +286,7 @@ class Table {
                     }
 
                     const records = map(results.records, ({id}) => {
-                        return new Record(that, id, null);
+                        return new Record(this, id, null);
                     });
                     done(null, records);
                 }
@@ -301,8 +298,6 @@ class Table {
     }
 
     _listRecords(limit, offset, opts, done) {
-        const that = this;
-
         if (!done) {
             done = opts;
             opts = {};
@@ -327,7 +322,7 @@ class Table {
                 }
 
                 const records = map(results.records, recordJson => {
-                    return new Record(that, null, recordJson);
+                    return new Record(this, null, recordJson);
                 });
                 done(null, records, results.offset);
             }
@@ -340,12 +335,11 @@ class Table {
             callback = opts;
             opts = {};
         }
-        const that = this;
         const limit = Table.__recordsPerPageForIteration || 100;
         let offset = null;
 
         const nextPage = () => {
-            that._listRecords(limit, offset, opts, (err, page, newOffset) => {
+            this._listRecords(limit, offset, opts, (err, page, newOffset) => {
                 if (err) {
                     done(err);
                     return;
