@@ -23,6 +23,7 @@
     "node-fetch": "^2.6.0"
   },
   "main": "./lib/airtable.js",
+  "types": "./lib/airtable.d.ts",
   "browser": {
     "node-fetch": false,
     "abort-controller": false,
