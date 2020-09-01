@@ -18,10 +18,20 @@ const userAgent = `Airtable.js/${packageVersion}`;
 type BaseRequestOptions = {
     method?: string;
     path?: string;
-    qs?: any;
-    headers?: any;
-    body?: any;
+    qs?: Record<string, any>;
+    headers?: Record<string, any>;
+    body?: Record<string, any>;
     _numAttempts?: number;
+};
+
+type BaseResponse = Response & {statusCode: Response['status']};
+
+type AirtableBase = {
+    (tableName: string): Table;
+    _base: Base;
+    getId(): string;
+    makeRequest(options: BaseRequestOptions): Promise<BaseResponse>;
+    table(tableName: string): Table;
 };
 
 class Base {
@@ -37,9 +47,7 @@ class Base {
         return new Table(this, null, tableName);
     }
 
-    makeRequest(options: BaseRequestOptions) {
-        options = options || {};
-
+    makeRequest(options: BaseRequestOptions = {}) {
         const method = get(options, 'method', 'GET').toUpperCase();
 
         const url = `${this._airtable._endpointUrl}/v${this._airtable._apiVersionMajor}/${
@@ -64,7 +72,7 @@ class Base {
 
         return new Promise((resolve, reject) => {
             fetch(url, requestOptions)
-                .then((resp: Response & {statusCode: Response['status']}) => {
+                .then((resp: BaseResponse) => {
                     clearTimeout(timeout);
                     resp.statusCode = resp.status;
                     if (resp.status === 429 && !this._airtable._noRetryIfRateLimited) {
@@ -205,7 +213,7 @@ class Base {
         return this._id;
     }
 
-    static createFunctor(airtable: Airtable, baseId: string) {
+    static createFunctor(airtable: Airtable, baseId: string): AirtableBase {
         const base = new Base(airtable, baseId);
         const baseFn = tableName => {
             return base.doCall(tableName);
@@ -214,8 +222,7 @@ class Base {
             baseFn[baseMethod] = base[baseMethod].bind(base);
         });
         baseFn._base = base;
-        baseFn.tables = base['tables'];
-        return baseFn;
+        return baseFn as AirtableBase;
     }
 }
 
