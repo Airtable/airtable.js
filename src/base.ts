@@ -138,6 +138,16 @@ class Base {
     }
 
     _checkStatusForError(statusCode, body) {
+
+        const {
+            error = {}
+        } = body ?? {error: {}};
+
+        const {
+            type,
+            message
+        } = error;
+
         if (statusCode === 401) {
             return new AirtableError(
                 'AUTHENTICATION_REQUIRED',
@@ -153,7 +163,7 @@ class Base {
         } else if (statusCode === 404) {
             return new AirtableError(
                 'NOT_FOUND',
-                body?.error?.message ?? 'Could not find what you are looking for',
+                message ?? 'Could not find what you are looking for',
                 statusCode
             );
         } else if (statusCode === 413) {
@@ -164,8 +174,8 @@ class Base {
             );
         } else if (statusCode === 422) {
             return new AirtableError(
-                body?.error?.type ?? 'UNPROCESSABLE_ENTITY',
-                body?.error?.message ?? 'The operation cannot be processed',
+                type ?? 'UNPROCESSABLE_ENTITY',
+                message ?? 'The operation cannot be processed',
                 statusCode
             );
         } else if (statusCode === 429) {
@@ -188,8 +198,8 @@ class Base {
             );
         } else if (statusCode >= 400) {
             return new AirtableError(
-                body?.error?.type ?? 'UNEXPECTED_ERROR',
-                body?.error?.message ?? 'An unexpected error occurred',
+                type ?? 'UNEXPECTED_ERROR',
+                message ?? 'An unexpected error occurred',
                 statusCode
             );
         } else {
