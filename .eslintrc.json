@@ -4,7 +4,8 @@
         "node": true
     },
     "extends": [
-        "eslint:recommended"
+       "eslint:recommended",
+       "plugin:@typescript-eslint/recommended"
     ],
     "rules": {
         "no-case-declarations": "warn",
@@ -107,7 +108,14 @@
         "space-in-parens": "warn",
         "space-unary-ops": "warn",
         "spaced-comment": "warn",
-        "yoda": "warn"
+        "yoda": "warn",
+
+        "@typescript-eslint/no-var-requires": "warn",
+        "@typescript-eslint/no-empty-function": "warn",
+        "@typescript-eslint/no-this-alias": "warn",
+        "prefer-spread": "warn",
+        "prefer-rest-params": "warn",
+        "no-var": "warn"
     },
     "globals": {
         "Promise": "writable"

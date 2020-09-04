@@ -6,20 +6,24 @@
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
   "scripts": {
-    "coverage": "jest --env node --coverage",
-    "pretest": "npm run lint",
-    "lint": "eslint .",
+    "coverage": "jest --env node --coverage --no-cache",
+    "pretest": "npm run lint && npm run prepare; true",
+    "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "format": "prettier --write '**/*.js'",
-    "test": "npm run coverage && npm run test-unit",
-    "test-unit": "jest --env node"
+    "test": "npm run coverage",
+    "test-unit": "jest --env node",
+    "prepare": "rm -rf lib/* && tsc",
+    "browserify": "npm run compile; grunt browserify"
   },
   "dependencies": {
+    "@types/node": "^14.0.14",
     "abort-controller": "^3.0.0",
     "abortcontroller-polyfill": "^1.4.0",
     "lodash": "4.17.15",
     "node-fetch": "^2.6.0"
   },
   "main": "./lib/airtable.js",
+  "types": "./lib/airtable.d.ts",
   "browser": {
     "node-fetch": false,
     "abort-controller": false,
@@ -43,9 +47,13 @@
     }
   },
   "devDependencies": {
+    "@types/jest": "^26.0.3",
+    "@types/lodash": "^4.14.157",
+    "@typescript-eslint/eslint-plugin": "^3.4.0",
+    "@typescript-eslint/parser": "^3.4.0",
     "body-parser": "^1.19.0",
     "envify": "^4.1.0",
-    "eslint": "^6.6.0",
+    "eslint": "^6.8.0",
     "express": "^4.17.1",
     "get-port": "^5.0.0",
     "grunt": "^1.0.4",
@@ -54,7 +62,8 @@
     "jest": "^24.9.0",
     "prettier": "^1.18.2",
     "pretty-quick": "^2.0.0",
-    "semver": "^6.3.0"
+    "semver": "^6.3.0",
+    "typescript": "^3.9.5"
   },
   "keywords": [
     "airtable",

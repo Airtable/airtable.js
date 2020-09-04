@@ -1,6 +1,4 @@
-'use strict';
-
-var didWarnForDeprecation = {};
+const didWarnForDeprecation = {};
 
 /**
  * Convenience function for marking a function as deprecated.
@@ -14,13 +12,13 @@ var didWarnForDeprecation = {};
  * @return a wrapped function
  */
 function deprecate(fn, key, message) {
-    return function() {
+    return function(...args) {
         if (!didWarnForDeprecation[key]) {
             didWarnForDeprecation[key] = true;
             console.warn(message);
         }
-        fn.apply(this, arguments);
+        fn.apply(this, args);
     };
 }
 
-module.exports = deprecate;
+export = deprecate;
