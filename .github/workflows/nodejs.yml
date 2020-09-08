@@ -31,4 +31,4 @@ jobs:
     - run: npm run test
       env:
         CI: true
-    - run: ./scripts/check-build-is-fresh.sh
+    - run: ./scripts/check-is-build-fresh.sh
