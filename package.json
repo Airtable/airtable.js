@@ -13,8 +13,8 @@
     "test": "npm run coverage",
     "test-unit": "jest --env node",
     "prepare": "rm -rf lib/* && tsc",
-    "post-install": "npm run prepare",
-    "browserify": "npm run compile; grunt browserify"
+    "browserify": "npm run compile; grunt browserify",
+    "postinstall": "npm run prepare & npm run browserify"
   },
   "dependencies": {
     "@types/node": "^14.0.14",
