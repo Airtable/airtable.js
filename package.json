@@ -12,8 +12,7 @@
     "format": "prettier --write '**/*.js'",
     "test": "npm run coverage",
     "test-unit": "jest --env node",
-    "prepare": "rm -rf lib/* && tsc",
-    "browserify": "npm run compile; grunt browserify"
+    "prepare": "rm -rf lib/* && tsc && grunt browserify"
   },
   "dependencies": {
     "@types/node": "^14.0.14",

@@ -1,271 +1,233 @@
 require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+"use strict";
 // istanbul ignore file
+var AbortController;
 if (typeof window === 'undefined') {
-    module.exports = require('abort-controller');
-} else {
+    AbortController = require('abort-controller');
+}
+else {
     if ('signal' in new Request('')) {
-        module.exports = window.AbortController;
-    } else {
+        AbortController = window.AbortController;
+    }
+    else {
         var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
-        module.exports = polyfill.AbortController;
+        AbortController = polyfill.AbortController;
     }
 }
+module.exports = AbortController;
 
-},{"abort-controller":19,"abortcontroller-polyfill/dist/cjs-ponyfill":18}],2:[function(require,module,exports){
-'use strict';
-
-function AirtableError(error, message, statusCode) {
-    this.error = error;
-    this.message = message;
-    this.statusCode = statusCode;
-}
-
-AirtableError.prototype.toString = function() {
-    return [
-        this.message,
-        '(',
-        this.error,
-        ')',
-        this.statusCode ? '[Http code ' + this.statusCode + ']' : '',
-    ].join('');
-};
-
+},{"abort-controller":20,"abortcontroller-polyfill/dist/cjs-ponyfill":19}],2:[function(require,module,exports){
+"use strict";
+var AirtableError = /** @class */ (function () {
+    function AirtableError(error, message, statusCode) {
+        this.error = error;
+        this.message = message;
+        this.statusCode = statusCode;
+    }
+    AirtableError.prototype.toString = function () {
+        return [
+            this.message,
+            '(',
+            this.error,
+            ')',
+            this.statusCode ? "[Http code " + this.statusCode + "]" : '',
+        ].join('');
+    };
+    return AirtableError;
+}());
 module.exports = AirtableError;
 
 },{}],3:[function(require,module,exports){
-'use strict';
-
-var forEach = require('lodash/forEach');
-var get = require('lodash/get');
-var assign = require('lodash/assign');
-var isPlainObject = require('lodash/isPlainObject');
-var fetch = require('./fetch');
-var AbortController = require('./abort-controller');
-
-var objectToQueryParamString = require('./object_to_query_param_string');
-var AirtableError = require('./airtable_error');
-var Table = require('./table');
-var HttpHeaders = require('./http_headers');
-var runAction = require('./run_action');
-var packageVersion = require('./package_version');
-var exponentialBackoffWithJitter = require('./exponential_backoff_with_jitter');
-
-var userAgent = 'Airtable.js/' + packageVersion;
-
-function Base(airtable, baseId) {
-    this._airtable = airtable;
-    this._id = baseId;
-}
-
-Base.prototype.table = function(tableName) {
-    return new Table(this, null, tableName);
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-
-Base.prototype.makeRequest = function(options) {
-    var that = this;
-
-    options = options || {};
-
-    var method = get(options, 'method', 'GET').toUpperCase();
-
-    var url =
-        this._airtable._endpointUrl +
-        '/v' +
-        this._airtable._apiVersionMajor +
-        '/' +
-        this._id +
-        get(options, 'path', '/') +
-        '?' +
-        objectToQueryParamString(get(options, 'qs', {}));
-
-    var controller = new AbortController();
-
-    var requestOptions = {
-        method: method,
-        headers: this._getRequestHeaders(get(options, 'headers', {})),
-        signal: controller.signal,
-    };
-
-    if ('body' in options && _canRequestMethodIncludeBody(method)) {
-        requestOptions.body = JSON.stringify(options.body);
+var forEach_1 = __importDefault(require("lodash/forEach"));
+var get_1 = __importDefault(require("lodash/get"));
+var assign_1 = __importDefault(require("lodash/assign"));
+var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
+var fetch_1 = __importDefault(require("./fetch"));
+var abort_controller_1 = __importDefault(require("./abort-controller"));
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
+var airtable_error_1 = __importDefault(require("./airtable_error"));
+var table_1 = __importDefault(require("./table"));
+var http_headers_1 = __importDefault(require("./http_headers"));
+var run_action_1 = __importDefault(require("./run_action"));
+var package_version_1 = __importDefault(require("./package_version"));
+var exponential_backoff_with_jitter_1 = __importDefault(require("./exponential_backoff_with_jitter"));
+var userAgent = "Airtable.js/" + package_version_1.default;
+var Base = /** @class */ (function () {
+    function Base(airtable, baseId) {
+        this._airtable = airtable;
+        this._id = baseId;
     }
-
-    var timeout = setTimeout(function() {
-        controller.abort();
-    }, this._airtable.requestTimeout);
-
-    return new Promise(function(resolve, reject) {
-        fetch(url, requestOptions)
-            .then(function(resp) {
+    Base.prototype.table = function (tableName) {
+        return new table_1.default(this, null, tableName);
+    };
+    Base.prototype.makeRequest = function (options) {
+        var _this = this;
+        if (options === void 0) { options = {}; }
+        var method = get_1.default(options, 'method', 'GET').toUpperCase();
+        var url = this._airtable._endpointUrl + "/v" + this._airtable._apiVersionMajor + "/" + this._id + get_1.default(options, 'path', '/') + "?" + object_to_query_param_string_1.default(get_1.default(options, 'qs', {}));
+        var controller = new abort_controller_1.default();
+        var requestOptions = {
+            method: method,
+            headers: this._getRequestHeaders(get_1.default(options, 'headers', {})),
+            signal: controller.signal,
+        };
+        if ('body' in options && _canRequestMethodIncludeBody(method)) {
+            requestOptions.body = JSON.stringify(options.body);
+        }
+        var timeout = setTimeout(function () {
+            controller.abort();
+        }, this._airtable.requestTimeout);
+        return new Promise(function (resolve, reject) {
+            fetch_1.default(url, requestOptions)
+                .then(function (resp) {
                 clearTimeout(timeout);
                 resp.statusCode = resp.status;
-                if (resp.status === 429 && !that._airtable._noRetryIfRateLimited) {
-                    var numAttempts = get(options, '_numAttempts', 0);
-                    var backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
-                    setTimeout(function() {
-                        var newOptions = assign({}, options, {
-                            _numAttempts: numAttempts + 1,
+                if (resp.status === 429 && !_this._airtable._noRetryIfRateLimited) {
+                    var numAttempts_1 = get_1.default(options, '_numAttempts', 0);
+                    var backoffDelayMs = exponential_backoff_with_jitter_1.default(numAttempts_1);
+                    setTimeout(function () {
+                        var newOptions = assign_1.default({}, options, {
+                            _numAttempts: numAttempts_1 + 1,
                         });
-                        that.makeRequest(newOptions)
+                        _this.makeRequest(newOptions)
                             .then(resolve)
                             .catch(reject);
                     }, backoffDelayMs);
-                } else {
+                }
+                else {
                     resp.json()
-                        .then(function(body) {
-                            var err =
-                                that._checkStatusForError(resp.status, body) ||
-                                _getErrorForNonObjectBody(resp.status, body);
-
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve({
-                                    statusCode: resp.status,
-                                    headers: resp.headers,
-                                    body: body,
-                                });
-                            }
-                        })
-                        .catch(function() {
-                            var err = _getErrorForNonObjectBody(resp.status);
+                        .then(function (body) {
+                        var err = _this._checkStatusForError(resp.status, body) ||
+                            _getErrorForNonObjectBody(resp.status, body);
+                        if (err) {
                             reject(err);
-                        });
+                        }
+                        else {
+                            resolve({
+                                statusCode: resp.status,
+                                headers: resp.headers,
+                                body: body,
+                            });
+                        }
+                    })
+                        .catch(function () {
+                        var err = _getErrorForNonObjectBody(resp.status);
+                        reject(err);
+                    });
                 }
             })
-            .catch(function(err) {
+                .catch(function (err) {
                 clearTimeout(timeout);
-                err = new AirtableError('CONNECTION_ERROR', err.message, null);
+                err = new airtable_error_1.default('CONNECTION_ERROR', err.message, null);
                 reject(err);
             });
-    });
-};
-
-// This method is deprecated.
-Base.prototype.runAction = function(method, path, queryParams, bodyData, callback) {
-    runAction(this, method, path, queryParams, bodyData, callback, 0);
-};
-
-Base.prototype._getRequestHeaders = function(headers) {
-    var result = new HttpHeaders();
-
-    result.set('Authorization', 'Bearer ' + this._airtable._apiKey);
-    result.set('User-Agent', userAgent);
-    result.set('Content-Type', 'application/json');
-    forEach(headers, function(headerValue, headerKey) {
-        result.set(headerKey, headerValue);
-    });
-
-    return result.toJSON();
-};
-
-Base.prototype._checkStatusForError = function(statusCode, body) {
-    if (statusCode === 401) {
-        return new AirtableError(
-            'AUTHENTICATION_REQUIRED',
-            'You should provide valid api key to perform this operation',
-            statusCode
-        );
-    } else if (statusCode === 403) {
-        return new AirtableError(
-            'NOT_AUTHORIZED',
-            'You are not authorized to perform this operation',
-            statusCode
-        );
-    } else if (statusCode === 404) {
-        return (function() {
-            var message =
-                body && body.error && body.error.message
+        });
+    };
+    /**
+     * @deprecated This method is deprecated.
+     */
+    Base.prototype.runAction = function (method, path, queryParams, bodyData, callback) {
+        run_action_1.default(this, method, path, queryParams, bodyData, callback, 0);
+    };
+    Base.prototype._getRequestHeaders = function (headers) {
+        var result = new http_headers_1.default();
+        result.set('Authorization', "Bearer " + this._airtable._apiKey);
+        result.set('User-Agent', userAgent);
+        result.set('Content-Type', 'application/json');
+        forEach_1.default(headers, function (headerValue, headerKey) {
+            result.set(headerKey, headerValue);
+        });
+        return result.toJSON();
+    };
+    Base.prototype._checkStatusForError = function (statusCode, body) {
+        if (statusCode === 401) {
+            return new airtable_error_1.default('AUTHENTICATION_REQUIRED', 'You should provide valid api key to perform this operation', statusCode);
+        }
+        else if (statusCode === 403) {
+            return new airtable_error_1.default('NOT_AUTHORIZED', 'You are not authorized to perform this operation', statusCode);
+        }
+        else if (statusCode === 404) {
+            return (function () {
+                var message = body && body.error && body.error.message
                     ? body.error.message
                     : 'Could not find what you are looking for';
-            return new AirtableError('NOT_FOUND', message, statusCode);
-        })();
-    } else if (statusCode === 413) {
-        return new AirtableError('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
-    } else if (statusCode === 422) {
-        return (function() {
-            var type =
-                body && body.error && body.error.type ? body.error.type : 'UNPROCESSABLE_ENTITY';
-            var message =
-                body && body.error && body.error.message
+                return new airtable_error_1.default('NOT_FOUND', message, statusCode);
+            })();
+        }
+        else if (statusCode === 413) {
+            return new airtable_error_1.default('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
+        }
+        else if (statusCode === 422) {
+            return (function () {
+                var type = body && body.error && body.error.type
+                    ? body.error.type
+                    : 'UNPROCESSABLE_ENTITY';
+                var message = body && body.error && body.error.message
                     ? body.error.message
                     : 'The operation cannot be processed';
-            return new AirtableError(type, message, statusCode);
-        })();
-    } else if (statusCode === 429) {
-        return new AirtableError(
-            'TOO_MANY_REQUESTS',
-            'You have made too many requests in a short period of time. Please retry your request later',
-            statusCode
-        );
-    } else if (statusCode === 500) {
-        return new AirtableError(
-            'SERVER_ERROR',
-            'Try again. If the problem persists, contact support.',
-            statusCode
-        );
-    } else if (statusCode === 503) {
-        return new AirtableError(
-            'SERVICE_UNAVAILABLE',
-            'The service is temporarily unavailable. Please retry shortly.',
-            statusCode
-        );
-    } else if (statusCode >= 400) {
-        return (function() {
-            var type = body && body.error && body.error.type ? body.error.type : 'UNEXPECTED_ERROR';
-            var message =
-                body && body.error && body.error.message
+                return new airtable_error_1.default(type, message, statusCode);
+            })();
+        }
+        else if (statusCode === 429) {
+            return new airtable_error_1.default('TOO_MANY_REQUESTS', 'You have made too many requests in a short period of time. Please retry your request later', statusCode);
+        }
+        else if (statusCode === 500) {
+            return new airtable_error_1.default('SERVER_ERROR', 'Try again. If the problem persists, contact support.', statusCode);
+        }
+        else if (statusCode === 503) {
+            return new airtable_error_1.default('SERVICE_UNAVAILABLE', 'The service is temporarily unavailable. Please retry shortly.', statusCode);
+        }
+        else if (statusCode >= 400) {
+            return (function () {
+                var type = body && body.error && body.error.type ? body.error.type : 'UNEXPECTED_ERROR';
+                var message = body && body.error && body.error.message
                     ? body.error.message
                     : 'An unexpected error occurred';
-            return new AirtableError(type, message, statusCode);
-        })();
-    } else {
-        return null;
-    }
-};
-
-Base.prototype.doCall = function(tableName) {
-    return this.table(tableName);
-};
-
-Base.prototype.getId = function() {
-    return this._id;
-};
-
-Base.createFunctor = function(airtable, baseId) {
-    var base = new Base(airtable, baseId);
-    var baseFn = function() {
-        return base.doCall.apply(base, arguments);
+                return new airtable_error_1.default(type, message, statusCode);
+            })();
+        }
+        else {
+            return null;
+        }
     };
-    forEach(['table', 'makeRequest', 'runAction', 'getId'], function(baseMethod) {
-        baseFn[baseMethod] = base[baseMethod].bind(base);
-    });
-    baseFn._base = base;
-    baseFn.tables = base.tables;
-    return baseFn;
-};
-
+    Base.prototype.doCall = function (tableName) {
+        return this.table(tableName);
+    };
+    Base.prototype.getId = function () {
+        return this._id;
+    };
+    Base.createFunctor = function (airtable, baseId) {
+        var base = new Base(airtable, baseId);
+        var baseFn = function (tableName) {
+            return base.doCall(tableName);
+        };
+        forEach_1.default(['table', 'makeRequest', 'runAction', 'getId'], function (baseMethod) {
+            baseFn[baseMethod] = base[baseMethod].bind(base);
+        });
+        baseFn._base = base;
+        return baseFn;
+    };
+    return Base;
+}());
 function _canRequestMethodIncludeBody(method) {
     return method !== 'GET' && method !== 'DELETE';
 }
-
 function _getErrorForNonObjectBody(statusCode, body) {
-    if (isPlainObject(body)) {
+    if (isPlainObject_1.default(body)) {
         return null;
-    } else {
-        return new AirtableError(
-            'UNEXPECTED_ERROR',
-            'The response from Airtable was invalid JSON. Please try again soon.',
-            statusCode
-        );
+    }
+    else {
+        return new airtable_error_1.default('UNEXPECTED_ERROR', 'The response from Airtable was invalid JSON. Please try again soon.', statusCode);
     }
 }
-
 module.exports = Base;
 
-},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":15,"./table":16,"lodash/assign":162,"lodash/forEach":166,"lodash/get":167,"lodash/isPlainObject":182}],4:[function(require,module,exports){
-'use strict';
-
+},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":16,"./table":17,"lodash/assign":163,"lodash/forEach":167,"lodash/get":168,"lodash/isPlainObject":183}],4:[function(require,module,exports){
+"use strict";
 /**
  * Given a function fn that takes a callback as its last argument, returns
  * a new version of the function that takes the callback optionally. If
@@ -273,47 +235,49 @@ module.exports = Base;
  * function will return a promise instead.
  */
 function callbackToPromise(fn, context, callbackArgIndex) {
-    return function() {
+    if (callbackArgIndex === void 0) { callbackArgIndex = void 0; }
+    return function () {
         var thisCallbackArgIndex;
         if (callbackArgIndex === void 0) {
+            // istanbul ignore next
             thisCallbackArgIndex = arguments.length > 0 ? arguments.length - 1 : 0;
-        } else {
+        }
+        else {
             thisCallbackArgIndex = callbackArgIndex;
         }
         var callbackArg = arguments[thisCallbackArgIndex];
         if (typeof callbackArg === 'function') {
             fn.apply(context, arguments);
             return void 0;
-        } else {
-            var args = [];
+        }
+        else {
+            var args_1 = [];
             // If an explicit callbackArgIndex is set, but the function is called
             // with too few arguments, we want to push undefined onto args so that
             // our constructed callback ends up at the right index.
             var argLen = Math.max(arguments.length, thisCallbackArgIndex);
             for (var i = 0; i < argLen; i++) {
-                args.push(arguments[i]);
+                args_1.push(arguments[i]);
             }
-            return new Promise(function(resolve, reject) {
-                args.push(function(err, result) {
+            return new Promise(function (resolve, reject) {
+                args_1.push(function (err, result) {
                     if (err) {
                         reject(err);
-                    } else {
+                    }
+                    else {
                         resolve(result);
                     }
                 });
-                fn.apply(context, args);
+                fn.apply(context, args_1);
             });
         }
     };
 }
-
 module.exports = callbackToPromise;
 
 },{}],5:[function(require,module,exports){
-'use strict';
-
+"use strict";
 var didWarnForDeprecation = {};
-
 /**
  * Convenience function for marking a function as deprecated.
  *
@@ -326,171 +290,167 @@ var didWarnForDeprecation = {};
  * @return a wrapped function
  */
 function deprecate(fn, key, message) {
-    return function() {
+    return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
         if (!didWarnForDeprecation[key]) {
             didWarnForDeprecation[key] = true;
             console.warn(message);
         }
-        fn.apply(this, arguments);
+        fn.apply(this, args);
     };
 }
-
 module.exports = deprecate;
 
 },{}],6:[function(require,module,exports){
-var internalConfig = require('./internal_config.json');
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var internal_config_json_1 = __importDefault(require("./internal_config.json"));
 // "Full Jitter" algorithm taken from https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
 function exponentialBackoffWithJitter(numberOfRetries) {
-    var rawBackoffTimeMs =
-        internalConfig.INITIAL_RETRY_DELAY_IF_RATE_LIMITED * Math.pow(2, numberOfRetries);
-    var clippedBackoffTimeMs = Math.min(
-        internalConfig.MAX_RETRY_DELAY_IF_RATE_LIMITED,
-        rawBackoffTimeMs
-    );
+    var rawBackoffTimeMs = internal_config_json_1.default.INITIAL_RETRY_DELAY_IF_RATE_LIMITED * Math.pow(2, numberOfRetries);
+    var clippedBackoffTimeMs = Math.min(internal_config_json_1.default.MAX_RETRY_DELAY_IF_RATE_LIMITED, rawBackoffTimeMs);
     var jitteredBackoffTimeMs = Math.random() * clippedBackoffTimeMs;
     return jitteredBackoffTimeMs;
 }
-
 module.exports = exponentialBackoffWithJitter;
 
 },{"./internal_config.json":10}],7:[function(require,module,exports){
-var fetch = require('node-fetch');
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var node_fetch_1 = __importDefault(require("node-fetch"));
+module.exports = (
 // istanbul ignore next
-module.exports = typeof window === 'undefined' ? fetch : window.fetch;
+typeof window === 'undefined' ? node_fetch_1.default : fetch);
 
-},{"node-fetch":19}],8:[function(require,module,exports){
-'use strict';
-
+},{"node-fetch":20}],8:[function(require,module,exports){
+"use strict";
 function has(object, property) {
     return Object.prototype.hasOwnProperty.call(object, property);
 }
-
 module.exports = has;
 
 },{}],9:[function(require,module,exports){
-var forEach = require('lodash/forEach');
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var forEach_1 = __importDefault(require("lodash/forEach"));
 var isBrowser = typeof window !== 'undefined';
-
-function HttpHeaders() {
-    this._headersByLowercasedKey = {};
-}
-
-HttpHeaders.prototype.set = function(headerKey, headerValue) {
-    var lowercasedKey = headerKey.toLowerCase();
-
-    if (lowercasedKey === 'x-airtable-user-agent') {
-        lowercasedKey = 'user-agent';
-        headerKey = 'User-Agent';
+var HttpHeaders = /** @class */ (function () {
+    function HttpHeaders() {
+        this._headersByLowercasedKey = {};
     }
-
-    this._headersByLowercasedKey[lowercasedKey] = {
-        headerKey: headerKey,
-        headerValue: headerValue,
-    };
-};
-
-HttpHeaders.prototype.toJSON = function() {
-    var result = {};
-    forEach(this._headersByLowercasedKey, function(headerDefinition, lowercasedKey) {
-        var headerKey;
-        /* istanbul ignore next */
-        if (isBrowser && lowercasedKey === 'user-agent') {
-            // Some browsers do not allow overriding the user agent.
-            // https://github.com/Airtable/airtable.js/issues/52
-            headerKey = 'X-Airtable-User-Agent';
-        } else {
-            headerKey = headerDefinition.headerKey;
+    HttpHeaders.prototype.set = function (headerKey, headerValue) {
+        var lowercasedKey = headerKey.toLowerCase();
+        if (lowercasedKey === 'x-airtable-user-agent') {
+            lowercasedKey = 'user-agent';
+            headerKey = 'User-Agent';
         }
-
-        result[headerKey] = headerDefinition.headerValue;
-    });
-    return result;
-};
-
+        this._headersByLowercasedKey[lowercasedKey] = {
+            headerKey: headerKey,
+            headerValue: headerValue,
+        };
+    };
+    HttpHeaders.prototype.toJSON = function () {
+        var result = {};
+        forEach_1.default(this._headersByLowercasedKey, function (headerDefinition, lowercasedKey) {
+            var headerKey;
+            /* istanbul ignore next */
+            if (isBrowser && lowercasedKey === 'user-agent') {
+                // Some browsers do not allow overriding the user agent.
+                // https://github.com/Airtable/airtable.js/issues/52
+                headerKey = 'X-Airtable-User-Agent';
+            }
+            else {
+                headerKey = headerDefinition.headerKey;
+            }
+            result[headerKey] = headerDefinition.headerValue;
+        });
+        return result;
+    };
+    return HttpHeaders;
+}());
 module.exports = HttpHeaders;
 
-},{"lodash/forEach":166}],10:[function(require,module,exports){
+},{"lodash/forEach":167}],10:[function(require,module,exports){
 module.exports={
     "INITIAL_RETRY_DELAY_IF_RATE_LIMITED": 5000,
     "MAX_RETRY_DELAY_IF_RATE_LIMITED": 600000
 }
 
 },{}],11:[function(require,module,exports){
-'use strict';
-
-var isArray = require('lodash/isArray');
-var forEach = require('lodash/forEach');
-var isNil = require('lodash/isNil');
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var isArray_1 = __importDefault(require("lodash/isArray"));
+var forEach_1 = __importDefault(require("lodash/forEach"));
+var isNil_1 = __importDefault(require("lodash/isNil"));
 // Adapted from jQuery.param:
 // https://github.com/jquery/jquery/blob/2.2-stable/src/serialize.js
 function buildParams(prefix, obj, addFn) {
-    if (isArray(obj)) {
+    if (isArray_1.default(obj)) {
         // Serialize array item.
-        forEach(obj, function(value, index) {
+        forEach_1.default(obj, function (value, index) {
             if (/\[\]$/.test(prefix)) {
                 // Treat each array item as a scalar.
                 addFn(prefix, value);
-            } else {
+            }
+            else {
                 // Item is non-scalar (array or object), encode its numeric index.
-                buildParams(
-                    prefix + '[' + (typeof value === 'object' && value !== null ? index : '') + ']',
-                    value,
-                    addFn
-                );
+                buildParams(prefix + "[" + (typeof value === 'object' && value !== null ? index : '') + "]", value, addFn);
             }
         });
-    } else if (typeof obj === 'object') {
+    }
+    else if (typeof obj === 'object') {
         // Serialize object item.
-        forEach(obj, function(value, key) {
-            buildParams(prefix + '[' + key + ']', value, addFn);
+        forEach_1.default(obj, function (value, key) {
+            buildParams(prefix + "[" + key + "]", value, addFn);
         });
-    } else {
+    }
+    else {
         // Serialize scalar item.
         addFn(prefix, obj);
     }
 }
-
 function objectToQueryParamString(obj) {
     var parts = [];
-    var addFn = function(key, value) {
-        value = isNil(value) ? '' : value;
-        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+    var addFn = function (key, value) {
+        value = isNil_1.default(value) ? '' : value;
+        parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
     };
-
-    forEach(obj, function(value, key) {
+    forEach_1.default(obj, function (value, key) {
         buildParams(key, value, addFn);
     });
-
     return parts.join('&').replace(/%20/g, '+');
 }
-
 module.exports = objectToQueryParamString;
 
-},{"lodash/forEach":166,"lodash/isArray":172,"lodash/isNil":178}],12:[function(require,module,exports){
+},{"lodash/forEach":167,"lodash/isArray":173,"lodash/isNil":179}],12:[function(require,module,exports){
+"use strict";
 module.exports = "0.9.0";
 
 },{}],13:[function(require,module,exports){
-'use strict';
-
-var isPlainObject = require('lodash/isPlainObject');
-var isFunction = require('lodash/isFunction');
-var isString = require('lodash/isString');
-var isNumber = require('lodash/isNumber');
-var includes = require('lodash/includes');
-var clone = require('lodash/clone');
-var forEach = require('lodash/forEach');
-var map = require('lodash/map');
-var keys = require('lodash/keys');
-
-var check = require('./typecheck');
-var Record = require('./record');
-var callbackToPromise = require('./callback_to_promise');
-var has = require('./has');
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var isFunction_1 = __importDefault(require("lodash/isFunction"));
+var clone_1 = __importDefault(require("lodash/clone"));
+var forEach_1 = __importDefault(require("lodash/forEach"));
+var map_1 = __importDefault(require("lodash/map"));
+var keys_1 = __importDefault(require("lodash/keys"));
+var record_1 = __importDefault(require("./record"));
+var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
+var has_1 = __importDefault(require("./has"));
+var query_params_1 = require("./query_params");
 /**
  * Builds a query object. Won't fetch until `firstPage` or
  * or `eachPage` is called.
@@ -498,34 +458,67 @@ var has = require('./has');
  * Params should be validated prior to being passed to Query
  * with `Query.validateParams`.
  */
-function Query(table, params) {
-    this._table = table;
-    this._params = params;
-
-    this.firstPage = callbackToPromise(firstPage, this);
-    this.eachPage = callbackToPromise(eachPage, this, 1);
-    this.all = callbackToPromise(all, this);
-}
-
+var Query = /** @class */ (function () {
+    function Query(table, params) {
+        this._table = table;
+        this._params = params;
+        this.firstPage = callback_to_promise_1.default(firstPage, this);
+        this.eachPage = callback_to_promise_1.default(eachPage, this, 1);
+        this.all = callback_to_promise_1.default(all, this);
+    }
+    /**
+     * Validates the parameters for passing to the Query constructor.
+     *
+     * @params {object} params parameters to validate
+     *
+     * @return an object with two keys:
+     *  validParams: the object that should be passed to the constructor.
+     *  ignoredKeys: a list of keys that will be ignored.
+     *  errors: a list of error messages.
+     */
+    Query.validateParams = function (params) {
+        var validParams = {};
+        var ignoredKeys = [];
+        var errors = [];
+        forEach_1.default(keys_1.default(params), function (key) {
+            var value = params[key];
+            if (has_1.default(Query.paramValidators, key)) {
+                var validator = Query.paramValidators[key];
+                var validationResult = validator(value);
+                if (validationResult.pass) {
+                    validParams[key] = value;
+                }
+                else {
+                    errors.push(validationResult.error);
+                }
+            }
+            else {
+                ignoredKeys.push(key);
+            }
+        });
+        return {
+            validParams: validParams,
+            ignoredKeys: ignoredKeys,
+            errors: errors,
+        };
+    };
+    Query.paramValidators = query_params_1.paramValidators;
+    return Query;
+}());
 /**
  * Fetches the first page of results for the query asynchronously,
  * then calls `done(error, records)`.
  */
 function firstPage(done) {
-    if (!isFunction(done)) {
+    if (!isFunction_1.default(done)) {
         throw new Error('The first parameter to `firstPage` must be a function');
     }
-
-    this.eachPage(
-        function(records) {
-            done(null, records);
-        },
-        function(error) {
-            done(error, null);
-        }
-    );
+    this.eachPage(function (records) {
+        done(null, records);
+    }, function (error) {
+        done(error, null);
+    });
 }
-
 /**
  * Fetches each page of results for the query asynchronously.
  *
@@ -537,309 +530,207 @@ function firstPage(done) {
  * `done(error)`.
  */
 function eachPage(pageCallback, done) {
-    if (!isFunction(pageCallback)) {
+    var _this = this;
+    if (!isFunction_1.default(pageCallback)) {
         throw new Error('The first parameter to `eachPage` must be a function');
     }
-
-    if (!isFunction(done) && done !== void 0) {
+    if (!isFunction_1.default(done) && done !== void 0) {
         throw new Error('The second parameter to `eachPage` must be a function or undefined');
     }
-
-    var that = this;
-    var path = '/' + this._table._urlEncodedNameOrId();
-    var params = clone(this._params);
-
-    var inner = function() {
-        that._table._base.runAction('get', path, params, null, function(err, response, result) {
+    var path = "/" + this._table._urlEncodedNameOrId();
+    var params = clone_1.default(this._params);
+    var inner = function () {
+        _this._table._base.runAction('get', path, params, null, function (err, response, result) {
             if (err) {
                 done(err, null);
-            } else {
-                var next;
+            }
+            else {
+                var next = void 0;
                 if (result.offset) {
                     params.offset = result.offset;
                     next = inner;
-                } else {
-                    next = function() {
+                }
+                else {
+                    next = function () {
                         done(null);
                     };
                 }
-
-                var records = map(result.records, function(recordJson) {
-                    return new Record(that._table, null, recordJson);
+                var records = map_1.default(result.records, function (recordJson) {
+                    return new record_1.default(_this._table, null, recordJson);
                 });
-
                 pageCallback(records, next);
             }
         });
     };
-
     inner();
 }
-
 /**
  * Fetches all pages of results asynchronously. May take a long time.
  */
 function all(done) {
-    if (!isFunction(done)) {
+    if (!isFunction_1.default(done)) {
         throw new Error('The first parameter to `all` must be a function');
     }
-
     var allRecords = [];
-    this.eachPage(
-        function(pageRecords, fetchNextPage) {
-            allRecords.push.apply(allRecords, pageRecords);
-            fetchNextPage();
-        },
-        function(err) {
-            if (err) {
-                done(err, null);
-            } else {
-                done(null, allRecords);
-            }
+    this.eachPage(function (pageRecords, fetchNextPage) {
+        allRecords.push.apply(allRecords, pageRecords);
+        fetchNextPage();
+    }, function (err) {
+        if (err) {
+            done(err, null);
         }
-    );
-}
-
-Query.paramValidators = {
-    fields: check(
-        check.isArrayOf(isString),
-        'the value for `fields` should be an array of strings'
-    ),
-
-    filterByFormula: check(isString, 'the value for `filterByFormula` should be a string'),
-
-    maxRecords: check(isNumber, 'the value for `maxRecords` should be a number'),
-
-    pageSize: check(isNumber, 'the value for `pageSize` should be a number'),
-
-    sort: check(
-        check.isArrayOf(function(obj) {
-            return (
-                isPlainObject(obj) &&
-                isString(obj.field) &&
-                (obj.direction === void 0 || includes(['asc', 'desc'], obj.direction))
-            );
-        }),
-        'the value for `sort` should be an array of sort objects. ' +
-            'Each sort object must have a string `field` value, and an optional ' +
-            '`direction` value that is "asc" or "desc".'
-    ),
-
-    view: check(isString, 'the value for `view` should be a string'),
-
-    cellFormat: check(function(cellFormat) {
-        return isString(cellFormat) && includes(['json', 'string'], cellFormat);
-    }, 'the value for `cellFormat` should be "json" or "string"'),
-
-    timeZone: check(isString, 'the value for `timeZone` should be a string'),
-
-    userLocale: check(isString, 'the value for `userLocale` should be a string'),
-};
-
-/**
- * Validates the parameters for passing to the Query constructor.
- *
- * @params {object} params parameters to validate
- *
- * @return an object with two keys:
- *  validParams: the object that should be passed to the constructor.
- *  ignoredKeys: a list of keys that will be ignored.
- *  errors: a list of error messages.
- */
-Query.validateParams = function validateParams(params) {
-    var validParams = {};
-    var ignoredKeys = [];
-    var errors = [];
-
-    forEach(keys(params), function(key) {
-        var value = params[key];
-        if (has(Query.paramValidators, key)) {
-            var validator = Query.paramValidators[key];
-            var validationResult = validator(value);
-            if (validationResult.pass) {
-                validParams[key] = value;
-            } else {
-                errors.push(validationResult.error);
-            }
-        } else {
-            ignoredKeys.push(key);
+        else {
+            done(null, allRecords);
         }
     });
-
-    return {
-        validParams: validParams,
-        ignoredKeys: ignoredKeys,
-        errors: errors,
-    };
-};
-
+}
 module.exports = Query;
 
-},{"./callback_to_promise":4,"./has":8,"./record":14,"./typecheck":17,"lodash/clone":163,"lodash/forEach":166,"lodash/includes":170,"lodash/isFunction":175,"lodash/isNumber":179,"lodash/isPlainObject":182,"lodash/isString":184,"lodash/keys":187,"lodash/map":189}],14:[function(require,module,exports){
-'use strict';
-
-var assign = require('lodash/assign');
-
-var callbackToPromise = require('./callback_to_promise');
-
-function Record(table, recordId, recordJson) {
-    this._table = table;
-    this.id = recordId || recordJson.id;
-    this.setRawJson(recordJson);
-
-    this.save = callbackToPromise(save, this);
-    this.patchUpdate = callbackToPromise(patchUpdate, this);
-    this.putUpdate = callbackToPromise(putUpdate, this);
-    this.destroy = callbackToPromise(destroy, this);
-    this.fetch = callbackToPromise(fetch, this);
-
-    this.updateFields = this.patchUpdate;
-    this.replaceFields = this.putUpdate;
-}
-
-Record.prototype.getId = function() {
-    return this.id;
+},{"./callback_to_promise":4,"./has":8,"./query_params":14,"./record":15,"lodash/clone":164,"lodash/forEach":167,"lodash/isFunction":176,"lodash/keys":188,"lodash/map":190}],14:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.paramValidators = void 0;
+var typecheck_1 = __importDefault(require("./typecheck"));
+var isString_1 = __importDefault(require("lodash/isString"));
+var isNumber_1 = __importDefault(require("lodash/isNumber"));
+var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
+var includes_1 = __importDefault(require("lodash/includes"));
+exports.paramValidators = {
+    fields: typecheck_1.default(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `fields` should be an array of strings'),
+    filterByFormula: typecheck_1.default(isString_1.default, 'the value for `filterByFormula` should be a string'),
+    maxRecords: typecheck_1.default(isNumber_1.default, 'the value for `maxRecords` should be a number'),
+    pageSize: typecheck_1.default(isNumber_1.default, 'the value for `pageSize` should be a number'),
+    offset: typecheck_1.default(isNumber_1.default, 'the value for `offset` should be a number'),
+    sort: typecheck_1.default(typecheck_1.default.isArrayOf(function (obj) {
+        return (isPlainObject_1.default(obj) &&
+            isString_1.default(obj.field) &&
+            (obj.direction === void 0 || includes_1.default(['asc', 'desc'], obj.direction)));
+    }), 'the value for `sort` should be an array of sort objects. ' +
+        'Each sort object must have a string `field` value, and an optional ' +
+        '`direction` value that is "asc" or "desc".'),
+    view: typecheck_1.default(isString_1.default, 'the value for `view` should be a string'),
+    cellFormat: typecheck_1.default(function (cellFormat) {
+        return isString_1.default(cellFormat) && includes_1.default(['json', 'string'], cellFormat);
+    }, 'the value for `cellFormat` should be "json" or "string"'),
+    timeZone: typecheck_1.default(isString_1.default, 'the value for `timeZone` should be a string'),
+    userLocale: typecheck_1.default(isString_1.default, 'the value for `userLocale` should be a string'),
 };
 
-Record.prototype.get = function(columnName) {
-    return this.fields[columnName];
+},{"./typecheck":18,"lodash/includes":171,"lodash/isNumber":180,"lodash/isPlainObject":183,"lodash/isString":185}],15:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-
-Record.prototype.set = function(columnName, columnValue) {
-    this.fields[columnName] = columnValue;
-};
-
+var assign_1 = __importDefault(require("lodash/assign"));
+var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
+var Record = /** @class */ (function () {
+    function Record(table, recordId, recordJson) {
+        this._table = table;
+        this.id = recordId || recordJson.id;
+        this.setRawJson(recordJson);
+        this.save = callback_to_promise_1.default(save, this);
+        this.patchUpdate = callback_to_promise_1.default(patchUpdate, this);
+        this.putUpdate = callback_to_promise_1.default(putUpdate, this);
+        this.destroy = callback_to_promise_1.default(destroy, this);
+        this.fetch = callback_to_promise_1.default(fetch, this);
+        this.updateFields = this.patchUpdate;
+        this.replaceFields = this.putUpdate;
+    }
+    Record.prototype.getId = function () {
+        return this.id;
+    };
+    Record.prototype.get = function (columnName) {
+        return this.fields[columnName];
+    };
+    Record.prototype.set = function (columnName, columnValue) {
+        this.fields[columnName] = columnValue;
+    };
+    Record.prototype.setRawJson = function (rawJson) {
+        this._rawJson = rawJson;
+        this.fields = (this._rawJson && this._rawJson.fields) || {};
+    };
+    return Record;
+}());
 function save(done) {
     this.putUpdate(this.fields, done);
 }
-
 function patchUpdate(cellValuesByName, opts, done) {
-    var that = this;
+    var _this = this;
     if (!done) {
         done = opts;
         opts = {};
     }
-    var updateBody = assign(
-        {
-            fields: cellValuesByName,
-        },
-        opts
-    );
-
-    this._table._base.runAction(
-        'patch',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
-        {},
-        updateBody,
-        function(err, response, results) {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            that.setRawJson(results);
-            done(null, that);
+    var updateBody = assign_1.default({
+        fields: cellValuesByName,
+    }, opts);
+    this._table._base.runAction('patch', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, updateBody, function (err, response, results) {
+        if (err) {
+            done(err);
+            return;
         }
-    );
+        _this.setRawJson(results);
+        done(null, _this);
+    });
 }
-
 function putUpdate(cellValuesByName, opts, done) {
-    var that = this;
+    var _this = this;
     if (!done) {
         done = opts;
         opts = {};
     }
-    var updateBody = assign(
-        {
-            fields: cellValuesByName,
-        },
-        opts
-    );
-    this._table._base.runAction(
-        'put',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
-        {},
-        updateBody,
-        function(err, response, results) {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            that.setRawJson(results);
-            done(null, that);
+    var updateBody = assign_1.default({
+        fields: cellValuesByName,
+    }, opts);
+    this._table._base.runAction('put', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, updateBody, function (err, response, results) {
+        if (err) {
+            done(err);
+            return;
         }
-    );
+        _this.setRawJson(results);
+        done(null, _this);
+    });
 }
-
 function destroy(done) {
-    var that = this;
-    this._table._base.runAction(
-        'delete',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
-        {},
-        null,
-        function(err) {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            done(null, that);
+    var _this = this;
+    this._table._base.runAction('delete', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, null, function (err) {
+        if (err) {
+            done(err);
+            return;
         }
-    );
+        done(null, _this);
+    });
 }
-
 function fetch(done) {
-    var that = this;
-    this._table._base.runAction(
-        'get',
-        '/' + this._table._urlEncodedNameOrId() + '/' + this.id,
-        {},
-        null,
-        function(err, response, results) {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            that.setRawJson(results);
-            done(null, that);
+    var _this = this;
+    this._table._base.runAction('get', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, null, function (err, response, results) {
+        if (err) {
+            done(err);
+            return;
         }
-    );
+        _this.setRawJson(results);
+        done(null, _this);
+    });
 }
-
-Record.prototype.setRawJson = function(rawJson) {
-    this._rawJson = rawJson;
-    this.fields = (this._rawJson && this._rawJson.fields) || {};
-};
-
 module.exports = Record;
 
-},{"./callback_to_promise":4,"lodash/assign":162}],15:[function(require,module,exports){
-'use strict';
-
-var exponentialBackoffWithJitter = require('./exponential_backoff_with_jitter');
-var objectToQueryParamString = require('./object_to_query_param_string');
-var packageVersion = require('./package_version');
-var fetch = require('./fetch');
-var AbortController = require('./abort-controller');
-
-var userAgent = 'Airtable.js/' + packageVersion;
-
+},{"./callback_to_promise":4,"lodash/assign":163}],16:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var exponential_backoff_with_jitter_1 = __importDefault(require("./exponential_backoff_with_jitter"));
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
+var package_version_1 = __importDefault(require("./package_version"));
+var fetch_1 = __importDefault(require("./fetch"));
+var abort_controller_1 = __importDefault(require("./abort-controller"));
+var userAgent = "Airtable.js/" + package_version_1.default;
 function runAction(base, method, path, queryParams, bodyData, callback, numAttempts) {
-    var url =
-        base._airtable._endpointUrl +
-        '/v' +
-        base._airtable._apiVersionMajor +
-        '/' +
-        base._id +
-        path +
-        '?' +
-        objectToQueryParamString(queryParams);
-
+    var url = base._airtable._endpointUrl + "/v" + base._airtable._apiVersionMajor + "/" + base._id + path + "?" + object_to_query_param_string_1.default(queryParams);
     var headers = {
-        authorization: 'Bearer ' + base._airtable._apiKey,
+        authorization: "Bearer " + base._airtable._apiKey,
         'x-api-version': base._airtable._apiVersion,
         'x-airtable-application-id': base.getId(),
         'content-type': 'application/json',
@@ -849,368 +740,295 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
     // https://github.com/Airtable/airtable.js/issues/52
     if (isBrowser) {
         headers['x-airtable-user-agent'] = userAgent;
-    } else {
+    }
+    else {
         headers['User-Agent'] = userAgent;
     }
-
-    var controller = new AbortController();
+    var controller = new abort_controller_1.default();
     var normalizedMethod = method.toUpperCase();
     var options = {
         method: normalizedMethod,
         headers: headers,
         signal: controller.signal,
     };
-
     if (bodyData !== null) {
         if (normalizedMethod === 'GET' || normalizedMethod === 'HEAD') {
             console.warn('body argument to runAction are ignored with GET or HEAD requests');
-        } else {
+        }
+        else {
             options.body = JSON.stringify(bodyData);
         }
     }
-
-    var timeout = setTimeout(function() {
+    var timeout = setTimeout(function () {
         controller.abort();
     }, base._airtable.requestTimeout);
-
-    fetch(url, options)
-        .then(function(resp) {
-            clearTimeout(timeout);
-            if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {
-                var backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
-                setTimeout(function() {
-                    runAction(base, method, path, queryParams, bodyData, callback, numAttempts + 1);
-                }, backoffDelayMs);
-            } else {
-                resp.json()
-                    .then(function(body) {
-                        var error = base._checkStatusForError(resp.status, body);
-                        // Ensure Response interface matches interface from
-                        // `request` Response object
-                        var r = {};
-                        Object.keys(resp).forEach(function(property) {
-                            r[property] = resp[property];
-                        });
-                        r.body = body;
-                        r.statusCode = resp.status;
-                        callback(error, r, body);
-                    })
-                    .catch(function() {
-                        callback(base._checkStatusForError(resp.status));
-                    });
-            }
-        })
-        .catch(function(error) {
-            clearTimeout(timeout);
-            callback(error);
-        });
+    fetch_1.default(url, options)
+        .then(function (resp) {
+        clearTimeout(timeout);
+        if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {
+            var backoffDelayMs = exponential_backoff_with_jitter_1.default(numAttempts);
+            setTimeout(function () {
+                runAction(base, method, path, queryParams, bodyData, callback, numAttempts + 1);
+            }, backoffDelayMs);
+        }
+        else {
+            resp.json()
+                .then(function (body) {
+                var error = base._checkStatusForError(resp.status, body);
+                // Ensure Response interface matches interface from
+                // `request` Response object
+                var r = {};
+                Object.keys(resp).forEach(function (property) {
+                    r[property] = resp[property];
+                });
+                r.body = body;
+                r.statusCode = resp.status;
+                callback(error, r, body);
+            })
+                .catch(function () {
+                callback(base._checkStatusForError(resp.status));
+            });
+        }
+    })
+        .catch(function (error) {
+        clearTimeout(timeout);
+        callback(error);
+    });
 }
-
 module.exports = runAction;
 
-},{"./abort-controller":1,"./exponential_backoff_with_jitter":6,"./fetch":7,"./object_to_query_param_string":11,"./package_version":12}],16:[function(require,module,exports){
-'use strict';
-
-var isArray = require('lodash/isArray');
-var isPlainObject = require('lodash/isPlainObject');
-var assign = require('lodash/assign');
-var forEach = require('lodash/forEach');
-var map = require('lodash/map');
-
-var deprecate = require('./deprecate');
-var Query = require('./query');
-var Record = require('./record');
-var callbackToPromise = require('./callback_to_promise');
-
-function Table(base, tableId, tableName) {
-    if (!tableId && !tableName) {
-        throw new Error('Table name or table ID is required');
-    }
-
-    this._base = base;
-    this.id = tableId;
-    this.name = tableName;
-
-    // Public API
-    this.find = callbackToPromise(this._findRecordById, this);
-    this.select = this._selectRecords.bind(this);
-    this.create = callbackToPromise(this._createRecords, this);
-    this.update = callbackToPromise(this._updateRecords.bind(this, false), this);
-    this.replace = callbackToPromise(this._updateRecords.bind(this, true), this);
-    this.destroy = callbackToPromise(this._destroyRecord, this);
-
-    // Deprecated API
-    this.list = deprecate(
-        this._listRecords.bind(this),
-        'table.list',
-        'Airtable: `list()` is deprecated. Use `select()` instead.'
-    );
-    this.forEach = deprecate(
-        this._forEachRecord.bind(this),
-        'table.forEach',
-        'Airtable: `forEach()` is deprecated. Use `select()` instead.'
-    );
-}
-
-Table.prototype._findRecordById = function(recordId, done) {
-    var record = new Record(this, recordId);
-    record.fetch(done);
+},{"./abort-controller":1,"./exponential_backoff_with_jitter":6,"./fetch":7,"./object_to_query_param_string":11,"./package_version":12}],17:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-
-Table.prototype._selectRecords = function(params) {
-    if (params === void 0) {
-        params = {};
-    }
-
-    if (arguments.length > 1) {
-        console.warn(
-            'Airtable: `select` takes only one parameter, but it was given ' +
-                arguments.length +
-                ' parameters. ' +
-                'Use `eachPage` or `firstPage` to fetch records.'
-        );
-    }
-
-    if (isPlainObject(params)) {
-        var validationResults = Query.validateParams(params);
-
-        if (validationResults.errors.length) {
-            var formattedErrors = map(validationResults.errors, function(error) {
-                return '  * ' + error;
-            });
-
-            throw new Error(
-                'Airtable: invalid parameters for `select`:\n' + formattedErrors.join('\n')
-            );
+var isArray_1 = __importDefault(require("lodash/isArray"));
+var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
+var assign_1 = __importDefault(require("lodash/assign"));
+var forEach_1 = __importDefault(require("lodash/forEach"));
+var map_1 = __importDefault(require("lodash/map"));
+var deprecate_1 = __importDefault(require("./deprecate"));
+var query_1 = __importDefault(require("./query"));
+var record_1 = __importDefault(require("./record"));
+var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
+var Table = /** @class */ (function () {
+    function Table(base, tableId, tableName) {
+        if (!tableId && !tableName) {
+            throw new Error('Table name or table ID is required');
         }
-
-        if (validationResults.ignoredKeys.length) {
-            console.warn(
-                'Airtable: the following parameters to `select` will be ignored: ' +
-                    validationResults.ignoredKeys.join(', ')
-            );
+        this._base = base;
+        this.id = tableId;
+        this.name = tableName;
+        // Public API
+        this.find = callback_to_promise_1.default(this._findRecordById, this);
+        this.select = this._selectRecords.bind(this);
+        this.create = callback_to_promise_1.default(this._createRecords, this);
+        this.update = callback_to_promise_1.default(this._updateRecords.bind(this, false), this);
+        this.replace = callback_to_promise_1.default(this._updateRecords.bind(this, true), this);
+        this.destroy = callback_to_promise_1.default(this._destroyRecord, this);
+        // Deprecated API
+        this.list = deprecate_1.default(this._listRecords.bind(this), 'table.list', 'Airtable: `list()` is deprecated. Use `select()` instead.');
+        this.forEach = deprecate_1.default(this._forEachRecord.bind(this), 'table.forEach', 'Airtable: `forEach()` is deprecated. Use `select()` instead.');
+    }
+    Table.prototype._findRecordById = function (recordId, done) {
+        var record = new record_1.default(this, recordId);
+        record.fetch(done);
+    };
+    Table.prototype._selectRecords = function (params) {
+        if (params === void 0) {
+            params = {};
         }
-
-        return new Query(this, validationResults.validParams);
-    } else {
-        throw new Error(
-            'Airtable: the parameter for `select` should be a plain object or undefined.'
-        );
-    }
-};
-
-Table.prototype._urlEncodedNameOrId = function() {
-    return this.id || encodeURIComponent(this.name);
-};
-
-Table.prototype._createRecords = function(recordsData, optionalParameters, done) {
-    var that = this;
-    var isCreatingMultipleRecords = isArray(recordsData);
-
-    if (!done) {
-        done = optionalParameters;
-        optionalParameters = {};
-    }
-    var requestData;
-    if (isCreatingMultipleRecords) {
-        requestData = {records: recordsData};
-    } else {
-        requestData = {fields: recordsData};
-    }
-    assign(requestData, optionalParameters);
-    this._base.runAction('post', '/' + that._urlEncodedNameOrId() + '/', {}, requestData, function(
-        err,
-        resp,
-        body
-    ) {
-        if (err) {
-            done(err);
-            return;
+        if (arguments.length > 1) {
+            console.warn("Airtable: `select` takes only one parameter, but it was given " + arguments.length + " parameters. Use `eachPage` or `firstPage` to fetch records.");
         }
-
-        var result;
+        if (isPlainObject_1.default(params)) {
+            var validationResults = query_1.default.validateParams(params);
+            if (validationResults.errors.length) {
+                var formattedErrors = map_1.default(validationResults.errors, function (error) {
+                    return "  * " + error;
+                });
+                throw new Error("Airtable: invalid parameters for `select`:\n" + formattedErrors.join('\n'));
+            }
+            if (validationResults.ignoredKeys.length) {
+                console.warn("Airtable: the following parameters to `select` will be ignored: " + validationResults.ignoredKeys.join(', '));
+            }
+            return new query_1.default(this, validationResults.validParams);
+        }
+        else {
+            throw new Error('Airtable: the parameter for `select` should be a plain object or undefined.');
+        }
+    };
+    Table.prototype._urlEncodedNameOrId = function () {
+        return this.id || encodeURIComponent(this.name);
+    };
+    Table.prototype._createRecords = function (recordsData, optionalParameters, done) {
+        var _this = this;
+        var isCreatingMultipleRecords = isArray_1.default(recordsData);
+        if (!done) {
+            done = optionalParameters;
+            optionalParameters = {};
+        }
+        var requestData;
         if (isCreatingMultipleRecords) {
-            result = body.records.map(function(record) {
-                return new Record(that, record.id, record);
-            });
-        } else {
-            result = new Record(that, body.id, body);
+            requestData = { records: recordsData };
         }
-        done(null, result);
-    });
-};
-
-Table.prototype._updateRecords = function(
-    isDestructiveUpdate,
-    recordsDataOrRecordId,
-    recordDataOrOptsOrDone,
-    optsOrDone,
-    done
-) {
-    var opts;
-
-    if (isArray(recordsDataOrRecordId)) {
-        var that = this;
-        var recordsData = recordsDataOrRecordId;
-        opts = isPlainObject(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
-        done = optsOrDone || recordDataOrOptsOrDone;
-
-        var method = isDestructiveUpdate ? 'put' : 'patch';
-        var requestData = assign({records: recordsData}, opts);
-        this._base.runAction(
-            method,
-            '/' + this._urlEncodedNameOrId() + '/',
-            {},
-            requestData,
-            function(err, resp, body) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-
-                var result = body.records.map(function(record) {
-                    return new Record(that, record.id, record);
-                });
-                done(null, result);
-            }
-        );
-    } else {
-        var recordId = recordsDataOrRecordId;
-        var recordData = recordDataOrOptsOrDone;
-        opts = isPlainObject(optsOrDone) ? optsOrDone : {};
-        done = done || optsOrDone;
-
-        var record = new Record(this, recordId);
-        if (isDestructiveUpdate) {
-            record.putUpdate(recordData, opts, done);
-        } else {
-            record.patchUpdate(recordData, opts, done);
+        else {
+            requestData = { fields: recordsData };
         }
-    }
-};
-
-Table.prototype._destroyRecord = function(recordIdsOrId, done) {
-    if (isArray(recordIdsOrId)) {
-        var that = this;
-        var queryParams = {records: recordIdsOrId};
-        this._base.runAction(
-            'delete',
-            '/' + this._urlEncodedNameOrId(),
-            queryParams,
-            null,
-            function(err, response, results) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-
-                var records = map(results.records, function(recordJson) {
-                    return new Record(that, recordJson.id, null);
-                });
-                done(null, records);
-            }
-        );
-    } else {
-        var record = new Record(this, recordIdsOrId);
-        record.destroy(done);
-    }
-};
-
-Table.prototype._listRecords = function(limit, offset, opts, done) {
-    var that = this;
-
-    if (!done) {
-        done = opts;
-        opts = {};
-    }
-    var listRecordsParameters = assign(
-        {
-            limit: limit,
-            offset: offset,
-        },
-        opts
-    );
-
-    this._base.runAction(
-        'get',
-        '/' + this._urlEncodedNameOrId() + '/',
-        listRecordsParameters,
-        null,
-        function(err, response, results) {
+        assign_1.default(requestData, optionalParameters);
+        this._base.runAction('post', "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
             if (err) {
                 done(err);
                 return;
             }
-
-            var records = map(results.records, function(recordJson) {
-                return new Record(that, null, recordJson);
-            });
-            done(null, records, results.offset);
-        }
-    );
-};
-
-Table.prototype._forEachRecord = function(opts, callback, done) {
-    if (arguments.length === 2) {
-        done = callback;
-        callback = opts;
-        opts = {};
-    }
-    var that = this;
-    var limit = Table.__recordsPerPageForIteration || 100;
-    var offset = null;
-
-    var nextPage = function() {
-        that._listRecords(limit, offset, opts, function(err, page, newOffset) {
-            if (err) {
-                done(err);
-                return;
+            var result;
+            if (isCreatingMultipleRecords) {
+                result = body.records.map(function (record) {
+                    return new record_1.default(_this, record.id, record);
+                });
             }
-
-            forEach(page, callback);
-
-            if (newOffset) {
-                offset = newOffset;
-                nextPage();
-            } else {
-                done();
+            else {
+                result = new record_1.default(_this, body.id, body);
             }
+            done(null, result);
         });
     };
-    nextPage();
-};
-
+    Table.prototype._updateRecords = function (isDestructiveUpdate, recordsDataOrRecordId, recordDataOrOptsOrDone, optsOrDone, done) {
+        var _this = this;
+        var opts;
+        if (isArray_1.default(recordsDataOrRecordId)) {
+            var recordsData = recordsDataOrRecordId;
+            opts = isPlainObject_1.default(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
+            done = optsOrDone || recordDataOrOptsOrDone;
+            var method = isDestructiveUpdate ? 'put' : 'patch';
+            var requestData = assign_1.default({ records: recordsData }, opts);
+            this._base.runAction(method, "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, _a) {
+                var records = _a.records;
+                if (err) {
+                    done(err);
+                    return;
+                }
+                var result = records.map(function (record) {
+                    return new record_1.default(_this, record.id, record);
+                });
+                done(null, result);
+            });
+        }
+        else {
+            var recordId = recordsDataOrRecordId;
+            var recordData = recordDataOrOptsOrDone;
+            opts = isPlainObject_1.default(optsOrDone) ? optsOrDone : {};
+            done = done || optsOrDone;
+            var record = new record_1.default(this, recordId);
+            if (isDestructiveUpdate) {
+                record.putUpdate(recordData, opts, done);
+            }
+            else {
+                record.patchUpdate(recordData, opts, done);
+            }
+        }
+    };
+    Table.prototype._destroyRecord = function (recordIdsOrId, done) {
+        var _this = this;
+        if (isArray_1.default(recordIdsOrId)) {
+            var queryParams = { records: recordIdsOrId };
+            this._base.runAction('delete', "/" + this._urlEncodedNameOrId(), queryParams, null, function (err, response, results) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                var records = map_1.default(results.records, function (_a) {
+                    var id = _a.id;
+                    return new record_1.default(_this, id, null);
+                });
+                done(null, records);
+            });
+        }
+        else {
+            var record = new record_1.default(this, recordIdsOrId);
+            record.destroy(done);
+        }
+    };
+    Table.prototype._listRecords = function (limit, offset, opts, done) {
+        var _this = this;
+        if (!done) {
+            done = opts;
+            opts = {};
+        }
+        var listRecordsParameters = assign_1.default({
+            limit: limit,
+            offset: offset,
+        }, opts);
+        this._base.runAction('get', "/" + this._urlEncodedNameOrId() + "/", listRecordsParameters, null, function (err, response, results) {
+            if (err) {
+                done(err);
+                return;
+            }
+            var records = map_1.default(results.records, function (recordJson) {
+                return new record_1.default(_this, null, recordJson);
+            });
+            done(null, records, results.offset);
+        });
+    };
+    Table.prototype._forEachRecord = function (opts, callback, done) {
+        var _this = this;
+        if (arguments.length === 2) {
+            done = callback;
+            callback = opts;
+            opts = {};
+        }
+        var limit = Table.__recordsPerPageForIteration || 100;
+        var offset = null;
+        var nextPage = function () {
+            _this._listRecords(limit, offset, opts, function (err, page, newOffset) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                forEach_1.default(page, callback);
+                if (newOffset) {
+                    offset = newOffset;
+                    nextPage();
+                }
+                else {
+                    done();
+                }
+            });
+        };
+        nextPage();
+    };
+    return Table;
+}());
 module.exports = Table;
 
-},{"./callback_to_promise":4,"./deprecate":5,"./query":13,"./record":14,"lodash/assign":162,"lodash/forEach":166,"lodash/isArray":172,"lodash/isPlainObject":182,"lodash/map":189}],17:[function(require,module,exports){
-'use strict';
-
-var includes = require('lodash/includes');
-var isArray = require('lodash/isArray');
-
+},{"./callback_to_promise":4,"./deprecate":5,"./query":13,"./record":15,"lodash/assign":163,"lodash/forEach":167,"lodash/isArray":173,"lodash/isPlainObject":183,"lodash/map":190}],18:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var includes_1 = __importDefault(require("lodash/includes"));
+var isArray_1 = __importDefault(require("lodash/isArray"));
 function check(fn, error) {
-    return function(value) {
+    return function (value) {
         if (fn(value)) {
-            return {pass: true};
-        } else {
-            return {pass: false, error: error};
+            return { pass: true };
+        }
+        else {
+            return { pass: false, error: error };
         }
     };
 }
-
 check.isOneOf = function isOneOf(options) {
-    return includes.bind(this, options);
+    return includes_1.default.bind(this, options);
 };
-
-check.isArrayOf = function(itemValidator) {
-    return function(value) {
-        return isArray(value) && value.every(itemValidator);
+check.isArrayOf = function (itemValidator) {
+    return function (value) {
+        return isArray_1.default(value) && value.every(itemValidator);
     };
 };
-
 module.exports = check;
 
-},{"lodash/includes":170,"lodash/isArray":172}],18:[function(require,module,exports){
+},{"lodash/includes":171,"lodash/isArray":173}],19:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -1659,9 +1477,9 @@ exports.AbortController = AbortController;
 exports.AbortSignal = AbortSignal;
 exports.abortableFetch = abortableFetchDecorator;
 
-},{}],19:[function(require,module,exports){
-
 },{}],20:[function(require,module,exports){
+
+},{}],21:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -1670,7 +1488,7 @@ var DataView = getNative(root, 'DataView');
 
 module.exports = DataView;
 
-},{"./_getNative":104,"./_root":147}],21:[function(require,module,exports){
+},{"./_getNative":105,"./_root":148}],22:[function(require,module,exports){
 var hashClear = require('./_hashClear'),
     hashDelete = require('./_hashDelete'),
     hashGet = require('./_hashGet'),
@@ -1704,7 +1522,7 @@ Hash.prototype.set = hashSet;
 
 module.exports = Hash;
 
-},{"./_hashClear":112,"./_hashDelete":113,"./_hashGet":114,"./_hashHas":115,"./_hashSet":116}],22:[function(require,module,exports){
+},{"./_hashClear":113,"./_hashDelete":114,"./_hashGet":115,"./_hashHas":116,"./_hashSet":117}],23:[function(require,module,exports){
 var listCacheClear = require('./_listCacheClear'),
     listCacheDelete = require('./_listCacheDelete'),
     listCacheGet = require('./_listCacheGet'),
@@ -1738,7 +1556,7 @@ ListCache.prototype.set = listCacheSet;
 
 module.exports = ListCache;
 
-},{"./_listCacheClear":127,"./_listCacheDelete":128,"./_listCacheGet":129,"./_listCacheHas":130,"./_listCacheSet":131}],23:[function(require,module,exports){
+},{"./_listCacheClear":128,"./_listCacheDelete":129,"./_listCacheGet":130,"./_listCacheHas":131,"./_listCacheSet":132}],24:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -1747,7 +1565,7 @@ var Map = getNative(root, 'Map');
 
 module.exports = Map;
 
-},{"./_getNative":104,"./_root":147}],24:[function(require,module,exports){
+},{"./_getNative":105,"./_root":148}],25:[function(require,module,exports){
 var mapCacheClear = require('./_mapCacheClear'),
     mapCacheDelete = require('./_mapCacheDelete'),
     mapCacheGet = require('./_mapCacheGet'),
@@ -1781,7 +1599,7 @@ MapCache.prototype.set = mapCacheSet;
 
 module.exports = MapCache;
 
-},{"./_mapCacheClear":132,"./_mapCacheDelete":133,"./_mapCacheGet":134,"./_mapCacheHas":135,"./_mapCacheSet":136}],25:[function(require,module,exports){
+},{"./_mapCacheClear":133,"./_mapCacheDelete":134,"./_mapCacheGet":135,"./_mapCacheHas":136,"./_mapCacheSet":137}],26:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -1790,7 +1608,7 @@ var Promise = getNative(root, 'Promise');
 
 module.exports = Promise;
 
-},{"./_getNative":104,"./_root":147}],26:[function(require,module,exports){
+},{"./_getNative":105,"./_root":148}],27:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -1799,7 +1617,7 @@ var Set = getNative(root, 'Set');
 
 module.exports = Set;
 
-},{"./_getNative":104,"./_root":147}],27:[function(require,module,exports){
+},{"./_getNative":105,"./_root":148}],28:[function(require,module,exports){
 var MapCache = require('./_MapCache'),
     setCacheAdd = require('./_setCacheAdd'),
     setCacheHas = require('./_setCacheHas');
@@ -1828,7 +1646,7 @@ SetCache.prototype.has = setCacheHas;
 
 module.exports = SetCache;
 
-},{"./_MapCache":24,"./_setCacheAdd":148,"./_setCacheHas":149}],28:[function(require,module,exports){
+},{"./_MapCache":25,"./_setCacheAdd":149,"./_setCacheHas":150}],29:[function(require,module,exports){
 var ListCache = require('./_ListCache'),
     stackClear = require('./_stackClear'),
     stackDelete = require('./_stackDelete'),
@@ -1857,7 +1675,7 @@ Stack.prototype.set = stackSet;
 
 module.exports = Stack;
 
-},{"./_ListCache":22,"./_stackClear":153,"./_stackDelete":154,"./_stackGet":155,"./_stackHas":156,"./_stackSet":157}],29:[function(require,module,exports){
+},{"./_ListCache":23,"./_stackClear":154,"./_stackDelete":155,"./_stackGet":156,"./_stackHas":157,"./_stackSet":158}],30:[function(require,module,exports){
 var root = require('./_root');
 
 /** Built-in value references. */
@@ -1865,7 +1683,7 @@ var Symbol = root.Symbol;
 
 module.exports = Symbol;
 
-},{"./_root":147}],30:[function(require,module,exports){
+},{"./_root":148}],31:[function(require,module,exports){
 var root = require('./_root');
 
 /** Built-in value references. */
@@ -1873,7 +1691,7 @@ var Uint8Array = root.Uint8Array;
 
 module.exports = Uint8Array;
 
-},{"./_root":147}],31:[function(require,module,exports){
+},{"./_root":148}],32:[function(require,module,exports){
 var getNative = require('./_getNative'),
     root = require('./_root');
 
@@ -1882,7 +1700,7 @@ var WeakMap = getNative(root, 'WeakMap');
 
 module.exports = WeakMap;
 
-},{"./_getNative":104,"./_root":147}],32:[function(require,module,exports){
+},{"./_getNative":105,"./_root":148}],33:[function(require,module,exports){
 /**
  * A faster alternative to `Function#apply`, this function invokes `func`
  * with the `this` binding of `thisArg` and the arguments of `args`.
@@ -1905,7 +1723,7 @@ function apply(func, thisArg, args) {
 
 module.exports = apply;
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 /**
  * A specialized version of `_.forEach` for arrays without support for
  * iteratee shorthands.
@@ -1929,7 +1747,7 @@ function arrayEach(array, iteratee) {
 
 module.exports = arrayEach;
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 /**
  * A specialized version of `_.filter` for arrays without support for
  * iteratee shorthands.
@@ -1956,7 +1774,7 @@ function arrayFilter(array, predicate) {
 
 module.exports = arrayFilter;
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var baseTimes = require('./_baseTimes'),
     isArguments = require('./isArguments'),
     isArray = require('./isArray'),
@@ -2007,7 +1825,7 @@ function arrayLikeKeys(value, inherited) {
 
 module.exports = arrayLikeKeys;
 
-},{"./_baseTimes":74,"./_isIndex":120,"./isArguments":171,"./isArray":172,"./isBuffer":174,"./isTypedArray":186}],36:[function(require,module,exports){
+},{"./_baseTimes":75,"./_isIndex":121,"./isArguments":172,"./isArray":173,"./isBuffer":175,"./isTypedArray":187}],37:[function(require,module,exports){
 /**
  * A specialized version of `_.map` for arrays without support for iteratee
  * shorthands.
@@ -2030,7 +1848,7 @@ function arrayMap(array, iteratee) {
 
 module.exports = arrayMap;
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 /**
  * Appends the elements of `values` to `array`.
  *
@@ -2052,7 +1870,7 @@ function arrayPush(array, values) {
 
 module.exports = arrayPush;
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /**
  * A specialized version of `_.some` for arrays without support for iteratee
  * shorthands.
@@ -2077,7 +1895,7 @@ function arraySome(array, predicate) {
 
 module.exports = arraySome;
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 var baseAssignValue = require('./_baseAssignValue'),
     eq = require('./eq');
 
@@ -2107,7 +1925,7 @@ function assignValue(object, key, value) {
 
 module.exports = assignValue;
 
-},{"./_baseAssignValue":43,"./eq":165}],40:[function(require,module,exports){
+},{"./_baseAssignValue":44,"./eq":166}],41:[function(require,module,exports){
 var eq = require('./eq');
 
 /**
@@ -2130,7 +1948,7 @@ function assocIndexOf(array, key) {
 
 module.exports = assocIndexOf;
 
-},{"./eq":165}],41:[function(require,module,exports){
+},{"./eq":166}],42:[function(require,module,exports){
 var copyObject = require('./_copyObject'),
     keys = require('./keys');
 
@@ -2149,7 +1967,7 @@ function baseAssign(object, source) {
 
 module.exports = baseAssign;
 
-},{"./_copyObject":88,"./keys":187}],42:[function(require,module,exports){
+},{"./_copyObject":89,"./keys":188}],43:[function(require,module,exports){
 var copyObject = require('./_copyObject'),
     keysIn = require('./keysIn');
 
@@ -2168,7 +1986,7 @@ function baseAssignIn(object, source) {
 
 module.exports = baseAssignIn;
 
-},{"./_copyObject":88,"./keysIn":188}],43:[function(require,module,exports){
+},{"./_copyObject":89,"./keysIn":189}],44:[function(require,module,exports){
 var defineProperty = require('./_defineProperty');
 
 /**
@@ -2195,7 +2013,7 @@ function baseAssignValue(object, key, value) {
 
 module.exports = baseAssignValue;
 
-},{"./_defineProperty":95}],44:[function(require,module,exports){
+},{"./_defineProperty":96}],45:[function(require,module,exports){
 var Stack = require('./_Stack'),
     arrayEach = require('./_arrayEach'),
     assignValue = require('./_assignValue'),
@@ -2362,7 +2180,7 @@ function baseClone(value, bitmask, customizer, key, object, stack) {
 
 module.exports = baseClone;
 
-},{"./_Stack":28,"./_arrayEach":33,"./_assignValue":39,"./_baseAssign":41,"./_baseAssignIn":42,"./_cloneBuffer":82,"./_copyArray":87,"./_copySymbols":89,"./_copySymbolsIn":90,"./_getAllKeys":100,"./_getAllKeysIn":101,"./_getTag":109,"./_initCloneArray":117,"./_initCloneByTag":118,"./_initCloneObject":119,"./isArray":172,"./isBuffer":174,"./isMap":177,"./isObject":180,"./isSet":183,"./keys":187}],45:[function(require,module,exports){
+},{"./_Stack":29,"./_arrayEach":34,"./_assignValue":40,"./_baseAssign":42,"./_baseAssignIn":43,"./_cloneBuffer":83,"./_copyArray":88,"./_copySymbols":90,"./_copySymbolsIn":91,"./_getAllKeys":101,"./_getAllKeysIn":102,"./_getTag":110,"./_initCloneArray":118,"./_initCloneByTag":119,"./_initCloneObject":120,"./isArray":173,"./isBuffer":175,"./isMap":178,"./isObject":181,"./isSet":184,"./keys":188}],46:[function(require,module,exports){
 var isObject = require('./isObject');
 
 /** Built-in value references. */
@@ -2394,7 +2212,7 @@ var baseCreate = (function() {
 
 module.exports = baseCreate;
 
-},{"./isObject":180}],46:[function(require,module,exports){
+},{"./isObject":181}],47:[function(require,module,exports){
 var baseForOwn = require('./_baseForOwn'),
     createBaseEach = require('./_createBaseEach');
 
@@ -2410,7 +2228,7 @@ var baseEach = createBaseEach(baseForOwn);
 
 module.exports = baseEach;
 
-},{"./_baseForOwn":49,"./_createBaseEach":93}],47:[function(require,module,exports){
+},{"./_baseForOwn":50,"./_createBaseEach":94}],48:[function(require,module,exports){
 /**
  * The base implementation of `_.findIndex` and `_.findLastIndex` without
  * support for iteratee shorthands.
@@ -2436,7 +2254,7 @@ function baseFindIndex(array, predicate, fromIndex, fromRight) {
 
 module.exports = baseFindIndex;
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 var createBaseFor = require('./_createBaseFor');
 
 /**
@@ -2454,7 +2272,7 @@ var baseFor = createBaseFor();
 
 module.exports = baseFor;
 
-},{"./_createBaseFor":94}],49:[function(require,module,exports){
+},{"./_createBaseFor":95}],50:[function(require,module,exports){
 var baseFor = require('./_baseFor'),
     keys = require('./keys');
 
@@ -2472,7 +2290,7 @@ function baseForOwn(object, iteratee) {
 
 module.exports = baseForOwn;
 
-},{"./_baseFor":48,"./keys":187}],50:[function(require,module,exports){
+},{"./_baseFor":49,"./keys":188}],51:[function(require,module,exports){
 var castPath = require('./_castPath'),
     toKey = require('./_toKey');
 
@@ -2498,7 +2316,7 @@ function baseGet(object, path) {
 
 module.exports = baseGet;
 
-},{"./_castPath":80,"./_toKey":160}],51:[function(require,module,exports){
+},{"./_castPath":81,"./_toKey":161}],52:[function(require,module,exports){
 var arrayPush = require('./_arrayPush'),
     isArray = require('./isArray');
 
@@ -2520,7 +2338,7 @@ function baseGetAllKeys(object, keysFunc, symbolsFunc) {
 
 module.exports = baseGetAllKeys;
 
-},{"./_arrayPush":37,"./isArray":172}],52:[function(require,module,exports){
+},{"./_arrayPush":38,"./isArray":173}],53:[function(require,module,exports){
 var Symbol = require('./_Symbol'),
     getRawTag = require('./_getRawTag'),
     objectToString = require('./_objectToString');
@@ -2550,7 +2368,7 @@ function baseGetTag(value) {
 
 module.exports = baseGetTag;
 
-},{"./_Symbol":29,"./_getRawTag":106,"./_objectToString":144}],53:[function(require,module,exports){
+},{"./_Symbol":30,"./_getRawTag":107,"./_objectToString":145}],54:[function(require,module,exports){
 /**
  * The base implementation of `_.hasIn` without support for deep paths.
  *
@@ -2565,7 +2383,7 @@ function baseHasIn(object, key) {
 
 module.exports = baseHasIn;
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 var baseFindIndex = require('./_baseFindIndex'),
     baseIsNaN = require('./_baseIsNaN'),
     strictIndexOf = require('./_strictIndexOf');
@@ -2587,7 +2405,7 @@ function baseIndexOf(array, value, fromIndex) {
 
 module.exports = baseIndexOf;
 
-},{"./_baseFindIndex":47,"./_baseIsNaN":60,"./_strictIndexOf":158}],55:[function(require,module,exports){
+},{"./_baseFindIndex":48,"./_baseIsNaN":61,"./_strictIndexOf":159}],56:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -2607,7 +2425,7 @@ function baseIsArguments(value) {
 
 module.exports = baseIsArguments;
 
-},{"./_baseGetTag":52,"./isObjectLike":181}],56:[function(require,module,exports){
+},{"./_baseGetTag":53,"./isObjectLike":182}],57:[function(require,module,exports){
 var baseIsEqualDeep = require('./_baseIsEqualDeep'),
     isObjectLike = require('./isObjectLike');
 
@@ -2637,7 +2455,7 @@ function baseIsEqual(value, other, bitmask, customizer, stack) {
 
 module.exports = baseIsEqual;
 
-},{"./_baseIsEqualDeep":57,"./isObjectLike":181}],57:[function(require,module,exports){
+},{"./_baseIsEqualDeep":58,"./isObjectLike":182}],58:[function(require,module,exports){
 var Stack = require('./_Stack'),
     equalArrays = require('./_equalArrays'),
     equalByTag = require('./_equalByTag'),
@@ -2722,7 +2540,7 @@ function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
 
 module.exports = baseIsEqualDeep;
 
-},{"./_Stack":28,"./_equalArrays":96,"./_equalByTag":97,"./_equalObjects":98,"./_getTag":109,"./isArray":172,"./isBuffer":174,"./isTypedArray":186}],58:[function(require,module,exports){
+},{"./_Stack":29,"./_equalArrays":97,"./_equalByTag":98,"./_equalObjects":99,"./_getTag":110,"./isArray":173,"./isBuffer":175,"./isTypedArray":187}],59:[function(require,module,exports){
 var getTag = require('./_getTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -2742,7 +2560,7 @@ function baseIsMap(value) {
 
 module.exports = baseIsMap;
 
-},{"./_getTag":109,"./isObjectLike":181}],59:[function(require,module,exports){
+},{"./_getTag":110,"./isObjectLike":182}],60:[function(require,module,exports){
 var Stack = require('./_Stack'),
     baseIsEqual = require('./_baseIsEqual');
 
@@ -2806,7 +2624,7 @@ function baseIsMatch(object, source, matchData, customizer) {
 
 module.exports = baseIsMatch;
 
-},{"./_Stack":28,"./_baseIsEqual":56}],60:[function(require,module,exports){
+},{"./_Stack":29,"./_baseIsEqual":57}],61:[function(require,module,exports){
 /**
  * The base implementation of `_.isNaN` without support for number objects.
  *
@@ -2820,7 +2638,7 @@ function baseIsNaN(value) {
 
 module.exports = baseIsNaN;
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 var isFunction = require('./isFunction'),
     isMasked = require('./_isMasked'),
     isObject = require('./isObject'),
@@ -2869,7 +2687,7 @@ function baseIsNative(value) {
 
 module.exports = baseIsNative;
 
-},{"./_isMasked":124,"./_toSource":161,"./isFunction":175,"./isObject":180}],62:[function(require,module,exports){
+},{"./_isMasked":125,"./_toSource":162,"./isFunction":176,"./isObject":181}],63:[function(require,module,exports){
 var getTag = require('./_getTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -2889,7 +2707,7 @@ function baseIsSet(value) {
 
 module.exports = baseIsSet;
 
-},{"./_getTag":109,"./isObjectLike":181}],63:[function(require,module,exports){
+},{"./_getTag":110,"./isObjectLike":182}],64:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isLength = require('./isLength'),
     isObjectLike = require('./isObjectLike');
@@ -2951,7 +2769,7 @@ function baseIsTypedArray(value) {
 
 module.exports = baseIsTypedArray;
 
-},{"./_baseGetTag":52,"./isLength":176,"./isObjectLike":181}],64:[function(require,module,exports){
+},{"./_baseGetTag":53,"./isLength":177,"./isObjectLike":182}],65:[function(require,module,exports){
 var baseMatches = require('./_baseMatches'),
     baseMatchesProperty = require('./_baseMatchesProperty'),
     identity = require('./identity'),
@@ -2984,7 +2802,7 @@ function baseIteratee(value) {
 
 module.exports = baseIteratee;
 
-},{"./_baseMatches":68,"./_baseMatchesProperty":69,"./identity":169,"./isArray":172,"./property":191}],65:[function(require,module,exports){
+},{"./_baseMatches":69,"./_baseMatchesProperty":70,"./identity":170,"./isArray":173,"./property":192}],66:[function(require,module,exports){
 var isPrototype = require('./_isPrototype'),
     nativeKeys = require('./_nativeKeys');
 
@@ -3016,7 +2834,7 @@ function baseKeys(object) {
 
 module.exports = baseKeys;
 
-},{"./_isPrototype":125,"./_nativeKeys":141}],66:[function(require,module,exports){
+},{"./_isPrototype":126,"./_nativeKeys":142}],67:[function(require,module,exports){
 var isObject = require('./isObject'),
     isPrototype = require('./_isPrototype'),
     nativeKeysIn = require('./_nativeKeysIn');
@@ -3051,7 +2869,7 @@ function baseKeysIn(object) {
 
 module.exports = baseKeysIn;
 
-},{"./_isPrototype":125,"./_nativeKeysIn":142,"./isObject":180}],67:[function(require,module,exports){
+},{"./_isPrototype":126,"./_nativeKeysIn":143,"./isObject":181}],68:[function(require,module,exports){
 var baseEach = require('./_baseEach'),
     isArrayLike = require('./isArrayLike');
 
@@ -3075,7 +2893,7 @@ function baseMap(collection, iteratee) {
 
 module.exports = baseMap;
 
-},{"./_baseEach":46,"./isArrayLike":173}],68:[function(require,module,exports){
+},{"./_baseEach":47,"./isArrayLike":174}],69:[function(require,module,exports){
 var baseIsMatch = require('./_baseIsMatch'),
     getMatchData = require('./_getMatchData'),
     matchesStrictComparable = require('./_matchesStrictComparable');
@@ -3099,7 +2917,7 @@ function baseMatches(source) {
 
 module.exports = baseMatches;
 
-},{"./_baseIsMatch":59,"./_getMatchData":103,"./_matchesStrictComparable":138}],69:[function(require,module,exports){
+},{"./_baseIsMatch":60,"./_getMatchData":104,"./_matchesStrictComparable":139}],70:[function(require,module,exports){
 var baseIsEqual = require('./_baseIsEqual'),
     get = require('./get'),
     hasIn = require('./hasIn'),
@@ -3134,7 +2952,7 @@ function baseMatchesProperty(path, srcValue) {
 
 module.exports = baseMatchesProperty;
 
-},{"./_baseIsEqual":56,"./_isKey":122,"./_isStrictComparable":126,"./_matchesStrictComparable":138,"./_toKey":160,"./get":167,"./hasIn":168}],70:[function(require,module,exports){
+},{"./_baseIsEqual":57,"./_isKey":123,"./_isStrictComparable":127,"./_matchesStrictComparable":139,"./_toKey":161,"./get":168,"./hasIn":169}],71:[function(require,module,exports){
 /**
  * The base implementation of `_.property` without support for deep paths.
  *
@@ -3150,7 +2968,7 @@ function baseProperty(key) {
 
 module.exports = baseProperty;
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 var baseGet = require('./_baseGet');
 
 /**
@@ -3168,7 +2986,7 @@ function basePropertyDeep(path) {
 
 module.exports = basePropertyDeep;
 
-},{"./_baseGet":50}],72:[function(require,module,exports){
+},{"./_baseGet":51}],73:[function(require,module,exports){
 var identity = require('./identity'),
     overRest = require('./_overRest'),
     setToString = require('./_setToString');
@@ -3187,7 +3005,7 @@ function baseRest(func, start) {
 
 module.exports = baseRest;
 
-},{"./_overRest":146,"./_setToString":151,"./identity":169}],73:[function(require,module,exports){
+},{"./_overRest":147,"./_setToString":152,"./identity":170}],74:[function(require,module,exports){
 var constant = require('./constant'),
     defineProperty = require('./_defineProperty'),
     identity = require('./identity');
@@ -3211,7 +3029,7 @@ var baseSetToString = !defineProperty ? identity : function(func, string) {
 
 module.exports = baseSetToString;
 
-},{"./_defineProperty":95,"./constant":164,"./identity":169}],74:[function(require,module,exports){
+},{"./_defineProperty":96,"./constant":165,"./identity":170}],75:[function(require,module,exports){
 /**
  * The base implementation of `_.times` without support for iteratee shorthands
  * or max array length checks.
@@ -3233,7 +3051,7 @@ function baseTimes(n, iteratee) {
 
 module.exports = baseTimes;
 
-},{}],75:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 var Symbol = require('./_Symbol'),
     arrayMap = require('./_arrayMap'),
     isArray = require('./isArray'),
@@ -3272,7 +3090,7 @@ function baseToString(value) {
 
 module.exports = baseToString;
 
-},{"./_Symbol":29,"./_arrayMap":36,"./isArray":172,"./isSymbol":185}],76:[function(require,module,exports){
+},{"./_Symbol":30,"./_arrayMap":37,"./isArray":173,"./isSymbol":186}],77:[function(require,module,exports){
 /**
  * The base implementation of `_.unary` without support for storing metadata.
  *
@@ -3288,7 +3106,7 @@ function baseUnary(func) {
 
 module.exports = baseUnary;
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 var arrayMap = require('./_arrayMap');
 
 /**
@@ -3309,7 +3127,7 @@ function baseValues(object, props) {
 
 module.exports = baseValues;
 
-},{"./_arrayMap":36}],78:[function(require,module,exports){
+},{"./_arrayMap":37}],79:[function(require,module,exports){
 /**
  * Checks if a `cache` value for `key` exists.
  *
@@ -3324,7 +3142,7 @@ function cacheHas(cache, key) {
 
 module.exports = cacheHas;
 
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 var identity = require('./identity');
 
 /**
@@ -3340,7 +3158,7 @@ function castFunction(value) {
 
 module.exports = castFunction;
 
-},{"./identity":169}],80:[function(require,module,exports){
+},{"./identity":170}],81:[function(require,module,exports){
 var isArray = require('./isArray'),
     isKey = require('./_isKey'),
     stringToPath = require('./_stringToPath'),
@@ -3363,7 +3181,7 @@ function castPath(value, object) {
 
 module.exports = castPath;
 
-},{"./_isKey":122,"./_stringToPath":159,"./isArray":172,"./toString":197}],81:[function(require,module,exports){
+},{"./_isKey":123,"./_stringToPath":160,"./isArray":173,"./toString":198}],82:[function(require,module,exports){
 var Uint8Array = require('./_Uint8Array');
 
 /**
@@ -3381,7 +3199,7 @@ function cloneArrayBuffer(arrayBuffer) {
 
 module.exports = cloneArrayBuffer;
 
-},{"./_Uint8Array":30}],82:[function(require,module,exports){
+},{"./_Uint8Array":31}],83:[function(require,module,exports){
 var root = require('./_root');
 
 /** Detect free variable `exports`. */
@@ -3418,7 +3236,7 @@ function cloneBuffer(buffer, isDeep) {
 
 module.exports = cloneBuffer;
 
-},{"./_root":147}],83:[function(require,module,exports){
+},{"./_root":148}],84:[function(require,module,exports){
 var cloneArrayBuffer = require('./_cloneArrayBuffer');
 
 /**
@@ -3436,7 +3254,7 @@ function cloneDataView(dataView, isDeep) {
 
 module.exports = cloneDataView;
 
-},{"./_cloneArrayBuffer":81}],84:[function(require,module,exports){
+},{"./_cloneArrayBuffer":82}],85:[function(require,module,exports){
 /** Used to match `RegExp` flags from their coerced string values. */
 var reFlags = /\w*$/;
 
@@ -3455,7 +3273,7 @@ function cloneRegExp(regexp) {
 
 module.exports = cloneRegExp;
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 var Symbol = require('./_Symbol');
 
 /** Used to convert symbols to primitives and strings. */
@@ -3475,7 +3293,7 @@ function cloneSymbol(symbol) {
 
 module.exports = cloneSymbol;
 
-},{"./_Symbol":29}],86:[function(require,module,exports){
+},{"./_Symbol":30}],87:[function(require,module,exports){
 var cloneArrayBuffer = require('./_cloneArrayBuffer');
 
 /**
@@ -3493,7 +3311,7 @@ function cloneTypedArray(typedArray, isDeep) {
 
 module.exports = cloneTypedArray;
 
-},{"./_cloneArrayBuffer":81}],87:[function(require,module,exports){
+},{"./_cloneArrayBuffer":82}],88:[function(require,module,exports){
 /**
  * Copies the values of `source` to `array`.
  *
@@ -3515,7 +3333,7 @@ function copyArray(source, array) {
 
 module.exports = copyArray;
 
-},{}],88:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 var assignValue = require('./_assignValue'),
     baseAssignValue = require('./_baseAssignValue');
 
@@ -3557,7 +3375,7 @@ function copyObject(source, props, object, customizer) {
 
 module.exports = copyObject;
 
-},{"./_assignValue":39,"./_baseAssignValue":43}],89:[function(require,module,exports){
+},{"./_assignValue":40,"./_baseAssignValue":44}],90:[function(require,module,exports){
 var copyObject = require('./_copyObject'),
     getSymbols = require('./_getSymbols');
 
@@ -3575,7 +3393,7 @@ function copySymbols(source, object) {
 
 module.exports = copySymbols;
 
-},{"./_copyObject":88,"./_getSymbols":107}],90:[function(require,module,exports){
+},{"./_copyObject":89,"./_getSymbols":108}],91:[function(require,module,exports){
 var copyObject = require('./_copyObject'),
     getSymbolsIn = require('./_getSymbolsIn');
 
@@ -3593,7 +3411,7 @@ function copySymbolsIn(source, object) {
 
 module.exports = copySymbolsIn;
 
-},{"./_copyObject":88,"./_getSymbolsIn":108}],91:[function(require,module,exports){
+},{"./_copyObject":89,"./_getSymbolsIn":109}],92:[function(require,module,exports){
 var root = require('./_root');
 
 /** Used to detect overreaching core-js shims. */
@@ -3601,7 +3419,7 @@ var coreJsData = root['__core-js_shared__'];
 
 module.exports = coreJsData;
 
-},{"./_root":147}],92:[function(require,module,exports){
+},{"./_root":148}],93:[function(require,module,exports){
 var baseRest = require('./_baseRest'),
     isIterateeCall = require('./_isIterateeCall');
 
@@ -3640,7 +3458,7 @@ function createAssigner(assigner) {
 
 module.exports = createAssigner;
 
-},{"./_baseRest":72,"./_isIterateeCall":121}],93:[function(require,module,exports){
+},{"./_baseRest":73,"./_isIterateeCall":122}],94:[function(require,module,exports){
 var isArrayLike = require('./isArrayLike');
 
 /**
@@ -3674,7 +3492,7 @@ function createBaseEach(eachFunc, fromRight) {
 
 module.exports = createBaseEach;
 
-},{"./isArrayLike":173}],94:[function(require,module,exports){
+},{"./isArrayLike":174}],95:[function(require,module,exports){
 /**
  * Creates a base function for methods like `_.forIn` and `_.forOwn`.
  *
@@ -3701,7 +3519,7 @@ function createBaseFor(fromRight) {
 
 module.exports = createBaseFor;
 
-},{}],95:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 var getNative = require('./_getNative');
 
 var defineProperty = (function() {
@@ -3714,7 +3532,7 @@ var defineProperty = (function() {
 
 module.exports = defineProperty;
 
-},{"./_getNative":104}],96:[function(require,module,exports){
+},{"./_getNative":105}],97:[function(require,module,exports){
 var SetCache = require('./_SetCache'),
     arraySome = require('./_arraySome'),
     cacheHas = require('./_cacheHas');
@@ -3799,7 +3617,7 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
 
 module.exports = equalArrays;
 
-},{"./_SetCache":27,"./_arraySome":38,"./_cacheHas":78}],97:[function(require,module,exports){
+},{"./_SetCache":28,"./_arraySome":39,"./_cacheHas":79}],98:[function(require,module,exports){
 var Symbol = require('./_Symbol'),
     Uint8Array = require('./_Uint8Array'),
     eq = require('./eq'),
@@ -3913,7 +3731,7 @@ function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
 
 module.exports = equalByTag;
 
-},{"./_Symbol":29,"./_Uint8Array":30,"./_equalArrays":96,"./_mapToArray":137,"./_setToArray":150,"./eq":165}],98:[function(require,module,exports){
+},{"./_Symbol":30,"./_Uint8Array":31,"./_equalArrays":97,"./_mapToArray":138,"./_setToArray":151,"./eq":166}],99:[function(require,module,exports){
 var getAllKeys = require('./_getAllKeys');
 
 /** Used to compose bitmasks for value comparisons. */
@@ -4004,7 +3822,7 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 
 module.exports = equalObjects;
 
-},{"./_getAllKeys":100}],99:[function(require,module,exports){
+},{"./_getAllKeys":101}],100:[function(require,module,exports){
 (function (global){
 /** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
@@ -4012,7 +3830,7 @@ var freeGlobal = typeof global == 'object' && global && global.Object === Object
 module.exports = freeGlobal;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 var baseGetAllKeys = require('./_baseGetAllKeys'),
     getSymbols = require('./_getSymbols'),
     keys = require('./keys');
@@ -4030,7 +3848,7 @@ function getAllKeys(object) {
 
 module.exports = getAllKeys;
 
-},{"./_baseGetAllKeys":51,"./_getSymbols":107,"./keys":187}],101:[function(require,module,exports){
+},{"./_baseGetAllKeys":52,"./_getSymbols":108,"./keys":188}],102:[function(require,module,exports){
 var baseGetAllKeys = require('./_baseGetAllKeys'),
     getSymbolsIn = require('./_getSymbolsIn'),
     keysIn = require('./keysIn');
@@ -4049,7 +3867,7 @@ function getAllKeysIn(object) {
 
 module.exports = getAllKeysIn;
 
-},{"./_baseGetAllKeys":51,"./_getSymbolsIn":108,"./keysIn":188}],102:[function(require,module,exports){
+},{"./_baseGetAllKeys":52,"./_getSymbolsIn":109,"./keysIn":189}],103:[function(require,module,exports){
 var isKeyable = require('./_isKeyable');
 
 /**
@@ -4069,7 +3887,7 @@ function getMapData(map, key) {
 
 module.exports = getMapData;
 
-},{"./_isKeyable":123}],103:[function(require,module,exports){
+},{"./_isKeyable":124}],104:[function(require,module,exports){
 var isStrictComparable = require('./_isStrictComparable'),
     keys = require('./keys');
 
@@ -4095,7 +3913,7 @@ function getMatchData(object) {
 
 module.exports = getMatchData;
 
-},{"./_isStrictComparable":126,"./keys":187}],104:[function(require,module,exports){
+},{"./_isStrictComparable":127,"./keys":188}],105:[function(require,module,exports){
 var baseIsNative = require('./_baseIsNative'),
     getValue = require('./_getValue');
 
@@ -4114,7 +3932,7 @@ function getNative(object, key) {
 
 module.exports = getNative;
 
-},{"./_baseIsNative":61,"./_getValue":110}],105:[function(require,module,exports){
+},{"./_baseIsNative":62,"./_getValue":111}],106:[function(require,module,exports){
 var overArg = require('./_overArg');
 
 /** Built-in value references. */
@@ -4122,7 +3940,7 @@ var getPrototype = overArg(Object.getPrototypeOf, Object);
 
 module.exports = getPrototype;
 
-},{"./_overArg":145}],106:[function(require,module,exports){
+},{"./_overArg":146}],107:[function(require,module,exports){
 var Symbol = require('./_Symbol');
 
 /** Used for built-in method references. */
@@ -4170,7 +3988,7 @@ function getRawTag(value) {
 
 module.exports = getRawTag;
 
-},{"./_Symbol":29}],107:[function(require,module,exports){
+},{"./_Symbol":30}],108:[function(require,module,exports){
 var arrayFilter = require('./_arrayFilter'),
     stubArray = require('./stubArray');
 
@@ -4202,7 +4020,7 @@ var getSymbols = !nativeGetSymbols ? stubArray : function(object) {
 
 module.exports = getSymbols;
 
-},{"./_arrayFilter":34,"./stubArray":192}],108:[function(require,module,exports){
+},{"./_arrayFilter":35,"./stubArray":193}],109:[function(require,module,exports){
 var arrayPush = require('./_arrayPush'),
     getPrototype = require('./_getPrototype'),
     getSymbols = require('./_getSymbols'),
@@ -4229,7 +4047,7 @@ var getSymbolsIn = !nativeGetSymbols ? stubArray : function(object) {
 
 module.exports = getSymbolsIn;
 
-},{"./_arrayPush":37,"./_getPrototype":105,"./_getSymbols":107,"./stubArray":192}],109:[function(require,module,exports){
+},{"./_arrayPush":38,"./_getPrototype":106,"./_getSymbols":108,"./stubArray":193}],110:[function(require,module,exports){
 var DataView = require('./_DataView'),
     Map = require('./_Map'),
     Promise = require('./_Promise'),
@@ -4289,7 +4107,7 @@ if ((DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag) ||
 
 module.exports = getTag;
 
-},{"./_DataView":20,"./_Map":23,"./_Promise":25,"./_Set":26,"./_WeakMap":31,"./_baseGetTag":52,"./_toSource":161}],110:[function(require,module,exports){
+},{"./_DataView":21,"./_Map":24,"./_Promise":26,"./_Set":27,"./_WeakMap":32,"./_baseGetTag":53,"./_toSource":162}],111:[function(require,module,exports){
 /**
  * Gets the value at `key` of `object`.
  *
@@ -4304,7 +4122,7 @@ function getValue(object, key) {
 
 module.exports = getValue;
 
-},{}],111:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 var castPath = require('./_castPath'),
     isArguments = require('./isArguments'),
     isArray = require('./isArray'),
@@ -4345,7 +4163,7 @@ function hasPath(object, path, hasFunc) {
 
 module.exports = hasPath;
 
-},{"./_castPath":80,"./_isIndex":120,"./_toKey":160,"./isArguments":171,"./isArray":172,"./isLength":176}],112:[function(require,module,exports){
+},{"./_castPath":81,"./_isIndex":121,"./_toKey":161,"./isArguments":172,"./isArray":173,"./isLength":177}],113:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /**
@@ -4362,7 +4180,7 @@ function hashClear() {
 
 module.exports = hashClear;
 
-},{"./_nativeCreate":140}],113:[function(require,module,exports){
+},{"./_nativeCreate":141}],114:[function(require,module,exports){
 /**
  * Removes `key` and its value from the hash.
  *
@@ -4381,7 +4199,7 @@ function hashDelete(key) {
 
 module.exports = hashDelete;
 
-},{}],114:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /** Used to stand-in for `undefined` hash values. */
@@ -4413,7 +4231,7 @@ function hashGet(key) {
 
 module.exports = hashGet;
 
-},{"./_nativeCreate":140}],115:[function(require,module,exports){
+},{"./_nativeCreate":141}],116:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /** Used for built-in method references. */
@@ -4438,7 +4256,7 @@ function hashHas(key) {
 
 module.exports = hashHas;
 
-},{"./_nativeCreate":140}],116:[function(require,module,exports){
+},{"./_nativeCreate":141}],117:[function(require,module,exports){
 var nativeCreate = require('./_nativeCreate');
 
 /** Used to stand-in for `undefined` hash values. */
@@ -4463,7 +4281,7 @@ function hashSet(key, value) {
 
 module.exports = hashSet;
 
-},{"./_nativeCreate":140}],117:[function(require,module,exports){
+},{"./_nativeCreate":141}],118:[function(require,module,exports){
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
 
@@ -4491,7 +4309,7 @@ function initCloneArray(array) {
 
 module.exports = initCloneArray;
 
-},{}],118:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 var cloneArrayBuffer = require('./_cloneArrayBuffer'),
     cloneDataView = require('./_cloneDataView'),
     cloneRegExp = require('./_cloneRegExp'),
@@ -4570,7 +4388,7 @@ function initCloneByTag(object, tag, isDeep) {
 
 module.exports = initCloneByTag;
 
-},{"./_cloneArrayBuffer":81,"./_cloneDataView":83,"./_cloneRegExp":84,"./_cloneSymbol":85,"./_cloneTypedArray":86}],119:[function(require,module,exports){
+},{"./_cloneArrayBuffer":82,"./_cloneDataView":84,"./_cloneRegExp":85,"./_cloneSymbol":86,"./_cloneTypedArray":87}],120:[function(require,module,exports){
 var baseCreate = require('./_baseCreate'),
     getPrototype = require('./_getPrototype'),
     isPrototype = require('./_isPrototype');
@@ -4590,7 +4408,7 @@ function initCloneObject(object) {
 
 module.exports = initCloneObject;
 
-},{"./_baseCreate":45,"./_getPrototype":105,"./_isPrototype":125}],120:[function(require,module,exports){
+},{"./_baseCreate":46,"./_getPrototype":106,"./_isPrototype":126}],121:[function(require,module,exports){
 /** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -4617,7 +4435,7 @@ function isIndex(value, length) {
 
 module.exports = isIndex;
 
-},{}],121:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 var eq = require('./eq'),
     isArrayLike = require('./isArrayLike'),
     isIndex = require('./_isIndex'),
@@ -4649,7 +4467,7 @@ function isIterateeCall(value, index, object) {
 
 module.exports = isIterateeCall;
 
-},{"./_isIndex":120,"./eq":165,"./isArrayLike":173,"./isObject":180}],122:[function(require,module,exports){
+},{"./_isIndex":121,"./eq":166,"./isArrayLike":174,"./isObject":181}],123:[function(require,module,exports){
 var isArray = require('./isArray'),
     isSymbol = require('./isSymbol');
 
@@ -4680,7 +4498,7 @@ function isKey(value, object) {
 
 module.exports = isKey;
 
-},{"./isArray":172,"./isSymbol":185}],123:[function(require,module,exports){
+},{"./isArray":173,"./isSymbol":186}],124:[function(require,module,exports){
 /**
  * Checks if `value` is suitable for use as unique object key.
  *
@@ -4697,7 +4515,7 @@ function isKeyable(value) {
 
 module.exports = isKeyable;
 
-},{}],124:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 var coreJsData = require('./_coreJsData');
 
 /** Used to detect methods masquerading as native. */
@@ -4719,7 +4537,7 @@ function isMasked(func) {
 
 module.exports = isMasked;
 
-},{"./_coreJsData":91}],125:[function(require,module,exports){
+},{"./_coreJsData":92}],126:[function(require,module,exports){
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
 
@@ -4739,7 +4557,7 @@ function isPrototype(value) {
 
 module.exports = isPrototype;
 
-},{}],126:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 var isObject = require('./isObject');
 
 /**
@@ -4756,7 +4574,7 @@ function isStrictComparable(value) {
 
 module.exports = isStrictComparable;
 
-},{"./isObject":180}],127:[function(require,module,exports){
+},{"./isObject":181}],128:[function(require,module,exports){
 /**
  * Removes all key-value entries from the list cache.
  *
@@ -4771,7 +4589,7 @@ function listCacheClear() {
 
 module.exports = listCacheClear;
 
-},{}],128:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /** Used for built-in method references. */
@@ -4808,7 +4626,7 @@ function listCacheDelete(key) {
 
 module.exports = listCacheDelete;
 
-},{"./_assocIndexOf":40}],129:[function(require,module,exports){
+},{"./_assocIndexOf":41}],130:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /**
@@ -4829,7 +4647,7 @@ function listCacheGet(key) {
 
 module.exports = listCacheGet;
 
-},{"./_assocIndexOf":40}],130:[function(require,module,exports){
+},{"./_assocIndexOf":41}],131:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /**
@@ -4847,7 +4665,7 @@ function listCacheHas(key) {
 
 module.exports = listCacheHas;
 
-},{"./_assocIndexOf":40}],131:[function(require,module,exports){
+},{"./_assocIndexOf":41}],132:[function(require,module,exports){
 var assocIndexOf = require('./_assocIndexOf');
 
 /**
@@ -4875,7 +4693,7 @@ function listCacheSet(key, value) {
 
 module.exports = listCacheSet;
 
-},{"./_assocIndexOf":40}],132:[function(require,module,exports){
+},{"./_assocIndexOf":41}],133:[function(require,module,exports){
 var Hash = require('./_Hash'),
     ListCache = require('./_ListCache'),
     Map = require('./_Map');
@@ -4898,7 +4716,7 @@ function mapCacheClear() {
 
 module.exports = mapCacheClear;
 
-},{"./_Hash":21,"./_ListCache":22,"./_Map":23}],133:[function(require,module,exports){
+},{"./_Hash":22,"./_ListCache":23,"./_Map":24}],134:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -4918,7 +4736,7 @@ function mapCacheDelete(key) {
 
 module.exports = mapCacheDelete;
 
-},{"./_getMapData":102}],134:[function(require,module,exports){
+},{"./_getMapData":103}],135:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -4936,7 +4754,7 @@ function mapCacheGet(key) {
 
 module.exports = mapCacheGet;
 
-},{"./_getMapData":102}],135:[function(require,module,exports){
+},{"./_getMapData":103}],136:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -4954,7 +4772,7 @@ function mapCacheHas(key) {
 
 module.exports = mapCacheHas;
 
-},{"./_getMapData":102}],136:[function(require,module,exports){
+},{"./_getMapData":103}],137:[function(require,module,exports){
 var getMapData = require('./_getMapData');
 
 /**
@@ -4978,7 +4796,7 @@ function mapCacheSet(key, value) {
 
 module.exports = mapCacheSet;
 
-},{"./_getMapData":102}],137:[function(require,module,exports){
+},{"./_getMapData":103}],138:[function(require,module,exports){
 /**
  * Converts `map` to its key-value pairs.
  *
@@ -4998,7 +4816,7 @@ function mapToArray(map) {
 
 module.exports = mapToArray;
 
-},{}],138:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 /**
  * A specialized version of `matchesProperty` for source values suitable
  * for strict equality comparisons, i.e. `===`.
@@ -5020,7 +4838,7 @@ function matchesStrictComparable(key, srcValue) {
 
 module.exports = matchesStrictComparable;
 
-},{}],139:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 var memoize = require('./memoize');
 
 /** Used as the maximum memoize cache size. */
@@ -5048,7 +4866,7 @@ function memoizeCapped(func) {
 
 module.exports = memoizeCapped;
 
-},{"./memoize":190}],140:[function(require,module,exports){
+},{"./memoize":191}],141:[function(require,module,exports){
 var getNative = require('./_getNative');
 
 /* Built-in method references that are verified to be native. */
@@ -5056,7 +4874,7 @@ var nativeCreate = getNative(Object, 'create');
 
 module.exports = nativeCreate;
 
-},{"./_getNative":104}],141:[function(require,module,exports){
+},{"./_getNative":105}],142:[function(require,module,exports){
 var overArg = require('./_overArg');
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
@@ -5064,7 +4882,7 @@ var nativeKeys = overArg(Object.keys, Object);
 
 module.exports = nativeKeys;
 
-},{"./_overArg":145}],142:[function(require,module,exports){
+},{"./_overArg":146}],143:[function(require,module,exports){
 /**
  * This function is like
  * [`Object.keys`](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
@@ -5086,7 +4904,7 @@ function nativeKeysIn(object) {
 
 module.exports = nativeKeysIn;
 
-},{}],143:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 var freeGlobal = require('./_freeGlobal');
 
 /** Detect free variable `exports`. */
@@ -5118,7 +4936,7 @@ var nodeUtil = (function() {
 
 module.exports = nodeUtil;
 
-},{"./_freeGlobal":99}],144:[function(require,module,exports){
+},{"./_freeGlobal":100}],145:[function(require,module,exports){
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
 
@@ -5142,7 +4960,7 @@ function objectToString(value) {
 
 module.exports = objectToString;
 
-},{}],145:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 /**
  * Creates a unary function that invokes `func` with its argument transformed.
  *
@@ -5159,7 +4977,7 @@ function overArg(func, transform) {
 
 module.exports = overArg;
 
-},{}],146:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 var apply = require('./_apply');
 
 /* Built-in method references for those with the same name as other `lodash` methods. */
@@ -5197,7 +5015,7 @@ function overRest(func, start, transform) {
 
 module.exports = overRest;
 
-},{"./_apply":32}],147:[function(require,module,exports){
+},{"./_apply":33}],148:[function(require,module,exports){
 var freeGlobal = require('./_freeGlobal');
 
 /** Detect free variable `self`. */
@@ -5208,7 +5026,7 @@ var root = freeGlobal || freeSelf || Function('return this')();
 
 module.exports = root;
 
-},{"./_freeGlobal":99}],148:[function(require,module,exports){
+},{"./_freeGlobal":100}],149:[function(require,module,exports){
 /** Used to stand-in for `undefined` hash values. */
 var HASH_UNDEFINED = '__lodash_hash_undefined__';
 
@@ -5229,7 +5047,7 @@ function setCacheAdd(value) {
 
 module.exports = setCacheAdd;
 
-},{}],149:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 /**
  * Checks if `value` is in the array cache.
  *
@@ -5245,7 +5063,7 @@ function setCacheHas(value) {
 
 module.exports = setCacheHas;
 
-},{}],150:[function(require,module,exports){
+},{}],151:[function(require,module,exports){
 /**
  * Converts `set` to an array of its values.
  *
@@ -5265,7 +5083,7 @@ function setToArray(set) {
 
 module.exports = setToArray;
 
-},{}],151:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 var baseSetToString = require('./_baseSetToString'),
     shortOut = require('./_shortOut');
 
@@ -5281,7 +5099,7 @@ var setToString = shortOut(baseSetToString);
 
 module.exports = setToString;
 
-},{"./_baseSetToString":73,"./_shortOut":152}],152:[function(require,module,exports){
+},{"./_baseSetToString":74,"./_shortOut":153}],153:[function(require,module,exports){
 /** Used to detect hot functions by number of calls within a span of milliseconds. */
 var HOT_COUNT = 800,
     HOT_SPAN = 16;
@@ -5320,7 +5138,7 @@ function shortOut(func) {
 
 module.exports = shortOut;
 
-},{}],153:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 var ListCache = require('./_ListCache');
 
 /**
@@ -5337,7 +5155,7 @@ function stackClear() {
 
 module.exports = stackClear;
 
-},{"./_ListCache":22}],154:[function(require,module,exports){
+},{"./_ListCache":23}],155:[function(require,module,exports){
 /**
  * Removes `key` and its value from the stack.
  *
@@ -5357,7 +5175,7 @@ function stackDelete(key) {
 
 module.exports = stackDelete;
 
-},{}],155:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 /**
  * Gets the stack value for `key`.
  *
@@ -5373,7 +5191,7 @@ function stackGet(key) {
 
 module.exports = stackGet;
 
-},{}],156:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 /**
  * Checks if a stack value for `key` exists.
  *
@@ -5389,7 +5207,7 @@ function stackHas(key) {
 
 module.exports = stackHas;
 
-},{}],157:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 var ListCache = require('./_ListCache'),
     Map = require('./_Map'),
     MapCache = require('./_MapCache');
@@ -5425,7 +5243,7 @@ function stackSet(key, value) {
 
 module.exports = stackSet;
 
-},{"./_ListCache":22,"./_Map":23,"./_MapCache":24}],158:[function(require,module,exports){
+},{"./_ListCache":23,"./_Map":24,"./_MapCache":25}],159:[function(require,module,exports){
 /**
  * A specialized version of `_.indexOf` which performs strict equality
  * comparisons of values, i.e. `===`.
@@ -5450,7 +5268,7 @@ function strictIndexOf(array, value, fromIndex) {
 
 module.exports = strictIndexOf;
 
-},{}],159:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 var memoizeCapped = require('./_memoizeCapped');
 
 /** Used to match property names within property paths. */
@@ -5479,7 +5297,7 @@ var stringToPath = memoizeCapped(function(string) {
 
 module.exports = stringToPath;
 
-},{"./_memoizeCapped":139}],160:[function(require,module,exports){
+},{"./_memoizeCapped":140}],161:[function(require,module,exports){
 var isSymbol = require('./isSymbol');
 
 /** Used as references for various `Number` constants. */
@@ -5502,7 +5320,7 @@ function toKey(value) {
 
 module.exports = toKey;
 
-},{"./isSymbol":185}],161:[function(require,module,exports){
+},{"./isSymbol":186}],162:[function(require,module,exports){
 /** Used for built-in method references. */
 var funcProto = Function.prototype;
 
@@ -5530,7 +5348,7 @@ function toSource(func) {
 
 module.exports = toSource;
 
-},{}],162:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 var assignValue = require('./_assignValue'),
     copyObject = require('./_copyObject'),
     createAssigner = require('./_createAssigner'),
@@ -5590,7 +5408,7 @@ var assign = createAssigner(function(object, source) {
 
 module.exports = assign;
 
-},{"./_assignValue":39,"./_copyObject":88,"./_createAssigner":92,"./_isPrototype":125,"./isArrayLike":173,"./keys":187}],163:[function(require,module,exports){
+},{"./_assignValue":40,"./_copyObject":89,"./_createAssigner":93,"./_isPrototype":126,"./isArrayLike":174,"./keys":188}],164:[function(require,module,exports){
 var baseClone = require('./_baseClone');
 
 /** Used to compose bitmasks for cloning. */
@@ -5628,7 +5446,7 @@ function clone(value) {
 
 module.exports = clone;
 
-},{"./_baseClone":44}],164:[function(require,module,exports){
+},{"./_baseClone":45}],165:[function(require,module,exports){
 /**
  * Creates a function that returns `value`.
  *
@@ -5656,7 +5474,7 @@ function constant(value) {
 
 module.exports = constant;
 
-},{}],165:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 /**
  * Performs a
  * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
@@ -5695,7 +5513,7 @@ function eq(value, other) {
 
 module.exports = eq;
 
-},{}],166:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 var arrayEach = require('./_arrayEach'),
     baseEach = require('./_baseEach'),
     castFunction = require('./_castFunction'),
@@ -5738,7 +5556,7 @@ function forEach(collection, iteratee) {
 
 module.exports = forEach;
 
-},{"./_arrayEach":33,"./_baseEach":46,"./_castFunction":79,"./isArray":172}],167:[function(require,module,exports){
+},{"./_arrayEach":34,"./_baseEach":47,"./_castFunction":80,"./isArray":173}],168:[function(require,module,exports){
 var baseGet = require('./_baseGet');
 
 /**
@@ -5773,7 +5591,7 @@ function get(object, path, defaultValue) {
 
 module.exports = get;
 
-},{"./_baseGet":50}],168:[function(require,module,exports){
+},{"./_baseGet":51}],169:[function(require,module,exports){
 var baseHasIn = require('./_baseHasIn'),
     hasPath = require('./_hasPath');
 
@@ -5809,7 +5627,7 @@ function hasIn(object, path) {
 
 module.exports = hasIn;
 
-},{"./_baseHasIn":53,"./_hasPath":111}],169:[function(require,module,exports){
+},{"./_baseHasIn":54,"./_hasPath":112}],170:[function(require,module,exports){
 /**
  * This method returns the first argument it receives.
  *
@@ -5832,7 +5650,7 @@ function identity(value) {
 
 module.exports = identity;
 
-},{}],170:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 var baseIndexOf = require('./_baseIndexOf'),
     isArrayLike = require('./isArrayLike'),
     isString = require('./isString'),
@@ -5887,7 +5705,7 @@ function includes(collection, value, fromIndex, guard) {
 
 module.exports = includes;
 
-},{"./_baseIndexOf":54,"./isArrayLike":173,"./isString":184,"./toInteger":195,"./values":198}],171:[function(require,module,exports){
+},{"./_baseIndexOf":55,"./isArrayLike":174,"./isString":185,"./toInteger":196,"./values":199}],172:[function(require,module,exports){
 var baseIsArguments = require('./_baseIsArguments'),
     isObjectLike = require('./isObjectLike');
 
@@ -5925,7 +5743,7 @@ var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsAr
 
 module.exports = isArguments;
 
-},{"./_baseIsArguments":55,"./isObjectLike":181}],172:[function(require,module,exports){
+},{"./_baseIsArguments":56,"./isObjectLike":182}],173:[function(require,module,exports){
 /**
  * Checks if `value` is classified as an `Array` object.
  *
@@ -5953,7 +5771,7 @@ var isArray = Array.isArray;
 
 module.exports = isArray;
 
-},{}],173:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
 var isFunction = require('./isFunction'),
     isLength = require('./isLength');
 
@@ -5988,7 +5806,7 @@ function isArrayLike(value) {
 
 module.exports = isArrayLike;
 
-},{"./isFunction":175,"./isLength":176}],174:[function(require,module,exports){
+},{"./isFunction":176,"./isLength":177}],175:[function(require,module,exports){
 var root = require('./_root'),
     stubFalse = require('./stubFalse');
 
@@ -6028,7 +5846,7 @@ var isBuffer = nativeIsBuffer || stubFalse;
 
 module.exports = isBuffer;
 
-},{"./_root":147,"./stubFalse":193}],175:[function(require,module,exports){
+},{"./_root":148,"./stubFalse":194}],176:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObject = require('./isObject');
 
@@ -6067,7 +5885,7 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{"./_baseGetTag":52,"./isObject":180}],176:[function(require,module,exports){
+},{"./_baseGetTag":53,"./isObject":181}],177:[function(require,module,exports){
 /** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -6104,7 +5922,7 @@ function isLength(value) {
 
 module.exports = isLength;
 
-},{}],177:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 var baseIsMap = require('./_baseIsMap'),
     baseUnary = require('./_baseUnary'),
     nodeUtil = require('./_nodeUtil');
@@ -6133,7 +5951,7 @@ var isMap = nodeIsMap ? baseUnary(nodeIsMap) : baseIsMap;
 
 module.exports = isMap;
 
-},{"./_baseIsMap":58,"./_baseUnary":76,"./_nodeUtil":143}],178:[function(require,module,exports){
+},{"./_baseIsMap":59,"./_baseUnary":77,"./_nodeUtil":144}],179:[function(require,module,exports){
 /**
  * Checks if `value` is `null` or `undefined`.
  *
@@ -6160,7 +5978,7 @@ function isNil(value) {
 
 module.exports = isNil;
 
-},{}],179:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -6200,7 +6018,7 @@ function isNumber(value) {
 
 module.exports = isNumber;
 
-},{"./_baseGetTag":52,"./isObjectLike":181}],180:[function(require,module,exports){
+},{"./_baseGetTag":53,"./isObjectLike":182}],181:[function(require,module,exports){
 /**
  * Checks if `value` is the
  * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
@@ -6233,7 +6051,7 @@ function isObject(value) {
 
 module.exports = isObject;
 
-},{}],181:[function(require,module,exports){
+},{}],182:[function(require,module,exports){
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
@@ -6264,7 +6082,7 @@ function isObjectLike(value) {
 
 module.exports = isObjectLike;
 
-},{}],182:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     getPrototype = require('./_getPrototype'),
     isObjectLike = require('./isObjectLike');
@@ -6328,7 +6146,7 @@ function isPlainObject(value) {
 
 module.exports = isPlainObject;
 
-},{"./_baseGetTag":52,"./_getPrototype":105,"./isObjectLike":181}],183:[function(require,module,exports){
+},{"./_baseGetTag":53,"./_getPrototype":106,"./isObjectLike":182}],184:[function(require,module,exports){
 var baseIsSet = require('./_baseIsSet'),
     baseUnary = require('./_baseUnary'),
     nodeUtil = require('./_nodeUtil');
@@ -6357,7 +6175,7 @@ var isSet = nodeIsSet ? baseUnary(nodeIsSet) : baseIsSet;
 
 module.exports = isSet;
 
-},{"./_baseIsSet":62,"./_baseUnary":76,"./_nodeUtil":143}],184:[function(require,module,exports){
+},{"./_baseIsSet":63,"./_baseUnary":77,"./_nodeUtil":144}],185:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isArray = require('./isArray'),
     isObjectLike = require('./isObjectLike');
@@ -6389,7 +6207,7 @@ function isString(value) {
 
 module.exports = isString;
 
-},{"./_baseGetTag":52,"./isArray":172,"./isObjectLike":181}],185:[function(require,module,exports){
+},{"./_baseGetTag":53,"./isArray":173,"./isObjectLike":182}],186:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -6420,7 +6238,7 @@ function isSymbol(value) {
 
 module.exports = isSymbol;
 
-},{"./_baseGetTag":52,"./isObjectLike":181}],186:[function(require,module,exports){
+},{"./_baseGetTag":53,"./isObjectLike":182}],187:[function(require,module,exports){
 var baseIsTypedArray = require('./_baseIsTypedArray'),
     baseUnary = require('./_baseUnary'),
     nodeUtil = require('./_nodeUtil');
@@ -6449,7 +6267,7 @@ var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedA
 
 module.exports = isTypedArray;
 
-},{"./_baseIsTypedArray":63,"./_baseUnary":76,"./_nodeUtil":143}],187:[function(require,module,exports){
+},{"./_baseIsTypedArray":64,"./_baseUnary":77,"./_nodeUtil":144}],188:[function(require,module,exports){
 var arrayLikeKeys = require('./_arrayLikeKeys'),
     baseKeys = require('./_baseKeys'),
     isArrayLike = require('./isArrayLike');
@@ -6488,7 +6306,7 @@ function keys(object) {
 
 module.exports = keys;
 
-},{"./_arrayLikeKeys":35,"./_baseKeys":65,"./isArrayLike":173}],188:[function(require,module,exports){
+},{"./_arrayLikeKeys":36,"./_baseKeys":66,"./isArrayLike":174}],189:[function(require,module,exports){
 var arrayLikeKeys = require('./_arrayLikeKeys'),
     baseKeysIn = require('./_baseKeysIn'),
     isArrayLike = require('./isArrayLike');
@@ -6522,7 +6340,7 @@ function keysIn(object) {
 
 module.exports = keysIn;
 
-},{"./_arrayLikeKeys":35,"./_baseKeysIn":66,"./isArrayLike":173}],189:[function(require,module,exports){
+},{"./_arrayLikeKeys":36,"./_baseKeysIn":67,"./isArrayLike":174}],190:[function(require,module,exports){
 var arrayMap = require('./_arrayMap'),
     baseIteratee = require('./_baseIteratee'),
     baseMap = require('./_baseMap'),
@@ -6577,7 +6395,7 @@ function map(collection, iteratee) {
 
 module.exports = map;
 
-},{"./_arrayMap":36,"./_baseIteratee":64,"./_baseMap":67,"./isArray":172}],190:[function(require,module,exports){
+},{"./_arrayMap":37,"./_baseIteratee":65,"./_baseMap":68,"./isArray":173}],191:[function(require,module,exports){
 var MapCache = require('./_MapCache');
 
 /** Error message constants. */
@@ -6652,7 +6470,7 @@ memoize.Cache = MapCache;
 
 module.exports = memoize;
 
-},{"./_MapCache":24}],191:[function(require,module,exports){
+},{"./_MapCache":25}],192:[function(require,module,exports){
 var baseProperty = require('./_baseProperty'),
     basePropertyDeep = require('./_basePropertyDeep'),
     isKey = require('./_isKey'),
@@ -6686,7 +6504,7 @@ function property(path) {
 
 module.exports = property;
 
-},{"./_baseProperty":70,"./_basePropertyDeep":71,"./_isKey":122,"./_toKey":160}],192:[function(require,module,exports){
+},{"./_baseProperty":71,"./_basePropertyDeep":72,"./_isKey":123,"./_toKey":161}],193:[function(require,module,exports){
 /**
  * This method returns a new empty array.
  *
@@ -6711,7 +6529,7 @@ function stubArray() {
 
 module.exports = stubArray;
 
-},{}],193:[function(require,module,exports){
+},{}],194:[function(require,module,exports){
 /**
  * This method returns `false`.
  *
@@ -6731,7 +6549,7 @@ function stubFalse() {
 
 module.exports = stubFalse;
 
-},{}],194:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 var toNumber = require('./toNumber');
 
 /** Used as references for various `Number` constants. */
@@ -6775,7 +6593,7 @@ function toFinite(value) {
 
 module.exports = toFinite;
 
-},{"./toNumber":196}],195:[function(require,module,exports){
+},{"./toNumber":197}],196:[function(require,module,exports){
 var toFinite = require('./toFinite');
 
 /**
@@ -6813,7 +6631,7 @@ function toInteger(value) {
 
 module.exports = toInteger;
 
-},{"./toFinite":194}],196:[function(require,module,exports){
+},{"./toFinite":195}],197:[function(require,module,exports){
 var isObject = require('./isObject'),
     isSymbol = require('./isSymbol');
 
@@ -6881,7 +6699,7 @@ function toNumber(value) {
 
 module.exports = toNumber;
 
-},{"./isObject":180,"./isSymbol":185}],197:[function(require,module,exports){
+},{"./isObject":181,"./isSymbol":186}],198:[function(require,module,exports){
 var baseToString = require('./_baseToString');
 
 /**
@@ -6911,7 +6729,7 @@ function toString(value) {
 
 module.exports = toString;
 
-},{"./_baseToString":75}],198:[function(require,module,exports){
+},{"./_baseToString":76}],199:[function(require,module,exports){
 var baseValues = require('./_baseValues'),
     keys = require('./keys');
 
@@ -6947,79 +6765,72 @@ function values(object) {
 
 module.exports = values;
 
-},{"./_baseValues":77,"./keys":187}],"airtable":[function(require,module,exports){
-'use strict';
-
-var Base = require('./base');
-var Record = require('./record');
-var Table = require('./table');
-var AirtableError = require('./airtable_error');
-
-function Airtable(opts) {
-    opts = opts || {};
-
-    var defaultConfig = Airtable.default_config();
-
-    var apiVersion = opts.apiVersion || Airtable.apiVersion || defaultConfig.apiVersion;
-
-    Object.defineProperties(this, {
-        _apiKey: {
-            value: opts.apiKey || Airtable.apiKey || defaultConfig.apiKey,
-        },
-        _endpointUrl: {
-            value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
-        },
-        _apiVersion: {
-            value: apiVersion,
-        },
-        _apiVersionMajor: {
-            value: apiVersion.split('.')[0],
-        },
-        _noRetryIfRateLimited: {
-            value:
-                opts.noRetryIfRateLimited ||
-                Airtable.noRetryIfRateLimited ||
-                defaultConfig.noRetryIfRateLimited,
-        },
-    });
-
-    this.requestTimeout = opts.requestTimeout || defaultConfig.requestTimeout;
-
-    if (!this._apiKey) {
-        throw new Error('An API key is required to connect to Airtable');
+},{"./_baseValues":78,"./keys":188}],"airtable":[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var base_1 = __importDefault(require("./base"));
+var record_1 = __importDefault(require("./record"));
+var table_1 = __importDefault(require("./table"));
+var airtable_error_1 = __importDefault(require("./airtable_error"));
+var Airtable = /** @class */ (function () {
+    function Airtable(opts) {
+        if (opts === void 0) { opts = {}; }
+        var defaultConfig = Airtable.default_config();
+        var apiVersion = opts.apiVersion || Airtable.apiVersion || defaultConfig.apiVersion;
+        Object.defineProperties(this, {
+            _apiKey: {
+                value: opts.apiKey || Airtable.apiKey || defaultConfig.apiKey,
+            },
+            _endpointUrl: {
+                value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
+            },
+            _apiVersion: {
+                value: apiVersion,
+            },
+            _apiVersionMajor: {
+                value: apiVersion.split('.')[0],
+            },
+            _noRetryIfRateLimited: {
+                value: opts.noRetryIfRateLimited ||
+                    Airtable.noRetryIfRateLimited ||
+                    defaultConfig.noRetryIfRateLimited,
+            },
+        });
+        this.requestTimeout = opts.requestTimeout || defaultConfig.requestTimeout;
+        if (!this._apiKey) {
+            throw new Error('An API key is required to connect to Airtable');
+        }
     }
-}
-
-Airtable.prototype.base = function(baseId) {
-    return Base.createFunctor(this, baseId);
-};
-
-Airtable.default_config = function() {
-    return {
-        endpointUrl: undefined || 'https://api.airtable.com',
-        apiVersion: '0.1.0',
-        apiKey: undefined,
-        noRetryIfRateLimited: false,
-        requestTimeout: 300 * 1000, // 5 minutes
+    Airtable.prototype.base = function (baseId) {
+        return base_1.default.createFunctor(this, baseId);
     };
-};
-
-Airtable.configure = function(opts) {
-    Airtable.apiKey = opts.apiKey;
-    Airtable.endpointUrl = opts.endpointUrl;
-    Airtable.apiVersion = opts.apiVersion;
-    Airtable.noRetryIfRateLimited = opts.noRetryIfRateLimited;
-};
-
-Airtable.base = function(baseId) {
-    return new Airtable().base(baseId);
-};
-
-Airtable.Base = Base;
-Airtable.Record = Record;
-Airtable.Table = Table;
-Airtable.Error = AirtableError;
-
+    Airtable.default_config = function () {
+        return {
+            endpointUrl: undefined || 'https://api.airtable.com',
+            apiVersion: '0.1.0',
+            apiKey: undefined,
+            noRetryIfRateLimited: false,
+            requestTimeout: 300 * 1000,
+        };
+    };
+    Airtable.configure = function (_a) {
+        var apiKey = _a.apiKey, endpointUrl = _a.endpointUrl, apiVersion = _a.apiVersion, noRetryIfRateLimited = _a.noRetryIfRateLimited;
+        Airtable.apiKey = apiKey;
+        Airtable.endpointUrl = endpointUrl;
+        Airtable.apiVersion = apiVersion;
+        Airtable.noRetryIfRateLimited = noRetryIfRateLimited;
+    };
+    Airtable.base = function (baseId) {
+        return new Airtable().base(baseId);
+    };
+    Airtable.Base = base_1.default;
+    Airtable.Record = record_1.default;
+    Airtable.Table = table_1.default;
+    Airtable.Error = airtable_error_1.default;
+    return Airtable;
+}());
 module.exports = Airtable;
 
-},{"./airtable_error":2,"./base":3,"./record":14,"./table":16}]},{},["airtable"]);
+},{"./airtable_error":2,"./base":3,"./record":15,"./table":17}]},{},["airtable"]);
