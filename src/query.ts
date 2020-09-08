@@ -131,7 +131,7 @@ function eachPage(this: Query, pageCallback: PageCallback, done: DoneCallback) {
     const inner = () => {
         this._table._base.runAction('get', path, params, null, (err, response, result) => {
             if (err) {
-                done(err, null);
+                done(err);
             } else {
                 let next;
                 if (result.offset) {
@@ -171,7 +171,7 @@ function all(this: Query, done: RecordCollectionCallback) {
         },
         err => {
             if (err) {
-                done(err, null);
+                done(err);
             } else {
                 done(null, allRecords);
             }
