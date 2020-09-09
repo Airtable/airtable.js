@@ -65,13 +65,15 @@ var Base = /** @class */ (function () {
     };
     Base.prototype.makeRequest = function (options) {
         var _this = this;
+        var _a;
         if (options === void 0) { options = {}; }
         var method = get_1.default(options, 'method', 'GET').toUpperCase();
         var url = this._airtable._endpointUrl + "/v" + this._airtable._apiVersionMajor + "/" + this._id + get_1.default(options, 'path', '/') + "?" + object_to_query_param_string_1.default(get_1.default(options, 'qs', {}));
         var controller = new abort_controller_1.default();
+        var headers = this._getRequestHeaders(Object.assign({}, this._airtable._customHeaders, (_a = options.headers) !== null && _a !== void 0 ? _a : {}));
         var requestOptions = {
             method: method,
-            headers: this._getRequestHeaders(get_1.default(options, 'headers', {})),
+            headers: headers,
             signal: controller.signal,
         };
         if ('body' in options && _canRequestMethodIncludeBody(method)) {
@@ -6765,14 +6767,17 @@ var Airtable = /** @class */ (function () {
             _apiKey: {
                 value: opts.apiKey || Airtable.apiKey || defaultConfig.apiKey,
             },
-            _endpointUrl: {
-                value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
-            },
             _apiVersion: {
                 value: apiVersion,
             },
             _apiVersionMajor: {
                 value: apiVersion.split('.')[0],
+            },
+            _customHeaders: {
+                value: opts.customHeaders || {},
+            },
+            _endpointUrl: {
+                value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
             },
             _noRetryIfRateLimited: {
                 value: opts.noRetryIfRateLimited ||
