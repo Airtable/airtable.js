@@ -6,14 +6,12 @@
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
   "scripts": {
-    "coverage": "jest --env node --coverage --no-cache",
     "pretest": "npm run lint && npm run prepare; true",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "format": "prettier --write '**/*.js'",
-    "test": "npm run coverage",
+    "test": "jest --env node --coverage --no-cache",
     "test-unit": "jest --env node",
-    "prepare": "rm -rf lib/* && tsc",
-    "browserify": "npm run compile; grunt browserify"
+    "prepare": "rm -rf lib/* && tsc && grunt browserify"
   },
   "dependencies": {
     "@types/node": "^14.0.14",
