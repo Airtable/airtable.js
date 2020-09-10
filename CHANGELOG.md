@@ -1,3 +1,6 @@
+# v0.10.0
+ * Convert to TypeScript. The project now comes with .d.ts typescript definition files.
+
 # v0.9.0
  * Remove Promise polyfill (#195)
  * Replace deprecated `request` library with `node-fetch` (#191)
