@@ -5,7 +5,7 @@
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
-  "scripts": {    
+  "scripts": {
     "pretest": "npm run lint && npm run prepare; true",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "format": "prettier --write '**/*.js'",
