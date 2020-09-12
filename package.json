@@ -1,20 +1,17 @@
 {
   "name": "airtable",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "license": "MIT",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
-  "scripts": {
-    "coverage": "jest --env node --coverage --no-cache",
+  "scripts": {    
     "pretest": "npm run lint && npm run prepare; true",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "format": "prettier --write '**/*.js'",
-    "test": "npm run coverage",
+    "test": "jest --env node --coverage --no-cache",
     "test-unit": "jest --env node",
-    "prepare": "rm -rf lib/* && tsc",
-    "browserify": "npm run compile; grunt browserify",
-    "postinstall": "npm run prepare"
+    "prepare": "rm -rf lib/* && tsc && grunt browserify"
   },
   "dependencies": {
     "@types/node": "^14.0.14",
