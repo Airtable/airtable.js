@@ -885,13 +885,12 @@ var Table = /** @class */ (function () {
             done = optsOrDone || recordDataOrOptsOrDone;
             var method = isDestructiveUpdate ? 'put' : 'patch';
             var requestData = assign_1.default({ records: recordsData }, opts);
-            this._base.runAction(method, "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, _a) {
-                var records = _a.records;
+            this._base.runAction(method, "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
                 if (err) {
                     done(err);
                     return;
                 }
-                var result = records.map(function (record) {
+                var result = body.records.map(function (record) {
                     return new record_1.default(_this, record.id, record);
                 });
                 done(null, result);
