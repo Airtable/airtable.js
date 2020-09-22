@@ -6,6 +6,7 @@
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
   "scripts": {
+    "postinstall": "npm run prepare",
     "pretest": "npm run lint && npm run prepare; true",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "format": "prettier --write '**/*.js'",
