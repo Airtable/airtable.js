@@ -12,29 +12,22 @@ import runAction from './run_action';
 import packageVersion from './package_version';
 import exponentialBackoffWithJitter from './exponential_backoff_with_jitter';
 import type Airtable from './airtable';
+import {AirtableBase} from './airtable_base';
 
 const userAgent = `Airtable.js/${packageVersion}`;
 
-type BaseRequestOptions = {
+export type BaseRequestOptions = {
     method?: string;
     path?: string;
-    qs?: Record<string, any>;
-    headers?: Record<string, any>;
-    body?: Record<string, any>;
+    qs?: Record<string, string>;
+    headers?: Record<string, string>;
+    body?;
     _numAttempts?: number;
 };
 
-type BaseResponse = Response & {statusCode: Response['status']};
+export type BaseResponse = Response & {statusCode: Response['status']};
 
-type AirtableBase = {
-    (tableName: string): Table;
-    _base: Base;
-    getId(): string;
-    makeRequest(options: BaseRequestOptions): Promise<BaseResponse>;
-    table(tableName: string): Table;
-};
-
-class Base {
+export class Base {
     readonly _airtable: Airtable;
     readonly _id: string;
 

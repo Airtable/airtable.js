@@ -9,7 +9,7 @@ class AirtableError {
         this.statusCode = statusCode;
     }
 
-    toString() {
+    toString(): string {
         return [
             this.message,
             '(',
