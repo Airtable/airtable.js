@@ -242,13 +242,13 @@ class Table {
                 `/${this._urlEncodedNameOrId()}/`,
                 {},
                 requestData,
-                (err, resp, {records}) => {
+                (err, resp, body) => {
                     if (err) {
                         done(err);
                         return;
                     }
 
-                    const result = records.map(record => {
+                    const result = body.records.map(record => {
                         return new Record(this, record.id, record);
                     });
                     done(null, result);
