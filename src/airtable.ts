@@ -68,13 +68,13 @@ class Airtable {
         return Base.createFunctor(this, baseId);
     }
 
-    static default_config(): {
+    static default_config(): ({
         endpointUrl: string,
         apiVersion: string,
         apiKey: string,
         noRetryIfRateLimited: boolean,
         requestTimeout: number,
-    } {
+    }) {
         return {
             endpointUrl: process.env.AIRTABLE_ENDPOINT_URL || 'https://api.airtable.com',
             apiVersion: '0.1.0',
