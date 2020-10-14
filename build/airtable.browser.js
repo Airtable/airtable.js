@@ -9,6 +9,7 @@ else if ('signal' in new Request('')) {
     AbortController = window.AbortController;
 }
 else {
+    /* eslint-disable-next-line */
     var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
     AbortController = polyfill.AbortController;
 }
