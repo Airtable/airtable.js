@@ -5,8 +5,9 @@ if (typeof window === 'undefined') {
 } else if ('signal' in new Request('')) {
     AbortController = window.AbortController;
 } else {
-    /* eslint-disable-next-line */
+    /* eslint-disable @typescript-eslint/no-var-requires */
     const polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
+    /* eslint-enable @typescript-eslint/no-var-requires */
     AbortController = polyfill.AbortController;
 }
 

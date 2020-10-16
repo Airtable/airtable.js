@@ -9,7 +9,7 @@ class HttpHeaders {
         this._headersByLowercasedKey = {};
     }
 
-    set(headerKey, headerValue) {
+    set(headerKey: string, headerValue: string): void {
         let lowercasedKey = headerKey.toLowerCase();
 
         if (lowercasedKey === 'x-airtable-user-agent') {
@@ -23,7 +23,7 @@ class HttpHeaders {
         };
     }
 
-    toJSON() {
+    toJSON(): {[key: string]: string} {
         const result = {};
         forEach(this._headersByLowercasedKey, (headerDefinition, lowercasedKey) => {
             let headerKey;

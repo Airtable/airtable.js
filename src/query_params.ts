@@ -42,6 +42,20 @@ export const paramValidators = {
     userLocale: check(isString, 'the value for `userLocale` should be a string'),
 };
 
-export type QueryParams = {
-    [key in keyof typeof paramValidators]?: Parameters<typeof paramValidators[key]>[0];
-};
+export interface SortParameter<TFields> {
+    field: keyof TFields;
+    direction?: 'asc' | 'desc';
+}
+
+export interface QueryParams<TFields> {
+    fields?: (keyof TFields)[];
+    filterByFormula?: string;
+    maxRecords?: number;
+    pageSize?: number;
+    offset?: number;
+    sort?: SortParameter<TFields>[];
+    view?: string;
+    cellFormat?: 'json' | 'string';
+    timeZone?: string;
+    userLocale?: string;
+}

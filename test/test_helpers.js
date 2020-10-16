@@ -112,8 +112,9 @@ function getMockEnvironmentAsync(options) {
     });
 
     // istanbul ignore next
-    // eslint-disable-next-line no-unused-vars
+    /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
     app.use(function(err, req, res, next) {
+        /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
         console.error(err);
         res.status(500);
         res.json({

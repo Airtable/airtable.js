@@ -1,40 +1,48 @@
 import assign from 'lodash/assign';
 import callbackToPromise from './callback_to_promise';
+import {FieldSet} from './field_set';
 import Table from './table';
 
-interface RecordCallback {
-    (error: null, record: Record): void;
-    (error: any): void;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type RecordError = any;
+type RecordJson = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+type OptionalParameters = {typecast: boolean};
+
+interface RecordCallback<TFields extends FieldSet> {
+    (error: null, record: Record<TFields>): void;
+    (error: RecordError): void;
 }
 
-interface RecordActionMethod {
-    (): Promise<Record>;
-    (done: RecordCallback): void;
+interface RecordActionMethod<TFields extends FieldSet> {
+    (): Promise<Record<TFields>>;
+    (done: RecordCallback<TFields>): void;
 }
 
-interface RecordChangeMethod {
-    (cellValuesByName: any, done: RecordCallback): void;
-    (cellValuesByName: any, opts: any, done: RecordCallback): void;
-    (cellValuesByName: any, opts?: any): Promise<Record>;
+interface RecordChangeMethod<TFields extends FieldSet> {
+    (cellValuesByName: TFields, done: RecordCallback<TFields>): void;
+    (cellValuesByName: TFields, opts: OptionalParameters, done: RecordCallback<TFields>): void;
+    (cellValuesByName: TFields, opts?: OptionalParameters): Promise<Record<TFields>>;
 }
 
-class Record {
-    readonly _table: Table;
-    _rawJson: any;
+class Record<TFields extends FieldSet> {
+    readonly _table: Table<TFields>;
+    _rawJson: RecordJson;
 
     readonly id: string;
-    fields: any;
+    fields: TFields;
 
-    readonly save: RecordActionMethod;
-    readonly patchUpdate: RecordChangeMethod;
-    readonly putUpdate: RecordChangeMethod;
-    readonly destroy: RecordActionMethod;
-    readonly fetch: RecordActionMethod;
+    readonly save: RecordActionMethod<TFields>;
+    readonly patchUpdate: RecordChangeMethod<TFields>;
+    readonly putUpdate: RecordChangeMethod<TFields>;
+    readonly destroy: RecordActionMethod<TFields>;
+    readonly fetch: RecordActionMethod<TFields>;
 
-    readonly updateFields: RecordChangeMethod;
-    readonly replaceFields: RecordChangeMethod;
+    readonly updateFields: RecordChangeMethod<TFields>;
+    readonly replaceFields: RecordChangeMethod<TFields>;
 
-    constructor(table: Table, recordId: string, recordJson?: any) {
+    constructor(table: Table<TFields>, recordId: string, recordJson?: RecordJson) {
         this._table = table;
         this.id = recordId || recordJson.id;
         this.setRawJson(recordJson);
@@ -49,29 +57,34 @@ class Record {
         this.replaceFields = this.putUpdate;
     }
 
-    getId() {
+    getId(): string {
         return this.id;
     }
 
-    get(columnName: string) {
+    get<Field extends keyof TFields>(columnName: Field): TFields[Field] {
         return this.fields[columnName];
     }
 
-    set(columnName: string, columnValue: any) {
+    set<Field extends keyof TFields>(columnName: Field, columnValue: TFields[Field]): void {
         this.fields[columnName] = columnValue;
     }
 
-    setRawJson(rawJson: any) {
+    setRawJson(rawJson: RecordJson): void {
         this._rawJson = rawJson;
         this.fields = (this._rawJson && this._rawJson.fields) || {};
     }
 }
 
-function save(this: Record, done: RecordCallback) {
+function save<TFields extends FieldSet>(this: Record<TFields>, done: RecordCallback<TFields>) {
     this.putUpdate(this.fields, done);
 }
 
-function patchUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) {
+function patchUpdate<TFields extends FieldSet>(
+    this: Record<TFields>,
+    cellValuesByName,
+    opts,
+    done?: RecordCallback<TFields>
+) {
     if (!done) {
         done = opts;
         opts = {};
@@ -100,7 +113,12 @@ function patchUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback
     );
 }
 
-function putUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) {
+function putUpdate<TFields extends FieldSet>(
+    this: Record<TFields>,
+    cellValuesByName,
+    opts,
+    done?: RecordCallback<TFields>
+) {
     if (!done) {
         done = opts;
         opts = {};
@@ -128,7 +146,7 @@ function putUpdate(this: Record, cellValuesByName, opts, done?: RecordCallback) 
     );
 }
 
-function destroy(this: Record, done: RecordCallback) {
+function destroy<TFields extends FieldSet>(this: Record<TFields>, done: RecordCallback<TFields>) {
     this._table._base.runAction(
         'delete',
         `/${this._table._urlEncodedNameOrId()}/${this.id}`,
@@ -145,7 +163,7 @@ function destroy(this: Record, done: RecordCallback) {
     );
 }
 
-function fetch(this: Record, done: RecordCallback) {
+function fetch<TFields extends FieldSet>(this: Record<TFields>, done: RecordCallback<TFields>) {
     this._table._base.runAction(
         'get',
         `/${this._table._urlEncodedNameOrId()}/${this.id}`,

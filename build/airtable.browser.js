@@ -9,8 +9,9 @@ else if ('signal' in new Request('')) {
     AbortController = window.AbortController;
 }
 else {
-    /* eslint-disable-next-line */
+    /* eslint-disable @typescript-eslint/no-var-requires */
     var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
+    /* eslint-enable @typescript-eslint/no-var-requires */
     AbortController = polyfill.AbortController;
 }
 module.exports = AbortController;
@@ -86,7 +87,6 @@ var Base = /** @class */ (function () {
             fetch_1.default(url, requestOptions)
                 .then(function (resp) {
                 clearTimeout(timeout);
-                resp.statusCode = resp.status;
                 if (resp.status === 429 && !_this._airtable._noRetryIfRateLimited) {
                     var numAttempts_1 = get_1.default(options, '_numAttempts', 0);
                     var backoffDelayMs = exponential_backoff_with_jitter_1.default(numAttempts_1);
@@ -219,20 +219,26 @@ module.exports = Base;
  * the function is not called with a callback for the last argument, the
  * function will return a promise instead.
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
 function callbackToPromise(fn, context, callbackArgIndex) {
     if (callbackArgIndex === void 0) { callbackArgIndex = void 0; }
+    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types */
     return function () {
+        var callArgs = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            callArgs[_i] = arguments[_i];
+        }
         var thisCallbackArgIndex;
         if (callbackArgIndex === void 0) {
             // istanbul ignore next
-            thisCallbackArgIndex = arguments.length > 0 ? arguments.length - 1 : 0;
+            thisCallbackArgIndex = callArgs.length > 0 ? callArgs.length - 1 : 0;
         }
         else {
             thisCallbackArgIndex = callbackArgIndex;
         }
-        var callbackArg = arguments[thisCallbackArgIndex];
+        var callbackArg = callArgs[thisCallbackArgIndex];
         if (typeof callbackArg === 'function') {
-            fn.apply(context, arguments);
+            fn.apply(context, callArgs);
             return void 0;
         }
         else {
@@ -240,9 +246,9 @@ function callbackToPromise(fn, context, callbackArgIndex) {
             // If an explicit callbackArgIndex is set, but the function is called
             // with too few arguments, we want to push undefined onto args so that
             // our constructed callback ends up at the right index.
-            var argLen = Math.max(arguments.length, thisCallbackArgIndex);
+            var argLen = Math.max(callArgs.length, thisCallbackArgIndex);
             for (var i = 0; i < argLen; i++) {
-                args_1.push(arguments[i]);
+                args_1.push(callArgs[i]);
             }
             return new Promise(function (resolve, reject) {
                 args_1.push(function (err, result) {
@@ -309,13 +315,13 @@ module.exports = exponentialBackoffWithJitter;
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+// istanbul ignore file
 var node_fetch_1 = __importDefault(require("node-fetch"));
-module.exports = (
-// istanbul ignore next
-typeof window === 'undefined' ? node_fetch_1.default : window.fetch.bind(window));
+module.exports = typeof window === 'undefined' ? node_fetch_1.default : window.fetch.bind(window);
 
 },{"node-fetch":20}],8:[function(require,module,exports){
 "use strict";
+/* eslint-enable @typescript-eslint/no-explicit-any */
 function has(object, property) {
     return Object.prototype.hasOwnProperty.call(object, property);
 }
@@ -378,6 +384,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var isArray_1 = __importDefault(require("lodash/isArray"));
 var forEach_1 = __importDefault(require("lodash/forEach"));
 var isNil_1 = __importDefault(require("lodash/isNil"));
+/* eslint-enable @typescript-eslint/no-explicit-any */
 // Adapted from jQuery.param:
 // https://github.com/jquery/jquery/blob/2.2-stable/src/serialize.js
 function buildParams(prefix, obj, addFn) {
@@ -884,7 +891,7 @@ var Table = /** @class */ (function () {
         if (isArray_1.default(recordsDataOrRecordId)) {
             var recordsData = recordsDataOrRecordId;
             opts = isPlainObject_1.default(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
-            done = optsOrDone || recordDataOrOptsOrDone;
+            done = (optsOrDone || recordDataOrOptsOrDone);
             var method = isDestructiveUpdate ? 'put' : 'patch';
             var requestData = assign_1.default({ records: recordsData }, opts);
             this._base.runAction(method, "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
@@ -902,7 +909,7 @@ var Table = /** @class */ (function () {
             var recordId = recordsDataOrRecordId;
             var recordData = recordDataOrOptsOrDone;
             opts = isPlainObject_1.default(optsOrDone) ? optsOrDone : {};
-            done = done || optsOrDone;
+            done = (done || optsOrDone);
             var record = new record_1.default(this, recordId);
             if (isDestructiveUpdate) {
                 record.putUpdate(recordData, opts, done);
@@ -992,6 +999,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var includes_1 = __importDefault(require("lodash/includes"));
 var isArray_1 = __importDefault(require("lodash/isArray"));
+/* eslint-enable @typescript-eslint/no-explicit-any */
 function check(fn, error) {
     return function (value) {
         if (fn(value)) {
