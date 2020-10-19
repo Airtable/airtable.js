@@ -2,17 +2,15 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 "use strict";
 // istanbul ignore file
 var AbortController;
-if (typeof window === 'undefined') {
+if (typeof window === 'undefined' || typeof window.Request === 'undefined') {
     AbortController = require('abort-controller');
 }
+else if ('signal' in new window.Request('')) {
+    AbortController = window.AbortController;
+}
 else {
-    if ('signal' in new Request('')) {
-        AbortController = window.AbortController;
-    }
-    else {
-        var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
-        AbortController = polyfill.AbortController;
-    }
+    var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
+    AbortController = polyfill.AbortController;
 }
 module.exports = AbortController;
 
@@ -310,7 +308,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var node_fetch_1 = __importDefault(require("node-fetch"));
 module.exports = (
 // istanbul ignore next
-typeof window === 'undefined' ? node_fetch_1.default : fetch);
+typeof window === 'undefined' || typeof window.fetch === 'undefined'
+    ? node_fetch_1.default : window.fetch.bind(window));
 
 },{"node-fetch":20}],8:[function(require,module,exports){
 "use strict";
@@ -525,7 +524,7 @@ function eachPage(pageCallback, done) {
     var inner = function () {
         _this._table._base.runAction('get', path, params, null, function (err, response, result) {
             if (err) {
-                done(err, null);
+                done(err);
             }
             else {
                 var next = void 0;
@@ -560,7 +559,7 @@ function all(done) {
         fetchNextPage();
     }, function (err) {
         if (err) {
-            done(err, null);
+            done(err);
         }
         else {
             done(null, allRecords);
@@ -1068,6 +1067,19 @@ function _setPrototypeOf(o, p) {
   return _setPrototypeOf(o, p);
 }
 
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -1082,6 +1094,25 @@ function _possibleConstructorReturn(self, call) {
   }
 
   return _assertThisInitialized(self);
+}
+
+function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+  return function _createSuperInternal() {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (hasNativeReflectConstruct) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
 }
 
 function _superPropBase(object, property) {
@@ -1114,9 +1145,7 @@ function _get(target, property, receiver) {
   return _get(target, property, receiver || target);
 }
 
-var Emitter =
-/*#__PURE__*/
-function () {
+var Emitter = /*#__PURE__*/function () {
   function Emitter() {
     _classCallCheck(this, Emitter);
 
@@ -1180,17 +1209,17 @@ function () {
   return Emitter;
 }();
 
-var AbortSignal =
-/*#__PURE__*/
-function (_Emitter) {
+var AbortSignal = /*#__PURE__*/function (_Emitter) {
   _inherits(AbortSignal, _Emitter);
+
+  var _super = _createSuper(AbortSignal);
 
   function AbortSignal() {
     var _this2;
 
     _classCallCheck(this, AbortSignal);
 
-    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(AbortSignal).call(this)); // Some versions of babel does not transpile super() correctly for IE <= 10, if the parent
+    _this2 = _super.call(this); // Some versions of babel does not transpile super() correctly for IE <= 10, if the parent
     // constructor has failed to run, then "this.listeners" will still be undefined and then we call
     // the parent constructor directly instead as a workaround. For general details, see babel bug:
     // https://github.com/babel/babel/issues/3041
@@ -1238,9 +1267,7 @@ function (_Emitter) {
 
   return AbortSignal;
 }(Emitter);
-var AbortController =
-/*#__PURE__*/
-function () {
+var AbortController = /*#__PURE__*/function () {
   function AbortController() {
     _classCallCheck(this, AbortController);
 
@@ -2016,7 +2043,8 @@ var Stack = require('./_Stack'),
     isMap = require('./isMap'),
     isObject = require('./isObject'),
     isSet = require('./isSet'),
-    keys = require('./keys');
+    keys = require('./keys'),
+    keysIn = require('./keysIn');
 
 /** Used to compose bitmasks for cloning. */
 var CLONE_DEEP_FLAG = 1,
@@ -2162,7 +2190,7 @@ function baseClone(value, bitmask, customizer, key, object, stack) {
 
 module.exports = baseClone;
 
-},{"./_Stack":29,"./_arrayEach":34,"./_assignValue":40,"./_baseAssign":42,"./_baseAssignIn":43,"./_cloneBuffer":83,"./_copyArray":88,"./_copySymbols":90,"./_copySymbolsIn":91,"./_getAllKeys":101,"./_getAllKeysIn":102,"./_getTag":110,"./_initCloneArray":118,"./_initCloneByTag":119,"./_initCloneObject":120,"./isArray":173,"./isBuffer":175,"./isMap":178,"./isObject":181,"./isSet":184,"./keys":188}],46:[function(require,module,exports){
+},{"./_Stack":29,"./_arrayEach":34,"./_assignValue":40,"./_baseAssign":42,"./_baseAssignIn":43,"./_cloneBuffer":83,"./_copyArray":88,"./_copySymbols":90,"./_copySymbolsIn":91,"./_getAllKeys":101,"./_getAllKeysIn":102,"./_getTag":110,"./_initCloneArray":118,"./_initCloneByTag":119,"./_initCloneObject":120,"./isArray":173,"./isBuffer":175,"./isMap":178,"./isObject":181,"./isSet":184,"./keys":188,"./keysIn":189}],46:[function(require,module,exports){
 var isObject = require('./isObject');
 
 /** Built-in value references. */
@@ -3544,10 +3572,11 @@ function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
   if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
     return false;
   }
-  // Assume cyclic values are equal.
-  var stacked = stack.get(array);
-  if (stacked && stack.get(other)) {
-    return stacked == other;
+  // Check that cyclic values are equal.
+  var arrStacked = stack.get(array);
+  var othStacked = stack.get(other);
+  if (arrStacked && othStacked) {
+    return arrStacked == other && othStacked == array;
   }
   var index = -1,
       result = true,
@@ -3755,10 +3784,11 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
       return false;
     }
   }
-  // Assume cyclic values are equal.
-  var stacked = stack.get(object);
-  if (stacked && stack.get(other)) {
-    return stacked == other;
+  // Check that cyclic values are equal.
+  var objStacked = stack.get(object);
+  var othStacked = stack.get(other);
+  if (objStacked && othStacked) {
+    return objStacked == other && othStacked == object;
   }
   var result = true;
   stack.set(object, other);
@@ -3805,13 +3835,13 @@ function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
 module.exports = equalObjects;
 
 },{"./_getAllKeys":101}],100:[function(require,module,exports){
-(function (global){
+(function (global){(function (){
 /** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
 
 module.exports = freeGlobal;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],101:[function(require,module,exports){
 var baseGetAllKeys = require('./_baseGetAllKeys'),
     getSymbols = require('./_getSymbols'),
