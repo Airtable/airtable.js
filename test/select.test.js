@@ -1,11 +1,11 @@
 'use strict';
 
-var testHelpers = require('./test_helpers');
+let testHelpers = require('./test_helpers');
 
 describe('record selection', function() {
-    var airtable;
-    var testExpressApp;
-    var teardownAsync;
+    let airtable;
+    let testExpressApp;
+    let teardownAsync;
 
     beforeAll(function() {
         return testHelpers.getMockEnvironmentAsync().then(function(env) {
@@ -85,7 +85,7 @@ describe('record selection', function() {
     });
 
     it('selects all records', function(done) {
-        var iterationCounter = 0;
+        let iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
             if (iterationCounter === 0) {
@@ -133,7 +133,7 @@ describe('record selection', function() {
             });
     });
 
-    it('handles errors when selecting  all records', function(done) {
+    it('handles errors when selecting all records', function(done) {
         testExpressApp.set('handler override', function(req, res) {
             res.status(402).json({
                 error: {message: 'foo bar'},
@@ -195,7 +195,7 @@ describe('record selection', function() {
     });
 
     it('selects records and paginates the selection without a done function', function(done) {
-        var iterationCounter = 0;
+        let iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
@@ -254,7 +254,7 @@ describe('record selection', function() {
     });
 
     it('selects records and paginates the selection with a done function', function(done) {
-        var iterationCounter = 0;
+        let iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
