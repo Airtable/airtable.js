@@ -223,6 +223,36 @@ describe('record updates', function() {
                     }
                 );
         });
+
+        it('can throw an error if a multi-record update call fails due to network error', function(done) {
+            testExpressApp.set('handler override', function(req, res) {
+                res.status(522).end();
+            });
+
+            return airtable
+                .base('app123')
+                .table('Table')
+                .update([
+                    {
+                        id: 'rec123',
+                        fields: {foo: 'boo'},
+                    },
+                    {
+                        id: 'rec456',
+                        fields: {bar: 'yar'},
+                    },
+                ])
+                .then(
+                    function() {
+                        throw new Error('Promise unexpectly fufilled.');
+                    },
+                    function(err) {
+                        expect(err.statusCode).toBe(522);
+                        expect(err.message).toBe('An unexpected error occurred');
+                        done();
+                    }
+                );
+        });
     });
 
     describe('destructive updates', function() {
