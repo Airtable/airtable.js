@@ -1,4 +1,4 @@
-import forEach from 'lodash/forEach';
+import keys from 'lodash/keys';
 
 const isBrowser = typeof window !== 'undefined';
 
@@ -25,7 +25,9 @@ class HttpHeaders {
 
     toJSON(): {[key: string]: string} {
         const result = {};
-        forEach(this._headersByLowercasedKey, (headerDefinition, lowercasedKey) => {
+        for (const lowercasedKey of keys(this._headersByLowercasedKey)) {
+            const headerDefinition = this._headersByLowercasedKey[lowercasedKey];
+
             let headerKey;
             /* istanbul ignore next */
             if (isBrowser && lowercasedKey === 'user-agent') {
@@ -37,7 +39,7 @@ class HttpHeaders {
             }
 
             result[headerKey] = headerDefinition.headerValue;
-        });
+        }
         return result;
     }
 }

@@ -1,7 +1,6 @@
-import forEach from 'lodash/forEach';
 import get from 'lodash/get';
-import assign from 'lodash/assign';
 import isPlainObject from 'lodash/isPlainObject';
+import keys from 'lodash/keys';
 import fetch from './fetch';
 import AbortController from './abort-controller';
 import objectToQueryParamString from './object_to_query_param_string';
@@ -87,9 +86,10 @@ class Base {
                         const numAttempts = get(options, '_numAttempts', 0);
                         const backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
                         setTimeout(() => {
-                            const newOptions = assign({}, options, {
+                            const newOptions = {
+                                ...options,
                                 _numAttempts: numAttempts + 1,
-                            });
+                            };
                             this.makeRequest(newOptions)
                                 .then(resolve)
                                 .catch(reject);
@@ -144,9 +144,9 @@ class Base {
         result.set('Authorization', `Bearer ${this._airtable._apiKey}`);
         result.set('User-Agent', userAgent);
         result.set('Content-Type', 'application/json');
-        forEach(headers, (headerValue, headerKey) => {
-            result.set(headerKey, headerValue);
-        });
+        for (const headerKey of keys(headers)) {
+            result.set(headerKey, headers[headerKey]);
+        }
 
         return result.toJSON();
     }
