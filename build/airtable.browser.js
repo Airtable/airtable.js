@@ -310,7 +310,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var node_fetch_1 = __importDefault(require("node-fetch"));
 module.exports = (
 // istanbul ignore next
-typeof window === 'undefined' ? node_fetch_1.default : fetch);
+typeof window === 'undefined' ? node_fetch_1.default : window.fetch.bind(window));
 
 },{"node-fetch":20}],8:[function(require,module,exports){
 "use strict";
