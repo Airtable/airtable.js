@@ -14,7 +14,7 @@
     "prepare": "rm -rf lib/* && tsc && grunt browserify"
   },
   "dependencies": {
-    "@types/node": "^14.0.14",
+    "@types/node": ">=8.0.0 <15",
     "abort-controller": "^3.0.0",
     "abortcontroller-polyfill": "^1.4.0",
     "lodash": "^4.17.19",
