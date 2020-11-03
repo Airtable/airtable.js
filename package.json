@@ -18,7 +18,7 @@
     "abort-controller": "^3.0.0",
     "abortcontroller-polyfill": "^1.4.0",
     "lodash": "^4.17.19",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.1"
   },
   "main": "./lib/airtable.js",
   "types": "./lib/airtable.d.ts",
