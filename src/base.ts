@@ -138,16 +138,6 @@ class Base {
     }
 
     _checkStatusForError(statusCode, body) {
-
-        const {
-            error = {}
-        } = body ?? {error: {}};
-
-        const {
-            type,
-            message
-        } = error;
-
         if (statusCode === 401) {
             return new AirtableError(
                 'AUTHENTICATION_REQUIRED',
@@ -161,23 +151,27 @@ class Base {
                 statusCode
             );
         } else if (statusCode === 404) {
-            return new AirtableError(
-                'NOT_FOUND',
-                message ?? 'Could not find what you are looking for',
-                statusCode
-            );
+            return (() => {
+                const message =
+                    body && body.error && body.error.message
+                        ? body.error.message
+                        : 'Could not find what you are looking for';
+                return new AirtableError('NOT_FOUND', message, statusCode);
+            })();
         } else if (statusCode === 413) {
-            return new AirtableError(
-                'REQUEST_TOO_LARGE',
-                'Request body is too large',
-                statusCode
-            );
+            return new AirtableError('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
         } else if (statusCode === 422) {
-            return new AirtableError(
-                type ?? 'UNPROCESSABLE_ENTITY',
-                message ?? 'The operation cannot be processed',
-                statusCode
-            );
+            return (() => {
+                const type =
+                    body && body.error && body.error.type
+                        ? body.error.type
+                        : 'UNPROCESSABLE_ENTITY';
+                const message =
+                    body && body.error && body.error.message
+                        ? body.error.message
+                        : 'The operation cannot be processed';
+                return new AirtableError(type, message, statusCode);
+            })();
         } else if (statusCode === 429) {
             return new AirtableError(
                 'TOO_MANY_REQUESTS',
@@ -197,11 +191,15 @@ class Base {
                 statusCode
             );
         } else if (statusCode >= 400) {
-            return new AirtableError(
-                type ?? 'UNEXPECTED_ERROR',
-                message ?? 'An unexpected error occurred',
-                statusCode
-            );
+            return (() => {
+                const type =
+                    body && body.error && body.error.type ? body.error.type : 'UNEXPECTED_ERROR';
+                const message =
+                    body && body.error && body.error.message
+                        ? body.error.message
+                        : 'An unexpected error occurred';
+                return new AirtableError(type, message, statusCode);
+            })();
         } else {
             return null;
         }

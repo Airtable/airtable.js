@@ -1,3 +1,9 @@
+# v0.10.1
+ * Fix error handler in updating an array (#223)
+ * Fix binding fetch to window (#235)
+ * Update lodash and node-fetch dependencies
+ * Widen @types/node dependency
+
 # v0.10.0
  * Convert to TypeScript. The project now comes with .d.ts typescript definition files.
 
