@@ -5,14 +5,13 @@ var AbortController;
 if (typeof window === 'undefined') {
     AbortController = require('abort-controller');
 }
+else if ('signal' in new Request('')) {
+    AbortController = window.AbortController;
+}
 else {
-    if ('signal' in new Request('')) {
-        AbortController = window.AbortController;
-    }
-    else {
-        var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
-        AbortController = polyfill.AbortController;
-    }
+    /* eslint-disable-next-line */
+    var polyfill = require('abortcontroller-polyfill/dist/cjs-ponyfill');
+    AbortController = polyfill.AbortController;
 }
 module.exports = AbortController;
 
@@ -188,10 +187,11 @@ var Base = /** @class */ (function () {
         var baseFn = function (tableName) {
             return base.doCall(tableName);
         };
-        forEach_1.default(['table', 'makeRequest', 'runAction', 'getId'], function (baseMethod) {
-            baseFn[baseMethod] = base[baseMethod].bind(base);
-        });
         baseFn._base = base;
+        baseFn.table = base.table.bind(base);
+        baseFn.makeRequest = base.makeRequest.bind(base);
+        baseFn.runAction = base.runAction.bind(base);
+        baseFn.getId = base.getId.bind(base);
         return baseFn;
     };
     return Base;

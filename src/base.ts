@@ -12,27 +12,12 @@ import runAction from './run_action';
 import packageVersion from './package_version';
 import exponentialBackoffWithJitter from './exponential_backoff_with_jitter';
 import type Airtable from './airtable';
+import {AirtableBase} from './airtable_base';
+import {AirtableRequestOptions} from './airtable_request_options';
 
 const userAgent = `Airtable.js/${packageVersion}`;
 
-type BaseRequestOptions = {
-    method?: string;
-    path?: string;
-    qs?: Record<string, any>;
-    headers?: Record<string, any>;
-    body?: Record<string, any>;
-    _numAttempts?: number;
-};
-
 type BaseResponse = Response & {statusCode: Response['status']};
-
-type AirtableBase = {
-    (tableName: string): Table;
-    _base: Base;
-    getId(): string;
-    makeRequest(options: BaseRequestOptions): Promise<BaseResponse>;
-    table(tableName: string): Table;
-};
 
 class Base {
     readonly _airtable: Airtable;
@@ -47,7 +32,7 @@ class Base {
         return new Table(this, null, tableName);
     }
 
-    makeRequest(options: BaseRequestOptions = {}) {
+    makeRequest(options: AirtableRequestOptions = {}) {
         const method = get(options, 'method', 'GET').toUpperCase();
 
         const url = `${this._airtable._endpointUrl}/v${this._airtable._apiVersionMajor}/${
@@ -220,11 +205,12 @@ class Base {
         const baseFn = tableName => {
             return base.doCall(tableName);
         };
-        forEach(['table', 'makeRequest', 'runAction', 'getId'], baseMethod => {
-            baseFn[baseMethod] = base[baseMethod].bind(base);
-        });
         baseFn._base = base;
-        return baseFn as AirtableBase;
+        baseFn.table = base.table.bind(base);
+        baseFn.makeRequest = base.makeRequest.bind(base);
+        baseFn.runAction = base.runAction.bind(base);
+        baseFn.getId = base.getId.bind(base);
+        return baseFn;
     }
 }
 

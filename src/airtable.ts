@@ -2,6 +2,7 @@ import Base from './base';
 import Record from './record';
 import Table from './table';
 import AirtableError from './airtable_error';
+import {AirtableBase} from './airtable_base';
 
 class Airtable {
     readonly _apiKey: string;
@@ -63,11 +64,17 @@ class Airtable {
         }
     }
 
-    base(baseId: string) {
+    base(baseId: string): AirtableBase {
         return Base.createFunctor(this, baseId);
     }
 
-    static default_config() {
+    static default_config(): ({
+        endpointUrl: string,
+        apiVersion: string,
+        apiKey: string,
+        noRetryIfRateLimited: boolean,
+        requestTimeout: number,
+    }) {
         return {
             endpointUrl: process.env.AIRTABLE_ENDPOINT_URL || 'https://api.airtable.com',
             apiVersion: '0.1.0',
@@ -77,14 +84,19 @@ class Airtable {
         };
     }
 
-    static configure({apiKey, endpointUrl, apiVersion, noRetryIfRateLimited}) {
+    static configure({apiKey, endpointUrl, apiVersion, noRetryIfRateLimited}: {
+        apiKey: string,
+        endpointUrl: string,
+        apiVersion: string,
+        noRetryIfRateLimited: boolean,
+    }): void {
         Airtable.apiKey = apiKey;
         Airtable.endpointUrl = endpointUrl;
         Airtable.apiVersion = apiVersion;
         Airtable.noRetryIfRateLimited = noRetryIfRateLimited;
     }
 
-    static base(baseId: string) {
+    static base(baseId: string): AirtableBase {
         return new Airtable().base(baseId);
     }
 }
