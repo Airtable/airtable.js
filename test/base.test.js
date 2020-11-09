@@ -176,6 +176,54 @@ describe('Base', function() {
                         expect(req.get('user-agent')).toEqual('bazz');
                     });
             });
+
+            it('allows custom headers set via Airtable constructor', function() {
+                testExpressApp.set('handler override', (req, res) => {
+                    res.status(200)
+                        .json({})
+                        .end();
+                });
+
+                var base = new Airtable({
+                    apiKey: 'key123',
+                    endpointUrl: airtable._endpointUrl,
+                    customHeaders: {
+                        cookie: 'crisp=true',
+                    },
+                }).base('app123');
+
+                return base.makeRequest().then(function() {
+                    const req = testExpressApp.get('most recent request');
+                    expect(req.get('cookie')).toEqual('crisp=true');
+                });
+            });
+
+            it('allows custom headers set via Airtable constructor to be overridden', function() {
+                testExpressApp.set('handler override', (req, res) => {
+                    res.status(200)
+                        .json({})
+                        .end();
+                });
+
+                var base = new Airtable({
+                    apiKey: 'key123',
+                    endpointUrl: airtable._endpointUrl,
+                    customHeaders: {
+                        cookie: 'crisp=true',
+                    },
+                }).base('app123');
+
+                return base
+                    .makeRequest({
+                        headers: {
+                            cookie: 'soft=chewy',
+                        },
+                    })
+                    .then(function() {
+                        const req = testExpressApp.get('most recent request');
+                        expect(req.get('cookie')).toEqual('soft=chewy');
+                    });
+            });
         });
 
         describe('request body', function() {
