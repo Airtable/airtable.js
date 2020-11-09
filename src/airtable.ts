@@ -3,12 +3,16 @@ import Record from './record';
 import Table from './table';
 import AirtableError from './airtable_error';
 import {AirtableBase} from './airtable_base';
+import type {ObjectMap} from './object_map';
+
+type CustomHeaders = ObjectMap<string, string | number | boolean>;
 
 class Airtable {
     readonly _apiKey: string;
-    readonly _endpointUrl: string;
     readonly _apiVersion: string;
     readonly _apiVersionMajor: string;
+    readonly _customHeaders: CustomHeaders;
+    readonly _endpointUrl: string;
     readonly _noRetryIfRateLimited: boolean;
 
     requestTimeout: number;
@@ -27,9 +31,10 @@ class Airtable {
         opts: {
             apiKey?: string;
             apiVersion?: string;
+            customHeaders?: CustomHeaders;
             endpointUrl?: string;
-            requestTimeout?: number;
             noRetryIfRateLimited?: boolean;
+            requestTimeout?: number;
         } = {}
     ) {
         const defaultConfig = Airtable.default_config();
@@ -40,14 +45,17 @@ class Airtable {
             _apiKey: {
                 value: opts.apiKey || Airtable.apiKey || defaultConfig.apiKey,
             },
-            _endpointUrl: {
-                value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
-            },
             _apiVersion: {
                 value: apiVersion,
             },
             _apiVersionMajor: {
                 value: apiVersion.split('.')[0],
+            },
+            _customHeaders: {
+                value: opts.customHeaders || {},
+            },
+            _endpointUrl: {
+                value: opts.endpointUrl || Airtable.endpointUrl || defaultConfig.endpointUrl,
             },
             _noRetryIfRateLimited: {
                 value:

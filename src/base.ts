@@ -40,10 +40,17 @@ class Base {
         }${get(options, 'path', '/')}?${objectToQueryParamString(get(options, 'qs', {}))}`;
 
         const controller = new AbortController();
+        const headers = this._getRequestHeaders(
+            Object.assign(
+                {},
+                this._airtable._customHeaders,
+                options.headers ?? {}
+            )
+        );
 
         const requestOptions: RequestInit = {
             method,
-            headers: this._getRequestHeaders(get(options, 'headers', {})),
+            headers,
             signal: controller.signal,
         };
 
