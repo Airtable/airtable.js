@@ -45,7 +45,6 @@ var forEach_1 = __importDefault(require("lodash/forEach"));
 var get_1 = __importDefault(require("lodash/get"));
 var assign_1 = __importDefault(require("lodash/assign"));
 var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
-var fetch_1 = __importDefault(require("./fetch"));
 var abort_controller_1 = __importDefault(require("./abort-controller"));
 var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
 var airtable_error_1 = __importDefault(require("./airtable_error"));
@@ -83,7 +82,7 @@ var Base = /** @class */ (function () {
             controller.abort();
         }, this._airtable.requestTimeout);
         return new Promise(function (resolve, reject) {
-            fetch_1.default(url, requestOptions)
+            _this._airtable._fetch(url, requestOptions)
                 .then(function (resp) {
                 clearTimeout(timeout);
                 resp.statusCode = resp.status;
@@ -211,7 +210,7 @@ function _getErrorForNonObjectBody(statusCode, body) {
 }
 module.exports = Base;
 
-},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":16,"./table":17,"lodash/assign":163,"lodash/forEach":167,"lodash/get":168,"lodash/isPlainObject":183}],4:[function(require,module,exports){
+},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":16,"./table":17,"lodash/assign":163,"lodash/forEach":167,"lodash/get":168,"lodash/isPlainObject":183}],4:[function(require,module,exports){
 "use strict";
 /**
  * Given a function fn that takes a callback as its last argument, returns
@@ -709,7 +708,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var exponential_backoff_with_jitter_1 = __importDefault(require("./exponential_backoff_with_jitter"));
 var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
 var package_version_1 = __importDefault(require("./package_version"));
-var fetch_1 = __importDefault(require("./fetch"));
 var abort_controller_1 = __importDefault(require("./abort-controller"));
 var userAgent = "Airtable.js/" + package_version_1.default;
 function runAction(base, method, path, queryParams, bodyData, callback, numAttempts) {
@@ -747,7 +745,8 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
     var timeout = setTimeout(function () {
         controller.abort();
     }, base._airtable.requestTimeout);
-    fetch_1.default(url, options)
+    base._airtable
+        ._fetch(url, options)
         .then(function (resp) {
         clearTimeout(timeout);
         if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {
@@ -782,7 +781,7 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
 }
 module.exports = runAction;
 
-},{"./abort-controller":1,"./exponential_backoff_with_jitter":6,"./fetch":7,"./object_to_query_param_string":11,"./package_version":12}],17:[function(require,module,exports){
+},{"./abort-controller":1,"./exponential_backoff_with_jitter":6,"./object_to_query_param_string":11,"./package_version":12}],17:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -6757,6 +6756,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var base_1 = __importDefault(require("./base"));
 var record_1 = __importDefault(require("./record"));
 var table_1 = __importDefault(require("./table"));
+var fetch_1 = __importDefault(require("./fetch"));
 var airtable_error_1 = __importDefault(require("./airtable_error"));
 var Airtable = /** @class */ (function () {
     function Airtable(opts) {
@@ -6784,6 +6784,9 @@ var Airtable = /** @class */ (function () {
                     Airtable.noRetryIfRateLimited ||
                     defaultConfig.noRetryIfRateLimited,
             },
+            _fetch: {
+                value: opts.fetch || fetch_1.default
+            }
         });
         this.requestTimeout = opts.requestTimeout || defaultConfig.requestTimeout;
         if (!this._apiKey) {
@@ -6820,4 +6823,4 @@ var Airtable = /** @class */ (function () {
 }());
 module.exports = Airtable;
 
-},{"./airtable_error":2,"./base":3,"./record":15,"./table":17}]},{},["airtable"]);
+},{"./airtable_error":2,"./base":3,"./fetch":7,"./record":15,"./table":17}]},{},["airtable"]);

@@ -1,7 +1,6 @@
 import exponentialBackoffWithJitter from './exponential_backoff_with_jitter';
 import objectToQueryParamString from './object_to_query_param_string';
 import packageVersion from './package_version';
-import fetch from './fetch';
 import AbortController from './abort-controller';
 
 const userAgent = `Airtable.js/${packageVersion}`;
@@ -46,7 +45,8 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
         controller.abort();
     }, base._airtable.requestTimeout);
 
-    fetch(url, options)
+    base._airtable
+        ._fetch(url, options)
         .then((resp: Response & {statusCode: Response['status']}) => {
             clearTimeout(timeout);
             if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {

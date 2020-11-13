@@ -1,6 +1,7 @@
 import Base from './base';
 import Record from './record';
 import Table from './table';
+import fetch from './fetch';
 import AirtableError from './airtable_error';
 import {AirtableBase} from './airtable_base';
 import type {ObjectMap} from './object_map';
@@ -14,6 +15,7 @@ class Airtable {
     readonly _customHeaders: CustomHeaders;
     readonly _endpointUrl: string;
     readonly _noRetryIfRateLimited: boolean;
+    readonly _fetch: typeof fetch;
 
     requestTimeout: number;
 
@@ -35,6 +37,7 @@ class Airtable {
             endpointUrl?: string;
             noRetryIfRateLimited?: boolean;
             requestTimeout?: number;
+            fetch?: typeof fetch;
         } = {}
     ) {
         const defaultConfig = Airtable.default_config();
@@ -63,6 +66,9 @@ class Airtable {
                     Airtable.noRetryIfRateLimited ||
                     defaultConfig.noRetryIfRateLimited,
             },
+            _fetch: {
+                value: opts.fetch || fetch
+            }
         });
 
         this.requestTimeout = opts.requestTimeout || defaultConfig.requestTimeout;

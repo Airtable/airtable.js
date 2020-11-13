@@ -2,7 +2,6 @@ import forEach from 'lodash/forEach';
 import get from 'lodash/get';
 import assign from 'lodash/assign';
 import isPlainObject from 'lodash/isPlainObject';
-import fetch from './fetch';
 import AbortController from './abort-controller';
 import objectToQueryParamString from './object_to_query_param_string';
 import AirtableError from './airtable_error';
@@ -63,7 +62,7 @@ class Base {
         }, this._airtable.requestTimeout);
 
         return new Promise((resolve, reject) => {
-            fetch(url, requestOptions)
+            this._airtable._fetch(url, requestOptions)
                 .then((resp: BaseResponse) => {
                     clearTimeout(timeout);
                     resp.statusCode = resp.status;
