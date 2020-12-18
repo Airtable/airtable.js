@@ -2,5 +2,11 @@
     "env": {
         "jest": true,
         "es6": true
+    },
+    "rules": {
+        "no-var": "off",
+        "prefer-rest-params": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-empty-function": "off"
     }
 }

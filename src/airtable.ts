@@ -1,9 +1,17 @@
 import Base from './base';
-import Record from './record';
-import Table from './table';
+import AirtableRecord from './record';
+import AirtableTable from './table';
 import AirtableError from './airtable_error';
+import AirtableQuery from './query';
 import {AirtableBase} from './airtable_base';
-import type {ObjectMap} from './object_map';
+import {ObjectMap} from './object_map';
+import {FieldSet as AirtableFieldSet} from './field_set';
+import {Collaborator as AirtableCollaborator} from './collaborator';
+import {Thumbnail as AirtableThumbnail} from './thumbnail';
+import {Attachment as AirtableAttachment} from './attachment';
+import {Records as AirtableRecords} from './records';
+import {RecordData as AirtableRecordData} from './record_data';
+import {QueryParams as AirtableSelectOptions} from './query_params';
 
 type CustomHeaders = ObjectMap<string, string | number | boolean>;
 
@@ -18,8 +26,8 @@ class Airtable {
     requestTimeout: number;
 
     static Base = Base;
-    static Record = Record;
-    static Table = Table;
+    static Record = AirtableRecord;
+    static Table = AirtableTable;
     static Error = AirtableError;
 
     static apiKey: string;
@@ -27,16 +35,7 @@ class Airtable {
     static endpointUrl: string;
     static noRetryIfRateLimited: boolean;
 
-    constructor(
-        opts: {
-            apiKey?: string;
-            apiVersion?: string;
-            customHeaders?: CustomHeaders;
-            endpointUrl?: string;
-            noRetryIfRateLimited?: boolean;
-            requestTimeout?: number;
-        } = {}
-    ) {
+    constructor(opts: Airtable.AirtableOptions = {}) {
         const defaultConfig = Airtable.default_config();
 
         const apiVersion = opts.apiVersion || Airtable.apiVersion || defaultConfig.apiVersion;
@@ -72,17 +71,11 @@ class Airtable {
         }
     }
 
-    base(baseId: string): AirtableBase {
+    base(baseId: string): Airtable.Base {
         return Base.createFunctor(this, baseId);
     }
 
-    static default_config(): ({
-        endpointUrl: string,
-        apiVersion: string,
-        apiKey: string,
-        noRetryIfRateLimited: boolean,
-        requestTimeout: number,
-    }) {
+    static default_config(): Airtable.AirtableOptions {
         return {
             endpointUrl: process.env.AIRTABLE_ENDPOINT_URL || 'https://api.airtable.com',
             apiVersion: '0.1.0',
@@ -92,21 +85,48 @@ class Airtable {
         };
     }
 
-    static configure({apiKey, endpointUrl, apiVersion, noRetryIfRateLimited}: {
-        apiKey: string,
-        endpointUrl: string,
-        apiVersion: string,
-        noRetryIfRateLimited: boolean,
-    }): void {
+    static configure({
+        apiKey,
+        endpointUrl,
+        apiVersion,
+        noRetryIfRateLimited,
+    }: Pick<Airtable.AirtableOptions, 'apiKey' | 'endpointUrl' | 'apiVersion' | 'noRetryIfRateLimited'>): void {
         Airtable.apiKey = apiKey;
         Airtable.endpointUrl = endpointUrl;
         Airtable.apiVersion = apiVersion;
         Airtable.noRetryIfRateLimited = noRetryIfRateLimited;
     }
 
-    static base(baseId: string): AirtableBase {
+    static base(baseId: string): Airtable.Base {
         return new Airtable().base(baseId);
     }
+}
+
+/* eslint-disable no-redeclare, @typescript-eslint/no-namespace */
+namespace Airtable {
+    /* eslint-enable no-redeclare, @typescript-eslint/no-namespace */
+    export interface AirtableOptions {
+        apiKey?: string;
+        apiVersion?: string;
+        customHeaders?: CustomHeaders;
+        endpointUrl?: string;
+        noRetryIfRateLimited?: boolean;
+        requestTimeout?: number;
+    }
+
+    export type FieldSet = AirtableFieldSet;
+    export type Collaborator = AirtableCollaborator;
+    export type Attachment = AirtableAttachment;
+    export type Thumbnail = AirtableThumbnail;
+
+    export type Base = AirtableBase;
+    export type Error = AirtableError;
+    export type Table<TFields extends AirtableFieldSet> = AirtableTable<TFields>;
+    export type SelectOptions<TFields> = AirtableSelectOptions<TFields>;
+    export type Query<TFields extends AirtableFieldSet> = AirtableQuery<TFields>;
+    export type Record<TFields extends AirtableFieldSet> = AirtableRecord<TFields>;
+    export type RecordData<TFields extends AirtableFieldSet> = AirtableRecordData<TFields>;
+    export type Records<TFields extends AirtableFieldSet> = AirtableRecords<TFields>;
 }
 
 export = Airtable;

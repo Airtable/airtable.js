@@ -9,57 +9,106 @@ import {QueryParams} from './query_params';
 import Record from './record';
 import callbackToPromise from './callback_to_promise';
 import Base from './base';
+import {Records} from './records';
+import {FieldSet} from './field_set';
+import {RecordData} from './record_data';
 
-type OptionalParameters = {[key: string]: any};
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type TableError = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
-type RecordCallback = (error: any, record?: Record) => void;
-type RecordCollectionCallback = (error: any, records?: Record[]) => void;
+type CreateRecord<TFields> = Pick<RecordData<Partial<TFields>>, 'fields'>;
+type CreateRecords<TFields> = string[] | Partial<TFields>[] | CreateRecord<TFields>[];
 
-interface TableFindRecord {
-    (recordId: string): Promise<Record>;
-    (recordId: string, done: RecordCallback): void;
+type OptionalParameters = {typecast?: boolean};
+
+type RecordCollectionCallback<TFields extends FieldSet> = (
+    error: TableError,
+    records?: Records<TFields>
+) => void;
+type RecordCallback<TFields extends FieldSet> = (
+    error: TableError,
+    record?: Record<TFields>
+) => void;
+type RecordListCallback<TFields extends FieldSet> = (
+    error: TableError,
+    records?: Records<TFields>,
+    offset?: number
+) => void;
+type RecordForEachCallback<TFields extends FieldSet> = (record: Record<TFields>) => void;
+type RecordForEachDoneCallback = (error?: TableError) => void;
+
+interface TableFindRecord<TFields extends FieldSet> {
+    (recordId: string): Promise<Record<TFields>>;
+    (recordId: string, done: RecordCallback<TFields>): void;
 }
 
-interface TableCreateRecords {
-    (recordsData: any[], optionalParameters?: OptionalParameters): Promise<Record[]>;
+interface TableSelectRecord<TFields extends FieldSet> {
+    (params?: QueryParams<TFields>): Query<TFields>;
+}
+
+interface TableCreateRecords<TFields extends FieldSet> {
+    (recordsData: CreateRecords<TFields>, optionalParameters?: OptionalParameters): Promise<
+        Records<TFields>
+    >;
     (
-        recordsData: any[],
+        recordsData: CreateRecords<TFields>,
         optionalParameters: OptionalParameters,
-        done: RecordCollectionCallback
+        done: RecordCollectionCallback<TFields>
     ): void;
-    (recordsData: any[], done: RecordCollectionCallback): void;
-    (recordData: any, optionalParameters?: OptionalParameters): Promise<Record>;
-    (recordData: any, optionalParameters: OptionalParameters, done: RecordCallback): void;
-    (recordData: any, done: RecordCallback): void;
+    (recordsData: CreateRecords<TFields>, done: RecordCollectionCallback<TFields>): void;
+    (recordData: string | Partial<TFields>, optionalParameters?: OptionalParameters): Promise<
+        Record<TFields>
+    >;
+    (
+        recordData: string | Partial<TFields>,
+        optionalParameters: OptionalParameters,
+        done: RecordCallback<TFields>
+    ): void;
+    (recordData: string | Partial<TFields>, done: RecordCallback<TFields>): void;
 }
 
-interface TableChangeRecords {
-    (recordId: string, recordData: any, opts?: OptionalParameters): Promise<Record>;
-    (recordId: string, recordData: any, opts: OptionalParameters, done: RecordCallback): void;
-    (recordId: string, recordData: any, done: RecordCallback): void;
-    (recordsData: any[], opts?: OptionalParameters): Promise<Record[]>;
-    (recordsData: any[], opts: OptionalParameters, done: RecordCollectionCallback): void;
-    (recordsData: any[], done: RecordCollectionCallback): void;
+interface TableChangeRecords<TFields extends FieldSet> {
+    (recordId: string, recordData: Partial<TFields>, opts?: OptionalParameters): Promise<
+        Record<TFields>
+    >;
+    (
+        recordId: string,
+        recordData: Partial<TFields>,
+        opts: OptionalParameters,
+        done: RecordCallback<TFields>
+    ): void;
+    (recordId: string, recordData: Partial<TFields>, done: RecordCallback<TFields>): void;
+    (recordsData: RecordData<Partial<TFields>>[], opts?: OptionalParameters): Promise<
+        Records<TFields>
+    >;
+    (
+        recordsData: RecordData<Partial<TFields>>[],
+        opts: OptionalParameters,
+        done: RecordCollectionCallback<TFields>
+    ): void;
+    (recordsData: RecordData<Partial<TFields>>[], done: RecordCollectionCallback<TFields>): void;
 }
 
-interface TableDestroyRecords {
-    (recordId: string): Promise<Record>;
-    (recordIds: string[]): Promise<Record[]>;
-    (recordIds: string[], done: RecordCollectionCallback): void;
+interface TableDestroyRecords<TFields extends FieldSet> {
+    (recordId: string): Promise<Record<TFields>>;
+    (recordId: string, done: RecordCallback<TFields>): void;
+    (recordIds: string[]): Promise<Records<TFields>>;
+    (recordIds: string[], done: RecordCollectionCallback<TFields>): void;
 }
 
-class Table {
+class Table<TFields extends FieldSet> {
     readonly _base: Base;
 
     readonly id: string;
     readonly name: string;
 
-    readonly find: TableFindRecord;
-    readonly select: (params?: QueryParams) => Query;
-    readonly create: TableCreateRecords;
-    readonly update: TableChangeRecords;
-    readonly replace: TableChangeRecords;
-    readonly destroy: TableDestroyRecords;
+    readonly find: TableFindRecord<TFields>;
+    readonly select: TableSelectRecord<TFields>;
+    readonly create: TableCreateRecords<TFields>;
+    readonly update: TableChangeRecords<TFields>;
+    readonly replace: TableChangeRecords<TFields>;
+    readonly destroy: TableDestroyRecords<TFields>;
 
     /** @deprecated */
     readonly list;
@@ -98,12 +147,12 @@ class Table {
         );
     }
 
-    _findRecordById(recordId: string, done: RecordCallback) {
+    _findRecordById(recordId: string, done: RecordCallback<TFields>): void {
         const record = new Record(this, recordId);
         record.fetch(done);
     }
 
-    _selectRecords(params?: QueryParams): Query {
+    _selectRecords(params?: QueryParams<TFields>): Query<TFields> {
         if (params === void 0) {
             params = {};
         }
@@ -115,7 +164,7 @@ class Table {
         }
 
         if (isPlainObject(params)) {
-            const validationResults = Query.validateParams(params);
+            const validationResults = Query.validateParams<TFields>(params);
 
             if (validationResults.errors.length) {
                 const formattedErrors = map(validationResults.errors, error => {
@@ -147,23 +196,32 @@ class Table {
         return this.id || encodeURIComponent(this.name);
     }
 
-    _createRecords(recordData: any, done: RecordCallback): void;
+    _createRecords(recordData: TFields, done: RecordCallback<TFields>): void;
     _createRecords(
-        recordData: any,
+        recordData: TFields,
         optionalParameters: OptionalParameters,
-        done: RecordCallback
+        done: RecordCallback<TFields>
     ): void;
-    _createRecords(recordsData: any[], done: RecordCollectionCallback): void;
+    _createRecords(recordsData: TFields[], done: RecordCollectionCallback<TFields>): void;
     _createRecords(
-        recordsData: any[],
+        recordsData: TFields[],
         optionalParameters: OptionalParameters,
-        done: RecordCollectionCallback
+        done: RecordCollectionCallback<TFields>
     ): void;
-    _createRecords(recordsData, optionalParameters, done?) {
+    _createRecords(
+        recordsData: TFields | TFields[],
+        optionalParameters:
+            | OptionalParameters
+            | RecordCallback<TFields>
+            | RecordCollectionCallback<TFields>,
+        done?: RecordCallback<TFields> | RecordCollectionCallback<TFields>
+    ): void | Promise<Record<TFields>> | Promise<Records<TFields>> {
         const isCreatingMultipleRecords = isArray(recordsData);
 
         if (!done) {
-            done = optionalParameters;
+            done = optionalParameters as
+                | RecordCallback<TFields>
+                | RecordCollectionCallback<TFields>;
             optionalParameters = {};
         }
         let requestData;
@@ -200,40 +258,43 @@ class Table {
     _updateRecords(
         isDestructiveUpdate: boolean,
         recordId: string,
-        recordData: any,
-        done: RecordCallback
+        recordData: TFields,
+        done: RecordCallback<TFields>
     ): void;
     _updateRecords(
         isDestructiveUpdate: boolean,
         recordId: string,
-        recordData: any,
+        recordData: TFields,
         opts: OptionalParameters,
-        done: RecordCallback
+        done: RecordCallback<TFields>
     ): void;
     _updateRecords(
         isDestructiveUpdate: boolean,
-        recordsData: any[],
-        done: RecordCollectionCallback
+        recordsData: TFields[],
+        done: RecordCollectionCallback<TFields>
     ): void;
     _updateRecords(
         isDestructiveUpdate: boolean,
-        recordsData: any[],
+        recordsData: TFields[],
         opts: OptionalParameters,
-        done: RecordCollectionCallback
+        done: RecordCollectionCallback<TFields>
     ): void;
     _updateRecords(
         isDestructiveUpdate: boolean,
-        recordsDataOrRecordId,
-        recordDataOrOptsOrDone,
-        optsOrDone?,
-        done?
-    ) {
+        recordsDataOrRecordId: string | TFields[],
+        recordDataOrOptsOrDone: TFields | OptionalParameters | RecordCollectionCallback<TFields>,
+        optsOrDone?:
+            | OptionalParameters
+            | RecordCallback<TFields>
+            | RecordCollectionCallback<TFields>,
+        done?: RecordCallback<TFields> | RecordCollectionCallback<TFields>
+    ): void | Promise<Record<TFields>> | Promise<Records<TFields>> {
         let opts;
 
         if (isArray(recordsDataOrRecordId)) {
             const recordsData = recordsDataOrRecordId;
             opts = isPlainObject(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
-            done = optsOrDone || recordDataOrOptsOrDone;
+            done = (optsOrDone || recordDataOrOptsOrDone) as RecordCollectionCallback<TFields>;
 
             const method = isDestructiveUpdate ? 'put' : 'patch';
             const requestData = assign({records: recordsData}, opts);
@@ -255,10 +316,10 @@ class Table {
                 }
             );
         } else {
-            const recordId = recordsDataOrRecordId;
-            const recordData = recordDataOrOptsOrDone;
+            const recordId = recordsDataOrRecordId as string;
+            const recordData = recordDataOrOptsOrDone as TFields;
             opts = isPlainObject(optsOrDone) ? optsOrDone : {};
-            done = done || optsOrDone;
+            done = (done || optsOrDone) as RecordCallback<TFields>;
 
             const record = new Record(this, recordId);
             if (isDestructiveUpdate) {
@@ -269,9 +330,12 @@ class Table {
         }
     }
 
-    _destroyRecord(recordId: string, done: RecordCallback): void;
-    _destroyRecord(recordIds: string[], done: RecordCollectionCallback): void;
-    _destroyRecord(recordIdsOrId, done) {
+    _destroyRecord(recordId: string, done: RecordCallback<TFields>): void;
+    _destroyRecord(recordIds: string[], done: RecordCollectionCallback<TFields>): void;
+    _destroyRecord(
+        recordIdsOrId: string | string[],
+        done: RecordCallback<TFields> | RecordCollectionCallback<TFields>
+    ): void | Promise<Record<TFields>> | Promise<Record<TFields>> {
         if (isArray(recordIdsOrId)) {
             const queryParams = {records: recordIdsOrId};
             this._base.runAction(
@@ -288,18 +352,23 @@ class Table {
                     const records = map(results.records, ({id}) => {
                         return new Record(this, id, null);
                     });
-                    done(null, records);
+                    (done as RecordCollectionCallback<TFields>)(null, records);
                 }
             );
         } else {
             const record = new Record(this, recordIdsOrId);
-            record.destroy(done);
+            record.destroy(done as RecordCallback<TFields>);
         }
     }
 
-    _listRecords(limit, offset, opts, done) {
+    _listRecords(
+        limit: number,
+        offset: number,
+        opts: OptionalParameters | RecordListCallback<TFields>,
+        done?: RecordListCallback<TFields>
+    ): void {
         if (!done) {
-            done = opts;
+            done = opts as RecordListCallback<TFields>;
             opts = {};
         }
         const listRecordsParameters = assign(
@@ -329,10 +398,14 @@ class Table {
         );
     }
 
-    _forEachRecord(opts, callback, done) {
+    _forEachRecord(
+        opts: OptionalParameters,
+        callback: RecordForEachCallback<TFields>,
+        done: RecordForEachDoneCallback
+    ): void {
         if (arguments.length === 2) {
-            done = callback;
-            callback = opts;
+            done = callback as RecordForEachDoneCallback;
+            callback = opts as RecordForEachCallback<TFields>;
             opts = {};
         }
         const limit = Table.__recordsPerPageForIteration || 100;

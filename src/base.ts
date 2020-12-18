@@ -11,13 +11,30 @@ import HttpHeaders from './http_headers';
 import runAction from './run_action';
 import packageVersion from './package_version';
 import exponentialBackoffWithJitter from './exponential_backoff_with_jitter';
-import type Airtable from './airtable';
+import Airtable from './airtable';
 import {AirtableBase} from './airtable_base';
-import {AirtableRequestOptions} from './airtable_request_options';
+import {FieldSet} from './field_set';
 
 const userAgent = `Airtable.js/${packageVersion}`;
 
-type BaseResponse = Response & {statusCode: Response['status']};
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type BaseBody = any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+interface BaseRequestOptions {
+    method?: string;
+    path?: string;
+    qs?: Record<string, BaseBody>;
+    headers?: Record<string, string>;
+    body?: BaseBody;
+    _numAttempts?: number;
+}
+
+interface BaseResponse {
+    statusCode: Response['status'];
+    headers: Response['headers'];
+    body: BaseBody;
+}
 
 class Base {
     readonly _airtable: Airtable;
@@ -28,11 +45,11 @@ class Base {
         this._id = baseId;
     }
 
-    table(tableName: string) {
-        return new Table(this, null, tableName);
+    table<TFields extends FieldSet>(tableName: string): Table<TFields> {
+        return new Table<TFields>(this, null, tableName);
     }
 
-    makeRequest(options: AirtableRequestOptions = {}) {
+    makeRequest(options: BaseRequestOptions = {}): Promise<BaseResponse> {
         const method = get(options, 'method', 'GET').toUpperCase();
 
         const url = `${this._airtable._endpointUrl}/v${this._airtable._apiVersionMajor}/${
@@ -64,9 +81,8 @@ class Base {
 
         return new Promise((resolve, reject) => {
             fetch(url, requestOptions)
-                .then((resp: BaseResponse) => {
+                .then((resp: Response) => {
                     clearTimeout(timeout);
-                    resp.statusCode = resp.status;
                     if (resp.status === 429 && !this._airtable._noRetryIfRateLimited) {
                         const numAttempts = get(options, '_numAttempts', 0);
                         const backoffDelayMs = exponentialBackoffWithJitter(numAttempts);
@@ -112,11 +128,17 @@ class Base {
     /**
      * @deprecated This method is deprecated.
      */
-    runAction(method, path, queryParams, bodyData, callback) {
+    runAction(
+        method: string,
+        path: string,
+        queryParams: runAction.Params,
+        bodyData: runAction.Body,
+        callback: runAction.Callback
+    ): void {
         runAction(this, method, path, queryParams, bodyData, callback, 0);
     }
 
-    _getRequestHeaders(headers) {
+    _getRequestHeaders(headers: {[key: string]: string}): {[key: string]: string} {
         const result = new HttpHeaders();
 
         result.set('Authorization', `Bearer ${this._airtable._apiKey}`);
@@ -129,16 +151,10 @@ class Base {
         return result.toJSON();
     }
 
-    _checkStatusForError(statusCode, body) {
+    _checkStatusForError(statusCode: number, body?: BaseBody): null | AirtableError {
+        const {error = {}} = body ?? {error: {}};
 
-        const {
-            error = {}
-        } = body ?? {error: {}};
-
-        const {
-            type,
-            message
-        } = error;
+        const {type, message} = error;
 
         if (statusCode === 401) {
             return new AirtableError(
@@ -159,11 +175,7 @@ class Base {
                 statusCode
             );
         } else if (statusCode === 413) {
-            return new AirtableError(
-                'REQUEST_TOO_LARGE',
-                'Request body is too large',
-                statusCode
-            );
+            return new AirtableError('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
         } else if (statusCode === 422) {
             return new AirtableError(
                 type ?? 'UNPROCESSABLE_ENTITY',
@@ -199,33 +211,33 @@ class Base {
         }
     }
 
-    doCall(tableName) {
-        return this.table(tableName);
+    doCall<TFields extends FieldSet>(tableName: string): Table<TFields> {
+        return this.table<TFields>(tableName);
     }
 
-    getId() {
+    getId(): string {
         return this._id;
     }
 
     static createFunctor(airtable: Airtable, baseId: string): AirtableBase {
         const base = new Base(airtable, baseId);
-        const baseFn = tableName => {
-            return base.doCall(tableName);
+        const baseFn = <TFields extends FieldSet>(tableName) => {
+            return base.doCall<TFields>(tableName);
         };
         baseFn._base = base;
         baseFn.table = base.table.bind(base);
         baseFn.makeRequest = base.makeRequest.bind(base);
         baseFn.runAction = base.runAction.bind(base);
         baseFn.getId = base.getId.bind(base);
-        return baseFn;
+        return baseFn as AirtableBase;
     }
 }
 
-function _canRequestMethodIncludeBody(method) {
+function _canRequestMethodIncludeBody(method: string) {
     return method !== 'GET' && method !== 'DELETE';
 }
 
-function _getErrorForNonObjectBody(statusCode, body?) {
+function _getErrorForNonObjectBody(statusCode: number, body?) {
     if (isPlainObject(body)) {
         return null;
     } else {
