@@ -1,3 +1,6 @@
+# v0.10.2
+ * Fix all the types
+
 # v0.10.1
  * Fix error handler in updating an array (#223)
  * Fix binding fetch to window (#235)
