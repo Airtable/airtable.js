@@ -77,7 +77,7 @@ class Base {
 
         const timeout = setTimeout(() => {
             controller.abort();
-        }, this._airtable.requestTimeout);
+        }, this._airtable._requestTimeout);
 
         return new Promise((resolve, reject) => {
             fetch(url, requestOptions)

@@ -62,7 +62,7 @@ function runAction(
 
     const timeout = setTimeout(() => {
         controller.abort();
-    }, base._airtable.requestTimeout);
+    }, base._airtable._requestTimeout);
 
     fetch(url, options)
         .then(resp => {
