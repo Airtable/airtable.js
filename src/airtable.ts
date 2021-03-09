@@ -22,8 +22,7 @@ class Airtable {
     readonly _customHeaders: CustomHeaders;
     readonly _endpointUrl: string;
     readonly _noRetryIfRateLimited: boolean;
-
-    requestTimeout: number;
+    readonly _requestTimeout: number;
 
     static Base = Base;
     static Record = AirtableRecord;
@@ -34,6 +33,7 @@ class Airtable {
     static apiVersion: string;
     static endpointUrl: string;
     static noRetryIfRateLimited: boolean;
+    static requestTimeout: number;
 
     constructor(opts: Airtable.AirtableOptions = {}) {
         const defaultConfig = Airtable.default_config();
@@ -62,9 +62,11 @@ class Airtable {
                     Airtable.noRetryIfRateLimited ||
                     defaultConfig.noRetryIfRateLimited,
             },
+            _requestTimeout: {
+                value:
+                    opts.requestTimeout || Airtable.requestTimeout || defaultConfig.requestTimeout,
+            },
         });
-
-        this.requestTimeout = opts.requestTimeout || defaultConfig.requestTimeout;
 
         if (!this._apiKey) {
             throw new Error('An API key is required to connect to Airtable');
@@ -90,11 +92,16 @@ class Airtable {
         endpointUrl,
         apiVersion,
         noRetryIfRateLimited,
-    }: Pick<Airtable.AirtableOptions, 'apiKey' | 'endpointUrl' | 'apiVersion' | 'noRetryIfRateLimited'>): void {
+        requestTimeout,
+    }: Pick<
+        Airtable.AirtableOptions,
+        'apiKey' | 'endpointUrl' | 'apiVersion' | 'noRetryIfRateLimited' | 'requestTimeout'
+    >): void {
         Airtable.apiKey = apiKey;
         Airtable.endpointUrl = endpointUrl;
         Airtable.apiVersion = apiVersion;
         Airtable.noRetryIfRateLimited = noRetryIfRateLimited;
+        Airtable.requestTimeout = requestTimeout;
     }
 
     static base(baseId: string): Airtable.Base {
