@@ -1,7 +1,4 @@
 import isFunction from 'lodash/isFunction';
-import clone from 'lodash/clone';
-import forEach from 'lodash/forEach';
-import map from 'lodash/map';
 import keys from 'lodash/keys';
 import Record from './record';
 import callbackToPromise from './callback_to_promise';
@@ -85,7 +82,7 @@ class Query<TFields extends FieldSet> {
         const ignoredKeys = [];
         const errors = [];
 
-        forEach(keys(params), key => {
+        for (const key of keys(params)) {
             const value = params[key];
             if (has(Query.paramValidators, key)) {
                 const validator = Query.paramValidators[key];
@@ -98,7 +95,7 @@ class Query<TFields extends FieldSet> {
             } else {
                 ignoredKeys.push(key);
             }
-        });
+        }
 
         return {
             validParams,
@@ -154,7 +151,7 @@ function eachPage<TFields extends FieldSet>(
     }
 
     const path = `/${this._table._urlEncodedNameOrId()}`;
-    const params = clone(this._params);
+    const params = {...this._params};
 
     const inner = () => {
         this._table._base.runAction('get', path, params, null, (err, response, result) => {
@@ -171,7 +168,7 @@ function eachPage<TFields extends FieldSet>(
                     };
                 }
 
-                const records = map(result.records, recordJson => {
+                const records = result.records.map(recordJson => {
                     return new Record(this._table, null, recordJson);
                 });
 

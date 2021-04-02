@@ -1,8 +1,4 @@
-import isArray from 'lodash/isArray';
 import isPlainObject from 'lodash/isPlainObject';
-import assign from 'lodash/assign';
-import forEach from 'lodash/forEach';
-import map from 'lodash/map';
 import deprecate from './deprecate';
 import Query from './query';
 import {QueryParams} from './query_params';
@@ -167,7 +163,7 @@ class Table<TFields extends FieldSet> {
             const validationResults = Query.validateParams<TFields>(params);
 
             if (validationResults.errors.length) {
-                const formattedErrors = map(validationResults.errors, error => {
+                const formattedErrors = validationResults.errors.map(error => {
                     return `  * ${error}`;
                 });
 
@@ -216,7 +212,7 @@ class Table<TFields extends FieldSet> {
             | RecordCollectionCallback<TFields>,
         done?: RecordCallback<TFields> | RecordCollectionCallback<TFields>
     ): void | Promise<Record<TFields>> | Promise<Records<TFields>> {
-        const isCreatingMultipleRecords = isArray(recordsData);
+        const isCreatingMultipleRecords = Array.isArray(recordsData);
 
         if (!done) {
             done = optionalParameters as
@@ -226,11 +222,11 @@ class Table<TFields extends FieldSet> {
         }
         let requestData;
         if (isCreatingMultipleRecords) {
-            requestData = {records: recordsData};
+            requestData = {records: recordsData, ...optionalParameters};
         } else {
-            requestData = {fields: recordsData};
+            requestData = {fields: recordsData, ...optionalParameters};
         }
-        assign(requestData, optionalParameters);
+
         this._base.runAction(
             'post',
             `/${this._urlEncodedNameOrId()}/`,
@@ -291,13 +287,13 @@ class Table<TFields extends FieldSet> {
     ): void | Promise<Record<TFields>> | Promise<Records<TFields>> {
         let opts;
 
-        if (isArray(recordsDataOrRecordId)) {
+        if (Array.isArray(recordsDataOrRecordId)) {
             const recordsData = recordsDataOrRecordId;
             opts = isPlainObject(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
             done = (optsOrDone || recordDataOrOptsOrDone) as RecordCollectionCallback<TFields>;
 
             const method = isDestructiveUpdate ? 'put' : 'patch';
-            const requestData = assign({records: recordsData}, opts);
+            const requestData = {records: recordsData, ...opts};
             this._base.runAction(
                 method,
                 `/${this._urlEncodedNameOrId()}/`,
@@ -336,7 +332,7 @@ class Table<TFields extends FieldSet> {
         recordIdsOrId: string | string[],
         done: RecordCallback<TFields> | RecordCollectionCallback<TFields>
     ): void | Promise<Record<TFields>> | Promise<Record<TFields>> {
-        if (isArray(recordIdsOrId)) {
+        if (Array.isArray(recordIdsOrId)) {
             const queryParams = {records: recordIdsOrId};
             this._base.runAction(
                 'delete',
@@ -349,7 +345,7 @@ class Table<TFields extends FieldSet> {
                         return;
                     }
 
-                    const records = map(results.records, ({id}) => {
+                    const records = results.records.map(({id}) => {
                         return new Record(this, id, null);
                     });
                     (done as RecordCollectionCallback<TFields>)(null, records);
@@ -371,13 +367,11 @@ class Table<TFields extends FieldSet> {
             done = opts as RecordListCallback<TFields>;
             opts = {};
         }
-        const listRecordsParameters = assign(
-            {
-                limit,
-                offset,
-            },
-            opts
-        );
+        const listRecordsParameters = {
+            limit,
+            offset,
+            ...opts,
+        };
 
         this._base.runAction(
             'get',
@@ -390,7 +384,7 @@ class Table<TFields extends FieldSet> {
                     return;
                 }
 
-                const records = map(results.records, recordJson => {
+                const records = results.records.map(recordJson => {
                     return new Record(this, null, recordJson);
                 });
                 done(null, records, results.offset);
@@ -418,7 +412,9 @@ class Table<TFields extends FieldSet> {
                     return;
                 }
 
-                forEach(page, callback);
+                for (let index = 0; index < page.length; index++) {
+                    callback(page[index]);
+                }
 
                 if (newOffset) {
                     offset = newOffset;

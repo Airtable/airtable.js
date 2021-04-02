@@ -1,6 +1,3 @@
-import includes from 'lodash/includes';
-import isArray from 'lodash/isArray';
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type CheckValue = any;
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -16,12 +13,12 @@ function check<Value, Error>(fn: (value: CheckValue) => value is Value, error: E
 }
 
 check.isOneOf = function isOneOf(options) {
-    return includes.bind(this, options);
+    return options.includes.bind(options);
 };
 
 check.isArrayOf = function<Value>(itemValidator: (value: CheckValue) => value is Value) {
     return function(value: CheckValue): value is Value[] {
-        return isArray(value) && value.every(itemValidator);
+        return Array.isArray(value) && value.every(itemValidator);
     };
 };
 
