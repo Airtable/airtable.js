@@ -92,7 +92,7 @@ var Base = /** @class */ (function () {
         }
         var timeout = setTimeout(function () {
             controller.abort();
-        }, this._airtable._requestTimeout);
+        }, this._airtable.requestTimeout);
         return new Promise(function (resolve, reject) {
             fetch_1.default(url, requestOptions)
                 .then(function (resp) {
@@ -443,7 +443,7 @@ module.exports = objectToQueryParamString;
 
 },{"lodash/isArray":79,"lodash/isNil":84,"lodash/keys":92}],12:[function(require,module,exports){
 "use strict";
-module.exports = "0.10.1";
+module.exports = "0.11.0";
 
 },{}],13:[function(require,module,exports){
 "use strict";
@@ -783,7 +783,7 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
     }
     var timeout = setTimeout(function () {
         controller.abort();
-    }, base._airtable._requestTimeout);
+    }, base._airtable.requestTimeout);
     fetch_1.default(url, options)
         .then(function (resp) {
         clearTimeout(timeout);
@@ -3605,10 +3605,8 @@ var Airtable = /** @class */ (function () {
                     Airtable.noRetryIfRateLimited ||
                     defaultConfig.noRetryIfRateLimited,
             },
-            _requestTimeout: {
-                value: opts.requestTimeout || Airtable.requestTimeout || defaultConfig.requestTimeout,
-            },
         });
+        this.requestTimeout = opts.requestTimeout || defaultConfig.requestTimeout;
         if (!this._apiKey) {
             throw new Error('An API key is required to connect to Airtable');
         }
@@ -3626,12 +3624,11 @@ var Airtable = /** @class */ (function () {
         };
     };
     Airtable.configure = function (_a) {
-        var apiKey = _a.apiKey, endpointUrl = _a.endpointUrl, apiVersion = _a.apiVersion, noRetryIfRateLimited = _a.noRetryIfRateLimited, requestTimeout = _a.requestTimeout;
+        var apiKey = _a.apiKey, endpointUrl = _a.endpointUrl, apiVersion = _a.apiVersion, noRetryIfRateLimited = _a.noRetryIfRateLimited;
         Airtable.apiKey = apiKey;
         Airtable.endpointUrl = endpointUrl;
         Airtable.apiVersion = apiVersion;
         Airtable.noRetryIfRateLimited = noRetryIfRateLimited;
-        Airtable.requestTimeout = requestTimeout;
     };
     Airtable.base = function (baseId) {
         return new Airtable().base(baseId);
