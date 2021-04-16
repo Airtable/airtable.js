@@ -1,3 +1,8 @@
+# v0.11.0
+ * Add support for custom headers
+ * Allow requestTimeout to be configured like other AirtableOptions
+ * Fix type warnings
+
 # v0.10.1
  * Fix error handler in updating an array (#223)
  * Fix binding fetch to window (#235)
