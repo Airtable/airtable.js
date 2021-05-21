@@ -1,3 +1,6 @@
+# v0.11.1
+ * Bump NPM package versions (#250, #253, #266, #267, #268)
+
 # v0.11.0
  * Add support for custom headers
  * Allow requestTimeout to be configured like other AirtableOptions
