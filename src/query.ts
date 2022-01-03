@@ -159,20 +159,26 @@ function eachPage<TFields extends FieldSet>(
                 done(err, null);
             } else {
                 let next;
-                if (result.offset) {
-                    params.offset = result.offset;
-                    next = inner;
-                } else {
-                    next = () => {
-                        done(null);
-                    };
+                if (result) {
+                    if (result.offset) {
+                        params.offset = result.offset;
+                        next = inner;
+                    } else {
+                        next = () => {
+                            done(null);
+                        };
+                    }
+    
+                    const records = result.records.map(recordJson => {
+                        return new Record(this._table, null, recordJson);
+                    });
+    
+                    pageCallback(records, next);
+                        
                 }
-
-                const records = result.records.map(recordJson => {
-                    return new Record(this._table, null, recordJson);
-                });
-
-                pageCallback(records, next);
+                else {
+                    done(null)
+                }
             }
         });
     };
