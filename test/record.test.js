@@ -158,7 +158,7 @@ describe('Record', function() {
             });
         });
 
-        it('patch-updates the record and calls a callback', function(done) {
+        it('put-updates the record and calls a callback', function(done) {
             record.putUpdate({baz: 'qux'}, function(err, updatedRecord) {
                 expect(err).toBeNull();
 
