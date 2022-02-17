@@ -1,3 +1,6 @@
+# v0.11.2
+ * Bump NPM package versions (#276, #281, #293, #296, #297, #298)
+
 # v0.11.1
  * Bump NPM package versions (#250, #253, #266, #267, #268)
 

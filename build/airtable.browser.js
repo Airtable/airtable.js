@@ -443,7 +443,7 @@ module.exports = objectToQueryParamString;
 
 },{"lodash/isArray":79,"lodash/isNil":84,"lodash/keys":92}],12:[function(require,module,exports){
 "use strict";
-module.exports = "0.11.1";
+module.exports = "0.11.2";
 
 },{}],13:[function(require,module,exports){
 "use strict";
