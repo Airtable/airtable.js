@@ -11,7 +11,7 @@
     "format": "prettier --write '**/*.js'",
     "test": "jest --env node --coverage --no-cache",
     "test-unit": "jest --env node",
-    "prepare": "rm -rf lib/* && tsc && grunt browserify"
+    "prepare": "rm -rf lib/* && rm -f build/airtable.browser.js && tsc && cp lib/airtable.js lib/tmp_airtable.js && grunt browserify && rm lib/tmp_airtable.js"
   },
   "dependencies": {
     "@types/node": ">=8.0.0 <15",
@@ -25,6 +25,7 @@
   "browser": {
     "node-fetch": false,
     "abort-controller": false,
+    "./lib/airtable.js": "./lib/airtable.umd.js",
     "./lib/package_version": "./lib/package_version_browser"
   },
   "files": [
