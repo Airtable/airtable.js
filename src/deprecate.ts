@@ -11,7 +11,11 @@ const didWarnForDeprecation = {};
  *
  * @return a wrapped function
  */
-function deprecate<Args extends unknown[]>(fn: (...args: Args) => void, key: string, message: string): (...args: Args) => void {
+function deprecate<Args extends unknown[]>(
+    fn: (...args: Args) => void,
+    key: string,
+    message: string
+): (...args: Args) => void {
     return function(...args: Args): void {
         if (!didWarnForDeprecation[key]) {
             didWarnForDeprecation[key] = true;
