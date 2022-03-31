@@ -8,7 +8,7 @@
   "scripts": {
     "pretest": "npm run lint && npm run prepare && cp build/airtable.browser.js test/test_files; true",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
-    "format": "prettier --write '**/*.js'",
+    "format": "prettier --write '**/*.[j|t]s'",
     "test": "jest --env node --coverage --no-cache",
     "test-unit": "jest --env node",
     "prepare": "rm -rf lib/* && rm -f build/airtable.browser.js && tsc && cp lib/airtable.js lib/tmp_airtable.js && grunt browserify && rm lib/tmp_airtable.js"

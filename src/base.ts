@@ -57,11 +57,7 @@ class Base {
 
         const controller = new AbortController();
         const headers = this._getRequestHeaders(
-            Object.assign(
-                {},
-                this._airtable._customHeaders,
-                options.headers ?? {}
-            )
+            Object.assign({}, this._airtable._customHeaders, options.headers ?? {})
         );
 
         const requestOptions: RequestInit = {
