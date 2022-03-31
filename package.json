@@ -6,7 +6,7 @@
   "repository": "git://github.com/airtable/airtable.js.git",
   "private": false,
   "scripts": {
-    "pretest": "npm run lint && npm run prepare; true",
+    "pretest": "npm run lint && npm run prepare && cp build/airtable.browser.js test/test_files; true",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "format": "prettier --write '**/*.js'",
     "test": "jest --env node --coverage --no-cache",
