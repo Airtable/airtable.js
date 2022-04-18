@@ -159,7 +159,7 @@ function _checkParamsMiddleware(req, res, next) {
     var areParamsValid =
         req.get('authorization') === 'Bearer key123' &&
         req.params.baseId === 'app123' &&
-        req.params.tableIdOrName === 'Table';
+        (req.params.tableIdOrName === 'Table' || req.params.tableIdOrName === 'tbl123');
     // istanbul ignore else
     if (areParamsValid) {
         next();

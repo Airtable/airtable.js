@@ -361,7 +361,8 @@ class Table<TFields extends FieldSet> {
         limit: number,
         offset: number,
         opts: OptionalParameters | RecordListCallback<TFields>,
-        done?: RecordListCallback<TFields>
+        done?: RecordListCallback<TFields>,
+        returnFieldsByFieldId: boolean = false,
     ): void {
         if (!done) {
             done = opts as RecordListCallback<TFields>;
@@ -370,6 +371,7 @@ class Table<TFields extends FieldSet> {
         const listRecordsParameters = {
             limit,
             offset,
+            ...(returnFieldsByFieldId && {returnFieldsByFieldId}),
             ...opts,
         };
 

@@ -641,4 +641,10 @@ describe('Base', function() {
             expect(fakeBase.getId()).toBe(baseId);
         });
     });
+
+    describe('#table', function() {
+        it('fetching table id and name returns same result', function() {
+            expect(fakeBase.table(tableName='Table')).toBe(fakeBase.table(tableId='tbl123'));
+        })
+    })
 });

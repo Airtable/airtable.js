@@ -44,8 +44,11 @@ class Base {
         this._id = baseId;
     }
 
-    table<TFields extends FieldSet>(tableName: string): Table<TFields> {
-        return new Table<TFields>(this, null, tableName);
+    table<TFields extends FieldSet>(tableName?: string, tableId?: string): Table<TFields> {
+        if (!tableId && !tableName) {
+            throw new Error('Table name or table ID is required');
+        }
+        return new Table<TFields>(this, tableId, tableName);
     }
 
     makeRequest(options: BaseRequestOptions = {}): Promise<BaseResponse> {
