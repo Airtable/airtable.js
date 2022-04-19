@@ -644,7 +644,7 @@ describe('Base', function() {
 
     describe('#table', function() {
         it('fetching table id and name returns same result', function() {
-            expect(fakeBase.table(tableName='Table')).toBe(fakeBase.table(tableId='tbl123'));
+            expect(fakeBase.table('Table')).toBe(fakeBase.table(undefined, 'tbl123'));
         })
     })
 });
