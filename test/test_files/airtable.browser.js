@@ -220,7 +220,7 @@ function _getErrorForNonObjectBody(statusCode, body) {
 }
 module.exports = Base;
 
-},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":16,"./table":17,"lodash/get":77,"lodash/isPlainObject":88,"lodash/keys":92}],4:[function(require,module,exports){
+},{"./abort-controller":1,"./airtable_error":2,"./exponential_backoff_with_jitter":6,"./fetch":7,"./http_headers":9,"./object_to_query_param_string":11,"./package_version":12,"./run_action":16,"./table":17,"lodash/get":77,"lodash/isPlainObject":89,"lodash/keys":93}],4:[function(require,module,exports){
 "use strict";
 /**
  * Given a function fn that takes a callback as its last argument, returns
@@ -381,7 +381,7 @@ var HttpHeaders = /** @class */ (function () {
 }());
 module.exports = HttpHeaders;
 
-},{"lodash/keys":92}],10:[function(require,module,exports){
+},{"lodash/keys":93}],10:[function(require,module,exports){
 module.exports={
     "INITIAL_RETRY_DELAY_IF_RATE_LIMITED": 5000,
     "MAX_RETRY_DELAY_IF_RATE_LIMITED": 600000
@@ -441,9 +441,9 @@ function objectToQueryParamString(obj) {
 }
 module.exports = objectToQueryParamString;
 
-},{"lodash/isArray":79,"lodash/isNil":84,"lodash/keys":92}],12:[function(require,module,exports){
+},{"lodash/isArray":79,"lodash/isNil":85,"lodash/keys":93}],12:[function(require,module,exports){
 "use strict";
-module.exports = "0.11.3";
+module.exports = "0.11.4";
 
 },{}],13:[function(require,module,exports){
 "use strict";
@@ -603,7 +603,7 @@ function all(done) {
 }
 module.exports = Query;
 
-},{"./callback_to_promise":4,"./has":8,"./query_params":14,"./record":15,"lodash/isFunction":82,"lodash/keys":92}],14:[function(require,module,exports){
+},{"./callback_to_promise":4,"./has":8,"./query_params":14,"./record":15,"lodash/isFunction":83,"lodash/keys":93}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -614,6 +614,7 @@ var typecheck_1 = __importDefault(require("./typecheck"));
 var isString_1 = __importDefault(require("lodash/isString"));
 var isNumber_1 = __importDefault(require("lodash/isNumber"));
 var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
+var isBoolean_1 = __importDefault(require("lodash/isBoolean"));
 exports.paramValidators = {
     fields: typecheck_1.default(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `fields` should be an array of strings'),
     filterByFormula: typecheck_1.default(isString_1.default, 'the value for `filterByFormula` should be a string'),
@@ -633,9 +634,10 @@ exports.paramValidators = {
     }, 'the value for `cellFormat` should be "json" or "string"'),
     timeZone: typecheck_1.default(isString_1.default, 'the value for `timeZone` should be a string'),
     userLocale: typecheck_1.default(isString_1.default, 'the value for `userLocale` should be a string'),
+    returnFieldsByFieldId: typecheck_1.default(isBoolean_1.default, 'the value for `returnFieldsByFieldId` should be a boolean'),
 };
 
-},{"./typecheck":18,"lodash/isNumber":85,"lodash/isPlainObject":88,"lodash/isString":89}],15:[function(require,module,exports){
+},{"./typecheck":18,"lodash/isBoolean":81,"lodash/isNumber":86,"lodash/isPlainObject":89,"lodash/isString":90}],15:[function(require,module,exports){
 "use strict";
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
@@ -1028,7 +1030,7 @@ var Table = /** @class */ (function () {
 }());
 module.exports = Table;
 
-},{"./callback_to_promise":4,"./deprecate":5,"./query":13,"./record":15,"lodash/isPlainObject":88}],18:[function(require,module,exports){
+},{"./callback_to_promise":4,"./deprecate":5,"./query":13,"./record":15,"lodash/isPlainObject":89}],18:[function(require,module,exports){
 "use strict";
 /* eslint-enable @typescript-eslint/no-explicit-any */
 function check(fn, error) {
@@ -1672,7 +1674,7 @@ function arrayLikeKeys(value, inherited) {
 
 module.exports = arrayLikeKeys;
 
-},{"./_baseTimes":35,"./_isIndex":51,"./isArguments":78,"./isArray":79,"./isBuffer":81,"./isTypedArray":91}],27:[function(require,module,exports){
+},{"./_baseTimes":35,"./_isIndex":51,"./isArguments":78,"./isArray":79,"./isBuffer":82,"./isTypedArray":92}],27:[function(require,module,exports){
 /**
  * A specialized version of `_.map` for arrays without support for iteratee
  * shorthands.
@@ -1794,7 +1796,7 @@ function baseIsArguments(value) {
 
 module.exports = baseIsArguments;
 
-},{"./_baseGetTag":30,"./isObjectLike":87}],32:[function(require,module,exports){
+},{"./_baseGetTag":30,"./isObjectLike":88}],32:[function(require,module,exports){
 var isFunction = require('./isFunction'),
     isMasked = require('./_isMasked'),
     isObject = require('./isObject'),
@@ -1843,7 +1845,7 @@ function baseIsNative(value) {
 
 module.exports = baseIsNative;
 
-},{"./_isMasked":54,"./_toSource":75,"./isFunction":82,"./isObject":86}],33:[function(require,module,exports){
+},{"./_isMasked":54,"./_toSource":75,"./isFunction":83,"./isObject":87}],33:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isLength = require('./isLength'),
     isObjectLike = require('./isObjectLike');
@@ -1905,7 +1907,7 @@ function baseIsTypedArray(value) {
 
 module.exports = baseIsTypedArray;
 
-},{"./_baseGetTag":30,"./isLength":83,"./isObjectLike":87}],34:[function(require,module,exports){
+},{"./_baseGetTag":30,"./isLength":84,"./isObjectLike":88}],34:[function(require,module,exports){
 var isPrototype = require('./_isPrototype'),
     nativeKeys = require('./_nativeKeys');
 
@@ -1998,7 +2000,7 @@ function baseToString(value) {
 
 module.exports = baseToString;
 
-},{"./_Symbol":25,"./_arrayMap":27,"./isArray":79,"./isSymbol":90}],37:[function(require,module,exports){
+},{"./_Symbol":25,"./_arrayMap":27,"./isArray":79,"./isSymbol":91}],37:[function(require,module,exports){
 /**
  * The base implementation of `_.unary` without support for storing metadata.
  *
@@ -2037,7 +2039,7 @@ function castPath(value, object) {
 
 module.exports = castPath;
 
-},{"./_isKey":52,"./_stringToPath":73,"./isArray":79,"./toString":95}],39:[function(require,module,exports){
+},{"./_isKey":52,"./_stringToPath":73,"./isArray":79,"./toString":96}],39:[function(require,module,exports){
 var root = require('./_root');
 
 /** Used to detect overreaching core-js shims. */
@@ -2339,7 +2341,7 @@ function isKey(value, object) {
 
 module.exports = isKey;
 
-},{"./isArray":79,"./isSymbol":90}],53:[function(require,module,exports){
+},{"./isArray":79,"./isSymbol":91}],53:[function(require,module,exports){
 /**
  * Checks if `value` is suitable for use as unique object key.
  *
@@ -2648,7 +2650,7 @@ function memoizeCapped(func) {
 
 module.exports = memoizeCapped;
 
-},{"./memoize":93}],67:[function(require,module,exports){
+},{"./memoize":94}],67:[function(require,module,exports){
 var getNative = require('./_getNative');
 
 /* Built-in method references that are verified to be native. */
@@ -2800,7 +2802,7 @@ function toKey(value) {
 
 module.exports = toKey;
 
-},{"./isSymbol":90}],75:[function(require,module,exports){
+},{"./isSymbol":91}],75:[function(require,module,exports){
 /** Used for built-in method references. */
 var funcProto = Function.prototype;
 
@@ -2940,7 +2942,7 @@ var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsAr
 
 module.exports = isArguments;
 
-},{"./_baseIsArguments":31,"./isObjectLike":87}],79:[function(require,module,exports){
+},{"./_baseIsArguments":31,"./isObjectLike":88}],79:[function(require,module,exports){
 /**
  * Checks if `value` is classified as an `Array` object.
  *
@@ -3003,7 +3005,38 @@ function isArrayLike(value) {
 
 module.exports = isArrayLike;
 
-},{"./isFunction":82,"./isLength":83}],81:[function(require,module,exports){
+},{"./isFunction":83,"./isLength":84}],81:[function(require,module,exports){
+var baseGetTag = require('./_baseGetTag'),
+    isObjectLike = require('./isObjectLike');
+
+/** `Object#toString` result references. */
+var boolTag = '[object Boolean]';
+
+/**
+ * Checks if `value` is classified as a boolean primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a boolean, else `false`.
+ * @example
+ *
+ * _.isBoolean(false);
+ * // => true
+ *
+ * _.isBoolean(null);
+ * // => false
+ */
+function isBoolean(value) {
+  return value === true || value === false ||
+    (isObjectLike(value) && baseGetTag(value) == boolTag);
+}
+
+module.exports = isBoolean;
+
+},{"./_baseGetTag":30,"./isObjectLike":88}],82:[function(require,module,exports){
 var root = require('./_root'),
     stubFalse = require('./stubFalse');
 
@@ -3043,7 +3076,7 @@ var isBuffer = nativeIsBuffer || stubFalse;
 
 module.exports = isBuffer;
 
-},{"./_root":72,"./stubFalse":94}],82:[function(require,module,exports){
+},{"./_root":72,"./stubFalse":95}],83:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObject = require('./isObject');
 
@@ -3082,7 +3115,7 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{"./_baseGetTag":30,"./isObject":86}],83:[function(require,module,exports){
+},{"./_baseGetTag":30,"./isObject":87}],84:[function(require,module,exports){
 /** Used as references for various `Number` constants. */
 var MAX_SAFE_INTEGER = 9007199254740991;
 
@@ -3119,7 +3152,7 @@ function isLength(value) {
 
 module.exports = isLength;
 
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 /**
  * Checks if `value` is `null` or `undefined`.
  *
@@ -3146,7 +3179,7 @@ function isNil(value) {
 
 module.exports = isNil;
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -3186,7 +3219,7 @@ function isNumber(value) {
 
 module.exports = isNumber;
 
-},{"./_baseGetTag":30,"./isObjectLike":87}],86:[function(require,module,exports){
+},{"./_baseGetTag":30,"./isObjectLike":88}],87:[function(require,module,exports){
 /**
  * Checks if `value` is the
  * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
@@ -3219,7 +3252,7 @@ function isObject(value) {
 
 module.exports = isObject;
 
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
@@ -3250,7 +3283,7 @@ function isObjectLike(value) {
 
 module.exports = isObjectLike;
 
-},{}],88:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     getPrototype = require('./_getPrototype'),
     isObjectLike = require('./isObjectLike');
@@ -3314,7 +3347,7 @@ function isPlainObject(value) {
 
 module.exports = isPlainObject;
 
-},{"./_baseGetTag":30,"./_getPrototype":43,"./isObjectLike":87}],89:[function(require,module,exports){
+},{"./_baseGetTag":30,"./_getPrototype":43,"./isObjectLike":88}],90:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isArray = require('./isArray'),
     isObjectLike = require('./isObjectLike');
@@ -3346,7 +3379,7 @@ function isString(value) {
 
 module.exports = isString;
 
-},{"./_baseGetTag":30,"./isArray":79,"./isObjectLike":87}],90:[function(require,module,exports){
+},{"./_baseGetTag":30,"./isArray":79,"./isObjectLike":88}],91:[function(require,module,exports){
 var baseGetTag = require('./_baseGetTag'),
     isObjectLike = require('./isObjectLike');
 
@@ -3377,7 +3410,7 @@ function isSymbol(value) {
 
 module.exports = isSymbol;
 
-},{"./_baseGetTag":30,"./isObjectLike":87}],91:[function(require,module,exports){
+},{"./_baseGetTag":30,"./isObjectLike":88}],92:[function(require,module,exports){
 var baseIsTypedArray = require('./_baseIsTypedArray'),
     baseUnary = require('./_baseUnary'),
     nodeUtil = require('./_nodeUtil');
@@ -3406,7 +3439,7 @@ var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedA
 
 module.exports = isTypedArray;
 
-},{"./_baseIsTypedArray":33,"./_baseUnary":37,"./_nodeUtil":69}],92:[function(require,module,exports){
+},{"./_baseIsTypedArray":33,"./_baseUnary":37,"./_nodeUtil":69}],93:[function(require,module,exports){
 var arrayLikeKeys = require('./_arrayLikeKeys'),
     baseKeys = require('./_baseKeys'),
     isArrayLike = require('./isArrayLike');
@@ -3445,7 +3478,7 @@ function keys(object) {
 
 module.exports = keys;
 
-},{"./_arrayLikeKeys":26,"./_baseKeys":34,"./isArrayLike":80}],93:[function(require,module,exports){
+},{"./_arrayLikeKeys":26,"./_baseKeys":34,"./isArrayLike":80}],94:[function(require,module,exports){
 var MapCache = require('./_MapCache');
 
 /** Error message constants. */
@@ -3520,7 +3553,7 @@ memoize.Cache = MapCache;
 
 module.exports = memoize;
 
-},{"./_MapCache":24}],94:[function(require,module,exports){
+},{"./_MapCache":24}],95:[function(require,module,exports){
 /**
  * This method returns `false`.
  *
@@ -3540,7 +3573,7 @@ function stubFalse() {
 
 module.exports = stubFalse;
 
-},{}],95:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 var baseToString = require('./_baseToString');
 
 /**

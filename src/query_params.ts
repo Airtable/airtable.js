@@ -2,6 +2,7 @@ import check from './typecheck';
 import isString from 'lodash/isString';
 import isNumber from 'lodash/isNumber';
 import isPlainObject from 'lodash/isPlainObject';
+import isBoolean from 'lodash/isBoolean';
 
 export const paramValidators = {
     fields: check(
@@ -39,6 +40,11 @@ export const paramValidators = {
     timeZone: check(isString, 'the value for `timeZone` should be a string'),
 
     userLocale: check(isString, 'the value for `userLocale` should be a string'),
+
+    returnFieldsByFieldId: check(
+        isBoolean,
+        'the value for `returnFieldsByFieldId` should be a boolean'
+    ),
 };
 
 export interface SortParameter<TFields> {
@@ -57,4 +63,5 @@ export interface QueryParams<TFields> {
     cellFormat?: 'json' | 'string';
     timeZone?: string;
     userLocale?: string;
+    returnFieldsByFieldId?: boolean;
 }

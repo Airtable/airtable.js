@@ -1,3 +1,6 @@
+# v0.11.4
+ * Add support for returnFieldsByFieldId param.
+
 # v0.11.3
  * Adds a UMD build to use for browser-targeted builds. This fixes an issue where other apps that
  use airtable.js as a dependency were bundling code that expects to run in a node environment when

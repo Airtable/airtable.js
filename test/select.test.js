@@ -319,7 +319,7 @@ describe('record selection', function() {
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
             expect(req.url).toBe(
-                '/v0/app123/Table?maxRecords=50&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc&cellFormat=json'
+                '/v0/app123/Table?maxRecords=50&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc&cellFormat=json&returnFieldsByFieldId=true'
             );
             res.json({
                 records: [
@@ -340,6 +340,7 @@ describe('record selection', function() {
                 maxRecords: 50,
                 sort: [{field: 'Name', direction: 'desc'}],
                 cellFormat: 'json',
+                returnFieldsByFieldId: true,
             })
             .eachPage(function page(records) {
                 records.forEach(function(record) {
