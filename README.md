@@ -16,16 +16,19 @@ base.
 
 To install airtable.js in a node project:
 
-    npm install airtable
+```sh
+npm install airtable
+```
 
 Airtable.js is compatible with Node 10 and above.
 
 ### Browser
 
-To use airtable.js in the browser, use [airtable.browser.js](https://github.com/Airtable/airtable.js/blob/master/build/airtable.browser.js) which is in the `build` folder.
+To use airtable.js in the browser, use [build/airtable.browser.js](build/airtable.browser.js).
 
 For a demo, run:
-```
+
+```sh
 cd test/test_files
 python -m SimpleHTTPServer
 ```
@@ -42,23 +45,28 @@ See the [technical requirements](https://support.airtable.com/hc/en-us/articles/
 
 There are three configurable options available:
 
-  * `apiKey` - set the token to your secret API token. Visit [your account page](https://airtable.com/account) to create an API token.  (`AIRTABLE_API_KEY`)
-  * `endpointUrl` - the API endpoint to hit. You might want to override
+* `apiKey` - set the token to your secret API token. Visit [your account page](https://airtable.com/account) to create an API token.  (`AIRTABLE_API_KEY`)
+* `endpointUrl` - the API endpoint to hit. You might want to override
     it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`)
-  * `requestTimeout` - the timeout in milliseconds for requests. The default is 5 minutes (`300000`)
+* `requestTimeout` - the timeout in milliseconds for requests. The default is 5 minutes (`300000`)
 
 You can set the options globally via `Airtable.configure`:
 
-    Airtable.configure({ apiKey: 'YOUR_SECRET_API_KEY' })
-
+```js
+Airtable.configure({ apiKey: 'YOUR_SECRET_API_KEY' })
+```
 
 Globally via process env (e.g. in 12factor setup).
 
-    export AIRTABLE_API_KEY=YOUR_SECRET_API_KEY
+```sh
+export AIRTABLE_API_KEY=YOUR_SECRET_API_KEY
+```
 
 You can also override the settings per connection:
 
-    var airtable = new Airtable({endpointUrl: 'https://api-airtable-com-8hw7i1oz63iz.runscope.net/'})
+```js
+const airtable = new Airtable({endpointUrl: 'https://api-airtable-com-8hw7i1oz63iz.runscope.net/'})
+```
 
 # Interactive documentation
 
