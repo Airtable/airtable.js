@@ -152,7 +152,6 @@ class Table<TFields extends FieldSet> {
         if (params === void 0) {
             params = {};
         }
-
         if (arguments.length > 1) {
             console.warn(
                 `Airtable: \`select\` takes only one parameter, but it was given ${arguments.length} parameters. Use \`eachPage\` or \`firstPage\` to fetch records.`
@@ -369,15 +368,15 @@ class Table<TFields extends FieldSet> {
         }
         const listRecordsParameters = {
             limit,
-            offset,
+            ...(offset && {offset}),
             ...opts,
         };
 
         this._base.runAction(
-            'get',
-            `/${this._urlEncodedNameOrId()}/`,
-            listRecordsParameters,
+            'post',
+            `/${this._urlEncodedNameOrId()}/listRowsQuery`,
             null,
+            listRecordsParameters,
             (err, response, results) => {
                 if (err) {
                     done(err);

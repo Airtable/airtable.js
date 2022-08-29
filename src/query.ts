@@ -4,7 +4,7 @@ import Record from './record';
 import callbackToPromise from './callback_to_promise';
 import has from './has';
 import Table from './table';
-import {paramValidators, QueryParams} from './query_params';
+import {paramValidators, QueryParams as RequestData} from './query_params';
 import {FieldSet} from './field_set';
 import {Records} from './records';
 
@@ -41,7 +41,7 @@ interface RecordPageIteratationMethod<TFields extends FieldSet> {
  */
 class Query<TFields extends FieldSet> {
     readonly _table: Table<TFields>;
-    readonly _params: QueryParams<TFields>;
+    readonly _requestData: RequestData<TFields>;
 
     readonly firstPage: RecordCollectionRequestMethod<TFields>;
     readonly eachPage: RecordPageIteratationMethod<TFields>;
@@ -49,9 +49,9 @@ class Query<TFields extends FieldSet> {
 
     static paramValidators = paramValidators;
 
-    constructor(table: Table<TFields>, params: QueryParams<TFields>) {
+    constructor(table: Table<TFields>, requestData: RequestData<TFields>) {
         this._table = table;
-        this._params = params;
+        this._requestData = requestData;
 
         this.firstPage = callbackToPromise(firstPage, this);
         this.eachPage = callbackToPromise(eachPage, this, 1);
@@ -70,15 +70,15 @@ class Query<TFields extends FieldSet> {
      */
     static validateParams<
         TFields extends FieldSet,
-        Params extends QueryParams<TFields> = QueryParams<TFields>
+        Params extends RequestData<TFields> = RequestData<TFields>
     >(
         params: Params
     ): {
-        validParams: QueryParams<TFields>;
+        validParams: RequestData<TFields>;
         ignoredKeys: string[];
         errors: string[];
     } {
-        const validParams: QueryParams<TFields> = {};
+        const validParams: RequestData<TFields> = {};
         const ignoredKeys = [];
         const errors = [];
 
@@ -150,17 +150,17 @@ function eachPage<TFields extends FieldSet>(
         throw new Error('The second parameter to `eachPage` must be a function or undefined');
     }
 
-    const path = `/${this._table._urlEncodedNameOrId()}`;
-    const params = {...this._params};
+    const path = `/${this._table._urlEncodedNameOrId()}/listRowsQuery`;
+    const requestData = {...this._requestData};
 
     const inner = () => {
-        this._table._base.runAction('get', path, params, null, (err, response, result) => {
+        this._table._base.runAction('post', path, null, requestData, (err, response, result) => {
             if (err) {
                 done(err, null);
             } else {
                 let next;
                 if (result.offset) {
-                    params.offset = result.offset;
+                    requestData.offset = result.offset;
                     next = inner;
                 } else {
                     next = () => {
@@ -190,7 +190,6 @@ function all<TFields extends FieldSet>(
     if (!isFunction(done)) {
         throw new Error('The first parameter to `all` must be a function');
     }
-
     const allRecords = [];
     this.eachPage(
         (pageRecords, fetchNextPage) => {

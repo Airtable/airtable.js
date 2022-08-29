@@ -21,8 +21,8 @@ describe('record selection', function() {
 
     it('selects records without params', function(done) {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -51,8 +51,8 @@ describe('record selection', function() {
 
     it('selects records more than one record', function(done) {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -89,8 +89,8 @@ describe('record selection', function() {
 
         testExpressApp.set('handler override', function(req, res) {
             if (iterationCounter === 0) {
-                expect(req.method).toBe('GET');
-                expect(req.url).toBe('/v0/app123/Table?');
+                expect(req.method).toBe('POST');
+                expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
                 res.json({
                     records: [
                         {
@@ -102,8 +102,9 @@ describe('record selection', function() {
                     offset: 'offsetABC',
                 });
             } else if (iterationCounter === 1) {
-                expect(req.method).toBe('GET');
-                expect(req.url).toBe('/v0/app123/Table?offset=offsetABC');
+                expect(req.method).toBe('POST');
+                expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+                expect(req.body).toEqual({offset: 'offsetABC'});
                 res.json({
                     records: [
                         {
@@ -173,6 +174,7 @@ describe('record selection', function() {
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
             expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -198,8 +200,8 @@ describe('record selection', function() {
         var iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -225,8 +227,9 @@ describe('record selection', function() {
                     });
 
                     testExpressApp.set('handler override', function(req, res) {
-                        expect(req.method).toBe('GET');
-                        expect(req.url).toBe('/v0/app123/Table?offset=offsetABC');
+                        expect(req.method).toBe('POST');
+                        expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+                        expect(req.body).toEqual({offset: 'offsetABC'});
                         res.json({
                             records: [
                                 {
@@ -257,8 +260,8 @@ describe('record selection', function() {
         var iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -285,8 +288,9 @@ describe('record selection', function() {
                         });
 
                         testExpressApp.set('handler override', function(req, res) {
-                            expect(req.method).toBe('GET');
-                            expect(req.url).toBe('/v0/app123/Table?offset=offsetABC');
+                            expect(req.method).toBe('POST');
+                            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+                            expect(req.body).toEqual({offset: 'offsetABC'});
                             res.json({
                                 records: [
                                     {
@@ -317,10 +321,14 @@ describe('record selection', function() {
 
     it('selects records with valid params', function(done) {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe(
-                '/v0/app123/Table?maxRecords=50&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc&cellFormat=json&returnFieldsByFieldId=true'
-            );
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+            expect(req.body).toEqual({
+                maxRecords: 50,
+                sort: [{field: 'Name', direction: 'desc'}],
+                cellFormat: 'json',
+                returnFieldsByFieldId: true,
+            });
             res.json({
                 records: [
                     {
@@ -353,8 +361,8 @@ describe('record selection', function() {
 
     it('selects records filters out invalid parameters and extra arguments without erroring', function(done) {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -391,8 +399,8 @@ describe('record selection', function() {
 
     it('eachRecords errors on the first invalid parameter', function() {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -416,8 +424,8 @@ describe('record selection', function() {
 
     it('eachRecords errors on the second invalid parameter', function() {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -472,8 +480,8 @@ describe('record selection', function() {
 
     it('selects records the first page of records', function(done) {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table?');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
             res.json({
                 records: [
                     {
@@ -503,7 +511,7 @@ describe('record selection', function() {
 
     it('firstPage errors without a done function', function() {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
+            expect(req.method).toBe('POST');
             expect(req.url).toBe('/v0/app123/Table?');
             res.json({
                 records: [

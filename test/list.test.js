@@ -21,8 +21,9 @@ describe('list records', function() {
 
     it('lists records with a limit and offset without opts', function(done) {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table/?limit=50&offset=offset000');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+            expect(req.body).toEqual({limit: 50, offset: 'offset000'});
             res.json({
                 records: [
                     {
@@ -39,6 +40,7 @@ describe('list records', function() {
             .base('app123')
             .table('Table')
             .list(50, 'offset000', function(err, records, offset) {
+                console.log();
                 expect(err).toBeNull();
                 expect(records.length).toBe(1);
                 expect(records[0].getId()).toBe('recordA');
@@ -50,10 +52,13 @@ describe('list records', function() {
 
     it('lists records with a limit, offset, and opts', function(done) {
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe(
-                '/v0/app123/Table/?limit=50&offset=offset000&otherOptions=getpassedalong'
-            );
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+            expect(req.body).toEqual({
+                limit: 50,
+                offset: 'offset000',
+                otherOptions: 'getpassedalong',
+            });
             res.json({
                 records: [
                     {
@@ -106,8 +111,9 @@ describe('list records', function() {
         var iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table/?limit=100&opts=arepassedalong');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+            expect(req.body).toEqual({limit: 100, opts: 'arepassedalong'});
             res.json({
                 records: [
                     {
@@ -159,8 +165,9 @@ describe('list records', function() {
         };
 
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table/?limit=100');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+            expect(req.body).toEqual({limit: 100});
             res.json(json);
         });
 
@@ -187,8 +194,9 @@ describe('list records', function() {
         };
 
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table/?limit=100');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+            expect(req.body).toEqual({limit: 100});
             res.json(json);
         });
 
@@ -230,8 +238,9 @@ describe('list records', function() {
         var iterationCounter = 0;
 
         testExpressApp.set('handler override', function(req, res) {
-            expect(req.method).toBe('GET');
-            expect(req.url).toBe('/v0/app123/Table/?limit=100');
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+            expect(req.body).toEqual({limit: 100});
             res.json({
                 records: [
                     {
@@ -254,8 +263,9 @@ describe('list records', function() {
                         expect(record.get('Name')).toBe('Rebecca');
 
                         testExpressApp.set('handler override', function(req, res) {
-                            expect(req.method).toBe('GET');
-                            expect(req.url).toBe('/v0/app123/Table/?limit=100&offset=offset123');
+                            expect(req.method).toBe('POST');
+                            expect(req.url).toBe('/v0/app123/Table/listRowsQuery?');
+                            expect(req.body).toEqual({limit: 100, offset: 'offset123'});
                             // Don't include an offset in second page of results
                             // to indicate that it is the final page of results
                             res.json({

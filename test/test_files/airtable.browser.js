@@ -475,9 +475,9 @@ var query_params_1 = require("./query_params");
  * with `Query.validateParams`.
  */
 var Query = /** @class */ (function () {
-    function Query(table, params) {
+    function Query(table, requestData) {
         this._table = table;
-        this._params = params;
+        this._requestData = requestData;
         this.firstPage = callback_to_promise_1.default(firstPage, this);
         this.eachPage = callback_to_promise_1.default(eachPage, this, 1);
         this.all = callback_to_promise_1.default(all, this);
@@ -554,17 +554,17 @@ function eachPage(pageCallback, done) {
     if (!isFunction_1.default(done) && done !== void 0) {
         throw new Error('The second parameter to `eachPage` must be a function or undefined');
     }
-    var path = "/" + this._table._urlEncodedNameOrId();
-    var params = __assign({}, this._params);
+    var path = "/" + this._table._urlEncodedNameOrId() + "/listRowsQuery";
+    var requestData = __assign({}, this._requestData);
     var inner = function () {
-        _this._table._base.runAction('get', path, params, null, function (err, response, result) {
+        _this._table._base.runAction('post', path, null, requestData, function (err, response, result) {
             if (err) {
                 done(err, null);
             }
             else {
                 var next = void 0;
                 if (result.offset) {
-                    params.offset = result.offset;
+                    requestData.offset = result.offset;
                     next = inner;
                 }
                 else {
@@ -984,9 +984,8 @@ var Table = /** @class */ (function () {
             done = opts;
             opts = {};
         }
-        var listRecordsParameters = __assign({ limit: limit,
-            offset: offset }, opts);
-        this._base.runAction('get', "/" + this._urlEncodedNameOrId() + "/", listRecordsParameters, null, function (err, response, results) {
+        var listRecordsParameters = __assign(__assign({ limit: limit }, (offset && { offset: offset })), opts);
+        this._base.runAction('post', "/" + this._urlEncodedNameOrId() + "/listRowsQuery", null, listRecordsParameters, function (err, response, results) {
             if (err) {
                 done(err);
                 return;
