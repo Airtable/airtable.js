@@ -1,3 +1,7 @@
+# v0.11.5
+ * Update select() and list() to support to use POST endpoint when GET url length would exceed Airtable's 16k character limit
+  * Update select() and list() to explicitly choose to use GET or POST endpoint via new 'method' arg
+
 # v0.11.4
  * Add support for returnFieldsByFieldId param.
 
