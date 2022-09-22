@@ -544,4 +544,81 @@ describe('record selection', function() {
                 done();
             });
     });
+
+    it('uses POST listRows endpoint when params exceed 15k characters', function(done) {
+        // Mock formula that is 15000 characters in length
+        const longFormula = [...Array(657)]
+            .map((_, i) => {
+                return `NOT({Name} = '${i}') & `;
+            })
+            .join();
+
+        expect(longFormula.length).toBe(15000);
+
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe(
+                '/v0/app123/Table/listRecords?timeZone=America%2FLos_Angeles&userLocale=en-US'
+            );
+            expect(req.body.filterByFormula).toBe(longFormula);
+
+            res.json({
+                records: [
+                    {
+                        id: 'recordA',
+                        fields: {Name: 'Rebecca'},
+                        createdTime: '2020-04-20T16:20:00.000Z',
+                    },
+                ],
+                offset: 'offsetABC',
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .select({
+                filterByFormula: longFormula,
+                timeZone: 'America/Los_Angeles',
+                userLocale: 'en-US',
+            })
+            .eachPage(function page(records) {
+                records.forEach(function(record) {
+                    expect(record.id).toBe('recordA');
+                    expect(record.get('Name')).toBe('Rebecca');
+                });
+                done();
+            });
+    });
+
+    it('uses POST listRows endpoint when "post" is specified for method', function(done) {
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRecords?');
+            res.json({
+                records: [
+                    {
+                        id: 'recordA',
+                        fields: {Name: 'Rebecca'},
+                        createdTime: '2020-04-20T16:20:00.000Z',
+                    },
+                ],
+                offset: 'offsetABC',
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .select({
+                method: 'post',
+            })
+            .eachPage(function page(records) {
+                records.forEach(function(record) {
+                    expect(record.id).toBe('recordA');
+                    expect(record.get('Name')).toBe('Rebecca');
+                });
+                done();
+            });
+    });
 });

@@ -41,10 +41,20 @@ export const paramValidators = {
 
     userLocale: check(isString, 'the value for `userLocale` should be a string'),
 
+    method: check((method): method is 'json' | 'string' => {
+        return isString(method) && ['get', 'post'].includes(method);
+    }, 'the value for `method` should be "get" or "post"'),
+
     returnFieldsByFieldId: check(
         isBoolean,
         'the value for `returnFieldsByFieldId` should be a boolean'
     ),
+};
+
+export const URL_CHARACTER_LENGTH_LIMIT = 15000;
+
+export const shouldListRecordsParamBePassedAsParameter = (paramName: string): boolean => {
+    return paramName === 'timeZone' || paramName === 'userLocale';
 };
 
 export interface SortParameter<TFields> {
@@ -63,5 +73,6 @@ export interface QueryParams<TFields> {
     cellFormat?: 'json' | 'string';
     timeZone?: string;
     userLocale?: string;
+    method?: string;
     returnFieldsByFieldId?: boolean;
 }

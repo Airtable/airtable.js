@@ -1,7 +1,12 @@
 import isPlainObject from 'lodash/isPlainObject';
 import deprecate from './deprecate';
 import Query from './query';
-import {QueryParams} from './query_params';
+import {
+    QueryParams,
+    shouldListRecordsParamBePassedAsParameter,
+    URL_CHARACTER_LENGTH_LIMIT,
+} from './query_params';
+import objectToQueryParamString from './object_to_query_param_string';
 import Record from './record';
 import callbackToPromise from './callback_to_promise';
 import Base from './base';
@@ -16,7 +21,10 @@ type TableError = any;
 type CreateRecord<TFields> = Pick<RecordData<Partial<TFields>>, 'fields'>;
 type CreateRecords<TFields> = string[] | Partial<TFields>[] | CreateRecord<TFields>[];
 
-type OptionalParameters = {typecast?: boolean};
+type OptionalParameters = {
+    typecast?: boolean;
+    method?: 'get' | 'post';
+};
 
 type RecordCollectionCallback<TFields extends FieldSet> = (
     error: TableError,
@@ -92,7 +100,6 @@ interface TableDestroyRecords<TFields extends FieldSet> {
     (recordIds: string[]): Promise<Records<TFields>>;
     (recordIds: string[], done: RecordCollectionCallback<TFields>): void;
 }
-
 class Table<TFields extends FieldSet> {
     readonly _base: Base;
 
@@ -358,7 +365,7 @@ class Table<TFields extends FieldSet> {
     }
 
     _listRecords(
-        limit: number,
+        pageSize: number,
         offset: number,
         opts: OptionalParameters | RecordListCallback<TFields>,
         done?: RecordListCallback<TFields>
@@ -367,17 +374,58 @@ class Table<TFields extends FieldSet> {
             done = opts as RecordListCallback<TFields>;
             opts = {};
         }
-        const listRecordsParameters = {
-            limit,
-            offset,
-            ...opts,
-        };
+
+        const pathAndParamsAsString = `/${this._urlEncodedNameOrId()}?${objectToQueryParamString(
+            opts
+        )}`;
+
+        let path;
+        let listRecordsParameters = {};
+        let listRecordsData = null;
+        let method;
+
+        if (
+            (typeof opts !== 'function' && opts.method === 'post') ||
+            pathAndParamsAsString.length > URL_CHARACTER_LENGTH_LIMIT
+        ) {
+            // // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
+            // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
+            // with the request params
+
+            path = `/${this._urlEncodedNameOrId()}/listRecords`;
+            listRecordsData = {
+                // limit is deprecated and the GET request parser in hyperbase automatically
+                // replaces this but the body parser used for POST requests does not
+                ...(pageSize && {pageSize}),
+                // The request parser will error if offset is included and is undefined
+                ...(offset && {offset}),
+            };
+            method = 'post';
+
+            const paramNames = Object.keys(opts);
+
+            for (const paramName of paramNames) {
+                if (shouldListRecordsParamBePassedAsParameter(paramName)) {
+                    listRecordsParameters[paramName] = opts[paramName];
+                } else {
+                    listRecordsData[paramName] = opts[paramName];
+                }
+            }
+        } else {
+            method = 'get';
+            path = `/${this._urlEncodedNameOrId()}/`;
+            listRecordsParameters = {
+                limit: pageSize,
+                offset,
+                ...opts,
+            };
+        }
 
         this._base.runAction(
-            'get',
-            `/${this._urlEncodedNameOrId()}/`,
+            method,
+            path,
             listRecordsParameters,
-            null,
+            listRecordsData,
             (err, response, results) => {
                 if (err) {
                     done(err);

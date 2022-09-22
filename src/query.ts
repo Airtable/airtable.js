@@ -4,7 +4,13 @@ import Record from './record';
 import callbackToPromise from './callback_to_promise';
 import has from './has';
 import Table from './table';
-import {paramValidators, QueryParams} from './query_params';
+import {
+    paramValidators,
+    QueryParams,
+    shouldListRecordsParamBePassedAsParameter,
+    URL_CHARACTER_LENGTH_LIMIT,
+} from './query_params';
+import objectToQueryParamString from './object_to_query_param_string';
 import {FieldSet} from './field_set';
 import {Records} from './records';
 
@@ -150,31 +156,71 @@ function eachPage<TFields extends FieldSet>(
         throw new Error('The second parameter to `eachPage` must be a function or undefined');
     }
 
-    const path = `/${this._table._urlEncodedNameOrId()}`;
     const params = {...this._params};
+    const pathAndParamsAsString = `/${this._table._urlEncodedNameOrId()}?${objectToQueryParamString(
+        params
+    )}`;
+
+    let queryParams = {};
+    let requestData = null;
+    let method;
+    let path;
+
+    if (params.method === 'post' || pathAndParamsAsString.length > URL_CHARACTER_LENGTH_LIMIT) {
+        // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
+        // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
+        // with the request params
+
+        requestData = params;
+        method = 'post';
+        path = `/${this._table._urlEncodedNameOrId()}/listRecords`;
+
+        const paramNames = Object.keys(params);
+
+        for (const paramName of paramNames) {
+            if (shouldListRecordsParamBePassedAsParameter(paramName)) {
+                // timeZone and userLocale is parsed from the GET request separately from the other params. This parsing
+                // does not occurring within the body parser we use for POST requests, so this will still need to be passed
+                // via query params
+                queryParams[paramName] = params[paramName];
+            } else {
+                requestData[paramName] = params[paramName];
+            }
+        }
+    } else {
+        method = 'get';
+        queryParams = params;
+        path = `/${this._table._urlEncodedNameOrId()}`;
+    }
 
     const inner = () => {
-        this._table._base.runAction('get', path, params, null, (err, response, result) => {
-            if (err) {
-                done(err, null);
-            } else {
-                let next;
-                if (result.offset) {
-                    params.offset = result.offset;
-                    next = inner;
+        this._table._base.runAction(
+            method,
+            path,
+            queryParams,
+            requestData,
+            (err, response, result) => {
+                if (err) {
+                    done(err, null);
                 } else {
-                    next = () => {
-                        done(null);
-                    };
+                    let next;
+                    if (result.offset) {
+                        params.offset = result.offset;
+                        next = inner;
+                    } else {
+                        next = () => {
+                            done(null);
+                        };
+                    }
+
+                    const records = result.records.map(recordJson => {
+                        return new Record(this._table, null, recordJson);
+                    });
+
+                    pageCallback(records, next);
                 }
-
-                const records = result.records.map(recordJson => {
-                    return new Record(this._table, null, recordJson);
-                });
-
-                pageCallback(records, next);
             }
-        });
+        );
     };
 
     inner();

@@ -443,7 +443,7 @@ module.exports = objectToQueryParamString;
 
 },{"lodash/isArray":79,"lodash/isNil":85,"lodash/keys":93}],12:[function(require,module,exports){
 "use strict";
-module.exports = "0.11.4";
+module.exports = "0.11.5";
 
 },{}],13:[function(require,module,exports){
 "use strict";
@@ -467,6 +467,7 @@ var record_1 = __importDefault(require("./record"));
 var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
 var has_1 = __importDefault(require("./has"));
 var query_params_1 = require("./query_params");
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
 /**
  * Builds a query object. Won't fetch until `firstPage` or
  * or `eachPage` is called.
@@ -554,10 +555,40 @@ function eachPage(pageCallback, done) {
     if (!isFunction_1.default(done) && done !== void 0) {
         throw new Error('The second parameter to `eachPage` must be a function or undefined');
     }
-    var path = "/" + this._table._urlEncodedNameOrId();
     var params = __assign({}, this._params);
+    var pathAndParamsAsString = "/" + this._table._urlEncodedNameOrId() + "?" + object_to_query_param_string_1.default(params);
+    var queryParams = {};
+    var requestData = null;
+    var method;
+    var path;
+    if (params.method === 'post' || pathAndParamsAsString.length > query_params_1.URL_CHARACTER_LENGTH_LIMIT) {
+        // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
+        // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
+        // with the request params
+        requestData = params;
+        method = 'post';
+        path = "/" + this._table._urlEncodedNameOrId() + "/listRecords";
+        var paramNames = Object.keys(params);
+        for (var _i = 0, paramNames_1 = paramNames; _i < paramNames_1.length; _i++) {
+            var paramName = paramNames_1[_i];
+            if (query_params_1.shouldListRecordsParamBePassedAsParameter(paramName)) {
+                // timeZone and userLocale is parsed from the GET request separately from the other params. This parsing
+                // does not occurring within the body parser we use for POST requests, so this will still need to be passed
+                // via query params
+                queryParams[paramName] = params[paramName];
+            }
+            else {
+                requestData[paramName] = params[paramName];
+            }
+        }
+    }
+    else {
+        method = 'get';
+        queryParams = params;
+        path = "/" + this._table._urlEncodedNameOrId();
+    }
     var inner = function () {
-        _this._table._base.runAction('get', path, params, null, function (err, response, result) {
+        _this._table._base.runAction(method, path, queryParams, requestData, function (err, response, result) {
             if (err) {
                 done(err, null);
             }
@@ -603,13 +634,13 @@ function all(done) {
 }
 module.exports = Query;
 
-},{"./callback_to_promise":4,"./has":8,"./query_params":14,"./record":15,"lodash/isFunction":83,"lodash/keys":93}],14:[function(require,module,exports){
+},{"./callback_to_promise":4,"./has":8,"./object_to_query_param_string":11,"./query_params":14,"./record":15,"lodash/isFunction":83,"lodash/keys":93}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.paramValidators = void 0;
+exports.shouldListRecordsParamBePassedAsParameter = exports.URL_CHARACTER_LENGTH_LIMIT = exports.paramValidators = void 0;
 var typecheck_1 = __importDefault(require("./typecheck"));
 var isString_1 = __importDefault(require("lodash/isString"));
 var isNumber_1 = __importDefault(require("lodash/isNumber"));
@@ -634,7 +665,14 @@ exports.paramValidators = {
     }, 'the value for `cellFormat` should be "json" or "string"'),
     timeZone: typecheck_1.default(isString_1.default, 'the value for `timeZone` should be a string'),
     userLocale: typecheck_1.default(isString_1.default, 'the value for `userLocale` should be a string'),
+    method: typecheck_1.default(function (method) {
+        return isString_1.default(method) && ['get', 'post'].includes(method);
+    }, 'the value for `method` should be "get" or "post"'),
     returnFieldsByFieldId: typecheck_1.default(isBoolean_1.default, 'the value for `returnFieldsByFieldId` should be a boolean'),
+};
+exports.URL_CHARACTER_LENGTH_LIMIT = 15000;
+exports.shouldListRecordsParamBePassedAsParameter = function (paramName) {
+    return paramName === 'timeZone' || paramName === 'userLocale';
 };
 
 },{"./typecheck":18,"lodash/isBoolean":81,"lodash/isNumber":86,"lodash/isPlainObject":89,"lodash/isString":90}],15:[function(require,module,exports){
@@ -840,6 +878,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
 var deprecate_1 = __importDefault(require("./deprecate"));
 var query_1 = __importDefault(require("./query"));
+var query_params_1 = require("./query_params");
+var object_to_query_param_string_1 = __importDefault(require("./object_to_query_param_string"));
 var record_1 = __importDefault(require("./record"));
 var callback_to_promise_1 = __importDefault(require("./callback_to_promise"));
 var Table = /** @class */ (function () {
@@ -978,15 +1018,42 @@ var Table = /** @class */ (function () {
             record.destroy(done);
         }
     };
-    Table.prototype._listRecords = function (limit, offset, opts, done) {
+    Table.prototype._listRecords = function (pageSize, offset, opts, done) {
         var _this = this;
         if (!done) {
             done = opts;
             opts = {};
         }
-        var listRecordsParameters = __assign({ limit: limit,
-            offset: offset }, opts);
-        this._base.runAction('get', "/" + this._urlEncodedNameOrId() + "/", listRecordsParameters, null, function (err, response, results) {
+        var pathAndParamsAsString = "/" + this._urlEncodedNameOrId() + "?" + object_to_query_param_string_1.default(opts);
+        var path;
+        var listRecordsParameters = {};
+        var listRecordsData = null;
+        var method;
+        if ((typeof opts !== 'function' && opts.method === 'post') ||
+            pathAndParamsAsString.length > query_params_1.URL_CHARACTER_LENGTH_LIMIT) {
+            // // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
+            // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
+            // with the request params
+            path = "/" + this._urlEncodedNameOrId() + "/listRecords";
+            listRecordsData = __assign(__assign({}, (pageSize && { pageSize: pageSize })), (offset && { offset: offset }));
+            method = 'post';
+            var paramNames = Object.keys(opts);
+            for (var _i = 0, paramNames_1 = paramNames; _i < paramNames_1.length; _i++) {
+                var paramName = paramNames_1[_i];
+                if (query_params_1.shouldListRecordsParamBePassedAsParameter(paramName)) {
+                    listRecordsParameters[paramName] = opts[paramName];
+                }
+                else {
+                    listRecordsData[paramName] = opts[paramName];
+                }
+            }
+        }
+        else {
+            method = 'get';
+            path = "/" + this._urlEncodedNameOrId() + "/";
+            listRecordsParameters = __assign({ limit: pageSize, offset: offset }, opts);
+        }
+        this._base.runAction(method, path, listRecordsParameters, listRecordsData, function (err, response, results) {
             if (err) {
                 done(err);
                 return;
@@ -1030,7 +1097,7 @@ var Table = /** @class */ (function () {
 }());
 module.exports = Table;
 
-},{"./callback_to_promise":4,"./deprecate":5,"./query":13,"./record":15,"lodash/isPlainObject":89}],18:[function(require,module,exports){
+},{"./callback_to_promise":4,"./deprecate":5,"./object_to_query_param_string":11,"./query":13,"./query_params":14,"./record":15,"lodash/isPlainObject":89}],18:[function(require,module,exports){
 "use strict";
 /* eslint-enable @typescript-eslint/no-explicit-any */
 function check(fn, error) {
