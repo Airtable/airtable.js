@@ -1,12 +1,16 @@
+# v0.11.6
+ * Remove behavior of including `AIRTABLE_API_KEY` in airtable.browser.js via envify
+ * Add web worker compatibility
+
 # v0.11.5
  * Update select() and list() to support to use POST endpoint when GET url length would exceed Airtable's 16k character limit
-  * Update select() and list() to explicitly choose to use GET or POST endpoint via new 'method' arg
+ * Update select() and list() to explicitly choose to use GET or POST endpoint via new 'method' arg
 
 # v0.11.4
  * Add support for returnFieldsByFieldId param.
 
 # v0.11.3
- * Adds a UMD build to use for browser-targeted builds. This fixes an issue where other apps that
+ * Add a UMD build to use for browser-targeted builds. This fixes an issue where other apps that
  use airtable.js as a dependency were bundling code that expects to run in a node environment when
  building for a browser enviornment.
 

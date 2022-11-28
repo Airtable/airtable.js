@@ -2,11 +2,12 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 "use strict";
 // istanbul ignore file
 var AbortController;
-if (typeof window === 'undefined') {
+var browserGlobal = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : null; // self is the global in web workers
+if (!browserGlobal) {
     AbortController = require('abort-controller');
 }
 else if ('signal' in new Request('')) {
-    AbortController = window.AbortController;
+    AbortController = browserGlobal.AbortController;
 }
 else {
     /* eslint-disable @typescript-eslint/no-var-requires */
@@ -326,7 +327,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 // istanbul ignore file
 var node_fetch_1 = __importDefault(require("node-fetch"));
-module.exports = typeof window === 'undefined' ? node_fetch_1.default : window.fetch.bind(window);
+var browserGlobal = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : null; // self is the global in web workers
+module.exports = !browserGlobal ? node_fetch_1.default : browserGlobal.fetch.bind(browserGlobal);
 
 },{"node-fetch":20}],8:[function(require,module,exports){
 "use strict";
@@ -443,7 +445,7 @@ module.exports = objectToQueryParamString;
 
 },{"lodash/isArray":79,"lodash/isNil":85,"lodash/keys":93}],12:[function(require,module,exports){
 "use strict";
-module.exports = "0.11.5";
+module.exports = "0.11.6";
 
 },{}],13:[function(require,module,exports){
 "use strict";
@@ -3718,9 +3720,9 @@ var Airtable = /** @class */ (function () {
     };
     Airtable.default_config = function () {
         return {
-            endpointUrl: undefined || 'https://api.airtable.com',
+            endpointUrl: "" || 'https://api.airtable.com',
             apiVersion: '0.1.0',
-            apiKey: undefined,
+            apiKey: "",
             noRetryIfRateLimited: false,
             requestTimeout: 300 * 1000,
         };

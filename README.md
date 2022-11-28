@@ -47,7 +47,7 @@ There are three configurable options available:
 
 * `apiKey` - your secret API token. Visit [/create/tokens](https://airtable.com/create/tokens) to create a personal access token. [OAuth access tokens](https://airtable.com/developers/web/guides/oauth-integrations) can also be used.
 * `endpointUrl` - the API endpoint to hit. You might want to override
-    it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`)
+  it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`)
 * `requestTimeout` - the timeout in milliseconds for requests. The default is 5 minutes (`300000`)
 
 You can set the options globally via `Airtable.configure`:

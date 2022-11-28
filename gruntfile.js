@@ -21,8 +21,11 @@ module.exports = function(grunt) {
                     transform: [
                         [
                             'envify',
+                            // IMPORTANT: mask out environment variables that should never be shipped to the browser
                             {
                                 _: 'purge',
+                                AIRTABLE_ENDPOINT_URL: '',
+                                AIRTABLE_API_KEY: '',
                                 npm_package_version: pkg.version,
                             },
                         ],
@@ -42,8 +45,11 @@ module.exports = function(grunt) {
                     transform: [
                         [
                             'envify',
+                            // IMPORTANT: mask out environment variables that should never be shipped to the browser
                             {
                                 _: 'purge',
+                                AIRTABLE_ENDPOINT_URL: '',
+                                AIRTABLE_API_KEY: '',
                                 npm_package_version: pkg.version,
                             },
                         ],
