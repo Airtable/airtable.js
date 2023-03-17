@@ -1,5 +1,5 @@
 import {Collaborator} from './collaborator';
-import {Attachment} from './attachment';
+import {Attachment, AttachmentReference, CreateAttachment} from './attachment';
 
 export interface FieldSet {
     [key: string]:
@@ -10,5 +10,5 @@ export interface FieldSet {
         | Collaborator
         | ReadonlyArray<Collaborator>
         | ReadonlyArray<string>
-        | ReadonlyArray<Attachment>;
+        | ReadonlyArray<Attachment | CreateAttachment | AttachmentReference>;
 }
