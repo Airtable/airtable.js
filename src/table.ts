@@ -13,13 +13,20 @@ import Base from './base';
 import {Records} from './records';
 import {FieldSet} from './field_set';
 import {RecordData} from './record_data';
+import {Attachment, AttachmentReference, CreateAttachment} from './attachment';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type TableError = any;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-type CreateRecord<TFields> = Pick<RecordData<Partial<TFields>>, 'fields'>;
-type CreateRecords<TFields> = string[] | Partial<TFields>[] | CreateRecord<TFields>[];
+type PartialFields<TFields> = {
+    [Prop in keyof TFields]?: TFields[Prop] extends Attachment[]
+        ? (CreateAttachment | AttachmentReference)[]
+        : TFields[Prop];
+}
+
+type CreateRecord<TFields> = Pick<RecordData<PartialFields<TFields>>, 'fields'>;
+type CreateRecords<TFields> = string[] | PartialFields<TFields>[] | CreateRecord<TFields>[];
 
 type OptionalParameters = {
     typecast?: boolean;
@@ -51,7 +58,7 @@ interface TableSelectRecord<TFields extends FieldSet> {
     (params?: QueryParams<TFields>): Query<TFields>;
 }
 
-interface TableCreateRecords<TFields extends FieldSet> {
+interface TableCreateRecords<TFields extends PartialFields<FieldSet>> {
     (recordsData: CreateRecords<TFields>, optionalParameters?: OptionalParameters): Promise<
         Records<TFields>
     >;
@@ -61,29 +68,29 @@ interface TableCreateRecords<TFields extends FieldSet> {
         done: RecordCollectionCallback<TFields>
     ): void;
     (recordsData: CreateRecords<TFields>, done: RecordCollectionCallback<TFields>): void;
-    (recordData: string | Partial<TFields>, optionalParameters?: OptionalParameters): Promise<
+    (recordData: string | PartialFields<TFields>, optionalParameters?: OptionalParameters): Promise<
         Record<TFields>
     >;
     (
-        recordData: string | Partial<TFields>,
+        recordData: string | PartialFields<TFields>,
         optionalParameters: OptionalParameters,
         done: RecordCallback<TFields>
     ): void;
-    (recordData: string | Partial<TFields>, done: RecordCallback<TFields>): void;
+    (recordData: string | PartialFields<TFields>, done: RecordCallback<TFields>): void;
 }
 
 interface TableChangeRecords<TFields extends FieldSet> {
-    (recordId: string, recordData: Partial<TFields>, opts?: OptionalParameters): Promise<
+    (recordId: string, recordData: PartialFields<TFields>, opts?: OptionalParameters): Promise<
         Record<TFields>
     >;
     (
         recordId: string,
-        recordData: Partial<TFields>,
+        recordData: PartialFields<TFields>,
         opts: OptionalParameters,
         done: RecordCallback<TFields>
     ): void;
-    (recordId: string, recordData: Partial<TFields>, done: RecordCallback<TFields>): void;
-    (recordsData: RecordData<Partial<TFields>>[], opts?: OptionalParameters): Promise<
+    (recordId: string, recordData: PartialFields<TFields>, done: RecordCallback<TFields>): void;
+    (recordsData: RecordData<PartialFields<TFields>>[], opts?: OptionalParameters): Promise<
         Records<TFields>
     >;
     (
@@ -91,7 +98,7 @@ interface TableChangeRecords<TFields extends FieldSet> {
         opts: OptionalParameters,
         done: RecordCollectionCallback<TFields>
     ): void;
-    (recordsData: RecordData<Partial<TFields>>[], done: RecordCollectionCallback<TFields>): void;
+    (recordsData: RecordData<PartialFields<TFields>>[], done: RecordCollectionCallback<TFields>): void;
 }
 
 interface TableDestroyRecords<TFields extends FieldSet> {

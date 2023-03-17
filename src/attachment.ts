@@ -12,3 +12,12 @@ export interface Attachment {
         full: Thumbnail;
     };
 }
+
+export interface AttachmentReference extends Partial<Attachment> {
+    id: Attachment['id'];
+}
+
+export interface CreateAttachment {
+    url: Attachment['url'];
+    filename?: Attachment['filename'];
+}
