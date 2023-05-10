@@ -216,6 +216,7 @@ function eachPage<TFields extends FieldSet>(
                     const records = result.records.map(recordJson => {
                         return new Record(this._table, null, recordJson);
                     });
+                    records.offset = result.offset;
 
                     pageCallback(records, next);
                 }
