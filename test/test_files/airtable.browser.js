@@ -608,6 +608,7 @@ function eachPage(pageCallback, done) {
                 var records = result.records.map(function (recordJson) {
                     return new record_1.default(_this._table, null, recordJson);
                 });
+                records.offset = result.offset;
                 pageCallback(records, next);
             }
         });
@@ -653,7 +654,7 @@ exports.paramValidators = {
     filterByFormula: typecheck_1.default(isString_1.default, 'the value for `filterByFormula` should be a string'),
     maxRecords: typecheck_1.default(isNumber_1.default, 'the value for `maxRecords` should be a number'),
     pageSize: typecheck_1.default(isNumber_1.default, 'the value for `pageSize` should be a number'),
-    offset: typecheck_1.default(isNumber_1.default, 'the value for `offset` should be a number'),
+    offset: typecheck_1.default(isString_1.default, 'the value for `offset` should be a string'),
     sort: typecheck_1.default(typecheck_1.default.isArrayOf(function (obj) {
         return (isPlainObject_1.default(obj) &&
             isString_1.default(obj.field) &&

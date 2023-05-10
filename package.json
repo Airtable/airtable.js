@@ -1,6 +1,6 @@
 {
-  "name": "airtable",
-  "version": "0.11.6",
+  "name": "@pariti/airtable",
+  "version": "0.11.6-pariti",
   "license": "MIT",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
@@ -11,7 +11,8 @@
     "format": "prettier --write '**/*.[j|t]s'",
     "test": "jest --env node --coverage --no-cache",
     "test-unit": "jest --env node",
-    "prepare": "rm -rf lib/* && rm -f build/airtable.browser.js && tsc && cp lib/airtable.js lib/tmp_airtable.js && grunt browserify && rm lib/tmp_airtable.js"
+    "prepare": "rm -rf lib/* && rm -f build/airtable.browser.js && tsc && cp lib/airtable.js lib/tmp_airtable.js && grunt browserify && rm lib/tmp_airtable.js",
+    "artifactregistry-login": "npx google-artifactregistry-auth"
   },
   "dependencies": {
     "@types/node": ">=8.0.0 <15",
