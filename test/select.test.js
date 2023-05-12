@@ -346,10 +346,9 @@ describe('record selection', function() {
             })
             .eachPage(function page(records) {
                 records.forEach(function(record) {
-                    console.log({record});
                     expect(record.id).toBe('recordA');
                     expect(record.get('Name')).toBe('Rebecca');
-                    // expect(record.commentCount).toBe(0);
+                    expect(record.commentCount).toBe(0);
                 });
                 done();
             });
