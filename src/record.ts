@@ -45,7 +45,9 @@ class Record<TFields extends FieldSet> {
     constructor(table: Table<TFields>, recordId: string, recordJson?: RecordJson) {
         this._table = table;
         this.id = recordId || recordJson.id;
-        this.commentCount = recordId || recordJson.commentCount;
+        if (recordJson) {
+          this.commentCount = recordJson.commentCount;
+        }
         this.setRawJson(recordJson);
 
         this.save = callbackToPromise(save, this);
