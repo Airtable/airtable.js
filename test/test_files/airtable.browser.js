@@ -699,7 +699,9 @@ var Record = /** @class */ (function () {
     function Record(table, recordId, recordJson) {
         this._table = table;
         this.id = recordId || recordJson.id;
-        this.commentCount = recordId || recordJson.commentCount;
+        if (recordJson) {
+            this.commentCount = recordJson.commentCount;
+        }
         this.setRawJson(recordJson);
         this.save = callback_to_promise_1.default(save, this);
         this.patchUpdate = callback_to_promise_1.default(patchUpdate, this);
