@@ -319,7 +319,7 @@ describe('record selection', function() {
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('GET');
             expect(req.url).toBe(
-                '/v0/app123/Table?maxRecords=50&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc&cellFormat=json&returnFieldsByFieldId=true'
+                '/v0/app123/Table?maxRecords=50&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc&cellFormat=json&returnFieldsByFieldId=true&recordMetadata%5B%5D=commentCount'
             );
             res.json({
                 records: [
@@ -327,6 +327,7 @@ describe('record selection', function() {
                         id: 'recordA',
                         fields: {Name: 'Rebecca'},
                         createdTime: '2020-04-20T16:20:00.000Z',
+                        commentCount: 0,
                     },
                 ],
                 offset: 'offsetABC',
@@ -341,11 +342,13 @@ describe('record selection', function() {
                 sort: [{field: 'Name', direction: 'desc'}],
                 cellFormat: 'json',
                 returnFieldsByFieldId: true,
+                recordMetadata: ['commentCount'],
             })
             .eachPage(function page(records) {
                 records.forEach(function(record) {
                     expect(record.id).toBe('recordA');
                     expect(record.get('Name')).toBe('Rebecca');
+                    expect(record.commentCount).toBe(0);
                 });
                 done();
             });

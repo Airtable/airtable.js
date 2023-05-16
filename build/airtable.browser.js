@@ -671,6 +671,7 @@ exports.paramValidators = {
         return isString_1.default(method) && ['get', 'post'].includes(method);
     }, 'the value for `method` should be "get" or "post"'),
     returnFieldsByFieldId: typecheck_1.default(isBoolean_1.default, 'the value for `returnFieldsByFieldId` should be a boolean'),
+    recordMetadata: typecheck_1.default(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `recordMetadata` should be an array of strings'),
 };
 exports.URL_CHARACTER_LENGTH_LIMIT = 15000;
 exports.shouldListRecordsParamBePassedAsParameter = function (paramName) {
@@ -698,6 +699,9 @@ var Record = /** @class */ (function () {
     function Record(table, recordId, recordJson) {
         this._table = table;
         this.id = recordId || recordJson.id;
+        if (recordJson) {
+            this.commentCount = recordJson.commentCount;
+        }
         this.setRawJson(recordJson);
         this.save = callback_to_promise_1.default(save, this);
         this.patchUpdate = callback_to_promise_1.default(patchUpdate, this);
