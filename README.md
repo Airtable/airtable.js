@@ -12,9 +12,9 @@ base.
 
 # Installation
 
-### Node.js
+## Node.js
 
-To install airtable.js in a node project:
+To install Airtable.js in a node project:
 
 ```sh
 npm install airtable
@@ -22,9 +22,9 @@ npm install airtable
 
 Airtable.js is compatible with Node 10 and above.
 
-### Browser
+## Browser
 
-To use airtable.js in the browser, use [build/airtable.browser.js](build/airtable.browser.js).
+To use Airtable.js in the browser, use [build/airtable.browser.js](build/airtable.browser.js).
 
 For a demo, run:
 
@@ -33,9 +33,9 @@ cd test/test_files
 python -m SimpleHTTPServer
 ```
 
-Edit `test/test_files/index.html` - put your `BASE_ID` and `API_KEY` (Be careful! You are putting your API key on a web page! Create a separate account and share only one base with it).
+Edit `test/test_files/index.html` - put your `BASE_ID` and `API_KEY` (Be careful! You are putting your API key on a web page! Create a separate account and share only one base with it.)
 
-Then open http://localhost:8000/ in your browser.
+Then open <http://localhost:8000/> in your browser.
 
 Airtable.js is compatible with browsers supported by the Airtable web app with
 the exception of Safari 10.0. Airtable.js supports Safari 10.1 and higher.
@@ -47,8 +47,8 @@ There are three configurable options available:
 
 * `apiKey` - your secret API token. Visit [/create/tokens](https://airtable.com/create/tokens) to create a personal access token. [OAuth access tokens](https://airtable.com/developers/web/guides/oauth-integrations) can also be used.
 * `endpointUrl` - the API endpoint to hit. You might want to override
-  it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`)
-* `requestTimeout` - the timeout in milliseconds for requests. The default is 5 minutes (`300000`)
+  it if you are using an API proxy (e.g. runscope.net) to debug your API calls. (`AIRTABLE_ENDPOINT_URL`).
+* `requestTimeout` - the timeout in milliseconds for requests. The default is 5 minutes (`300000`).
 
 You can set the options globally via `Airtable.configure`:
 
@@ -56,7 +56,7 @@ You can set the options globally via `Airtable.configure`:
 Airtable.configure({ apiKey: 'YOUR_SECRET_API_TOKEN' })
 ```
 
-Globally via process env (e.g. in 12factor setup).
+Globally via process env (e.g. in 12factor setup):
 
 ```sh
 export AIRTABLE_API_KEY=YOUR_SECRET_API_TOKEN
@@ -70,9 +70,9 @@ const airtable = new Airtable({endpointUrl: 'https://api-airtable-com-8hw7i1oz63
 
 # Interactive documentation
 
-Go to https://airtable.com/api to see the interactive API documentation for your Airtable bases. Once you select a base, click the "JavaScript" tab to see code snippets using Airtable.js. It'll have examples for all operations you can perform against your base using this library.
+Go to <https://airtable.com/api> to see the interactive API documentation for your Airtable bases. Once you select a base, click the "JavaScript" tab to see code snippets using Airtable.js. It'll have examples for all operations you can perform against your base using this library.
 
-You can also view non-interactive API documentation at https://airtable.com/developers/web/api
+You can also view non-interactive API documentation at <https://airtable.com/developers/web/api>.
 
 # Promises
 

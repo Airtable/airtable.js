@@ -9,4 +9,6 @@
  *
  * @hidden
  */
-export type ObjectMap<K extends PropertyKey, V> = {[P in K]: V};
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type ObjectMap<K extends keyof any, V> = {[P in K]: V};
+/* eslint-enable @typescript-eslint/no-explicit-any */
