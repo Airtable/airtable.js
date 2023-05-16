@@ -1,3 +1,6 @@
+# v0.12.1
+ * Add `recordMetadata` param to `table.select(params)` in order to fetch comment counts, available as `record.commentCount`.
+
 # v0.11.6
  * Remove behavior of including `AIRTABLE_API_KEY` in airtable.browser.js via envify
  * Add web worker compatibility

@@ -46,7 +46,7 @@ class Record<TFields extends FieldSet> {
         this._table = table;
         this.id = recordId || recordJson.id;
         if (recordJson) {
-          this.commentCount = recordJson.commentCount;
+            this.commentCount = recordJson.commentCount;
         }
         this.setRawJson(recordJson);
 

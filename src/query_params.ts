@@ -54,7 +54,6 @@ export const paramValidators = {
         check.isArrayOf(isString),
         'the value for `recordMetadata` should be an array of strings'
     ),
-
 };
 
 export const URL_CHARACTER_LENGTH_LIMIT = 15000;
