@@ -6,7 +6,7 @@ var browserGlobal = typeof window !== 'undefined' ? window : typeof self !== 'un
 if (!browserGlobal) {
     AbortController = require('abort-controller');
 }
-else if ('signal' in new Request('')) {
+else if ('signal' in new Request('https://airtable.com')) {
     AbortController = browserGlobal.AbortController;
 }
 else {
