@@ -1,3 +1,6 @@
+# v0.12.2
+ * Fix invalid URL error in `abort-controller`
+
 # v0.12.1
  * Add `recordMetadata` param to `table.select(params)` in order to fetch comment counts, available as `record.commentCount`.
 
