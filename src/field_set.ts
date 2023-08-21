@@ -10,5 +10,7 @@ export interface FieldSet {
         | Collaborator
         | ReadonlyArray<Collaborator>
         | ReadonlyArray<string>
+        | ReadonlyArray<number>
+        | ReadonlyArray<boolean>
         | ReadonlyArray<Attachment>;
 }
