@@ -37,7 +37,7 @@ type RecordCallback<TFields extends FieldSet> = (
 type RecordListCallback<TFields extends FieldSet> = (
     error: TableError,
     records?: Records<TFields>,
-    offset?: number
+    offset?: string
 ) => void;
 type RecordForEachCallback<TFields extends FieldSet> = (record: Record<TFields>) => void;
 type RecordForEachDoneCallback = (error?: TableError) => void;
@@ -366,7 +366,7 @@ class Table<TFields extends FieldSet> {
 
     _listRecords(
         pageSize: number,
-        offset: number,
+        offset: string,
         opts: OptionalParameters | RecordListCallback<TFields>,
         done?: RecordListCallback<TFields>
     ): void {
