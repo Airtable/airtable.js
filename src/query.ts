@@ -26,7 +26,7 @@ type RecordCollectionCallback<TFields extends FieldSet> = (
     error: CallbackError,
     records?: Records<TFields>
 ) => void;
-type DoneCallback = (error: CallbackError) => void;
+type DoneCallback = (error: CallbackError, other?: any) => void;
 
 interface RecordCollectionRequestMethod<TFields extends FieldSet> {
     (): Promise<Records<TFields>>;
