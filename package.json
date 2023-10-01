@@ -1,6 +1,8 @@
 {
   "name": "airtable",
   "version": "0.12.2",
+  "name": "bernatfortet.airtable",
+  "version": "0.12.5",
   "license": "MIT",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
@@ -18,7 +20,7 @@
     "abort-controller": "^3.0.0",
     "abortcontroller-polyfill": "^1.4.0",
     "lodash": "^4.17.21",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^3.3.2"
   },
   "main": "./lib/airtable.js",
   "types": "./lib/airtable.d.ts",
