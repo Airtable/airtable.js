@@ -32,7 +32,7 @@ import { SyncSource } from './sync_source';
 // Phone: string
 // Rating: number
 // Rich text: string
-// Rollup: FieldValue (string[], number[], string)
+// Rollup: ReadonlyArray<FieldArray> | string | number
 // Single line text: string
 // Single select: string
 // Sync source: SyncSource
