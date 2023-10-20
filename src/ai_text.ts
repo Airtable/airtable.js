@@ -1,11 +1,11 @@
 export interface AiTextResult {
-    state: "empty" | "loading" | "generated";
+    state: 'empty' | 'loading' | 'generated';
     isState: boolean;
     value?: string;
 }
 
 export interface AiTextError {
-    state: "error";
+    state: 'error';
     errorType: string;
     isState: boolean;
     value?: string;

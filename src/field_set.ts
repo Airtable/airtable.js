@@ -2,10 +2,11 @@ import {Collaborator} from './collaborator';
 import {Attachment} from './attachment';
 import {Barcode} from './barcode';
 import {Button} from './button';
-import { SyncSource } from './sync_source';
-import { AiTextError, AiTextResult } from './ai_text';
+import {SyncSource} from './sync_source';
+import {AiTextError, AiTextResult} from './ai_text';
 
-// AI Text
+// Built from https://airtable.com/developers/web/api/field-model
+// AI Text: AiTextError | AiTextResult
 // Attachment: Attachment
 // Auto number: number
 // Barcode: Barcode
@@ -38,7 +39,18 @@ import { AiTextError, AiTextResult } from './ai_text';
 // Single select: string
 // Sync source: SyncSource
 // Url: string
-export type FieldValue = string | number | boolean | Collaborator | AiTextResult | AiTextError | SyncSource | ReadonlyArray<Attachment> | ReadonlyArray<FieldValue>;
+export type FieldValue = 
+    string | 
+    number | 
+    boolean | 
+    AiTextResult | 
+    AiTextError | 
+    Barcode | 
+    Button | 
+    Collaborator | 
+    SyncSource | 
+    ReadonlyArray<Attachment> | 
+    ReadonlyArray<FieldValue>;
 export interface FieldSet {
     [key: string]: FieldValue;
 }
