@@ -40,6 +40,7 @@ import {AiTextError, AiTextResult} from './ai_text';
 // Sync source: SyncSource
 // Url: string
 export type FieldValue = 
+    undefined | 
     string | 
     number | 
     boolean | 
