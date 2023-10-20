@@ -3,6 +3,7 @@ import {Attachment} from './attachment';
 import {Barcode} from './barcode';
 import {Button} from './button';
 import { SyncSource } from './sync_source';
+import { AiTextError, AiTextResult } from './ai_text';
 
 // AI Text
 // Attachment: Attachment
@@ -37,7 +38,7 @@ import { SyncSource } from './sync_source';
 // Single select: string
 // Sync source: SyncSource
 // Url: string
-export type FieldValue = string | number | boolean | Collaborator | SyncSource | ReadonlyArray<Attachment> | ReadonlyArray<FieldValue>;
+export type FieldValue = string | number | boolean | Collaborator | AiTextResult | AiTextError | SyncSource | ReadonlyArray<Attachment> | ReadonlyArray<FieldValue>;
 export interface FieldSet {
     [key: string]: FieldValue;
 }
