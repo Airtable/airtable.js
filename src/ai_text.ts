@@ -1,12 +1,6 @@
 export interface AiTextResult {
-    state: 'empty' | 'loading' | 'generated';
-    isState: boolean;
+    state: 'empty' | 'loading' | 'generated' | 'error';
+    isStale: boolean;
     value?: string;
-}
-
-export interface AiTextError {
-    state: 'error';
-    errorType: string;
-    isState: boolean;
-    value?: string;
+    errorType?: string;
 }

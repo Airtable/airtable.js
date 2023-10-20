@@ -3,10 +3,10 @@ import {Attachment} from './attachment';
 import {Barcode} from './barcode';
 import {Button} from './button';
 import {SyncSource} from './sync_source';
-import {AiTextError, AiTextResult} from './ai_text';
+import {AiTextResult} from './ai_text';
 
 // Built from https://airtable.com/developers/web/api/field-model
-// AI Text: AiTextError | AiTextResult
+// AI Text: AiTextResult
 // Attachment: Attachment
 // Auto number: number
 // Barcode: Barcode
@@ -45,7 +45,6 @@ export type FieldValue =
     number | 
     boolean | 
     AiTextResult | 
-    AiTextError | 
     Barcode | 
     Button | 
     Collaborator | 
