@@ -1,5 +1,6 @@
 export interface Collaborator {
     id: string;
-    email: string;
-    name: string;
+    email?: string;
+    name?: string;
+    profilePicUrl?: string;
 }
