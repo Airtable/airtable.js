@@ -1,6 +1,6 @@
 {
   "name": "airtable",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "license": "MIT",
   "homepage": "https://github.com/airtable/airtable.js",
   "repository": "git://github.com/airtable/airtable.js.git",
@@ -16,9 +16,9 @@
   "dependencies": {
     "@types/node": ">=8.0.0 <15",
     "abort-controller": "^3.0.0",
-    "abortcontroller-polyfill": "^1.4.0",
+    "abortcontroller-polyfill": "^1.7.5",
     "lodash": "^4.17.21",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^3.3.2"
   },
   "main": "./lib/airtable.js",
   "types": "./lib/airtable.d.ts",
@@ -47,12 +47,12 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.3",
-    "@types/lodash": "^4.14.157",
-    "@typescript-eslint/eslint-plugin": "^3.4.0",
-    "@typescript-eslint/parser": "^3.4.0",
+    "@types/lodash": "^4.14.199",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
     "body-parser": "^1.19.0",
     "envify": "^4.1.0",
-    "eslint": "^6.8.0",
+    "eslint": "^8.50.0",
     "express": "^4.17.1",
     "get-port": "^5.0.0",
     "grunt": "^1.3.0",
@@ -62,7 +62,7 @@
     "prettier": "^1.18.2",
     "pretty-quick": "^2.0.0",
     "semver": "^6.3.0",
-    "typescript": "^3.9.5"
+    "typescript": "^5.2.2"
   },
   "keywords": [
     "airtable",
