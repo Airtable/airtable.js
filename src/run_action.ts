@@ -1,7 +1,6 @@
 import exponentialBackoffWithJitter from './exponential_backoff_with_jitter';
 import objectToQueryParamString from './object_to_query_param_string';
 import packageVersion from './package_version';
-import fetch from './fetch';
 import AbortController from './abort-controller';
 import Base from './base';
 
@@ -64,7 +63,8 @@ function runAction(
         controller.abort();
     }, base._airtable._requestTimeout);
 
-    fetch(url, options)
+    base._airtable
+        ._fetch(url, options)
         .then(resp => {
             clearTimeout(timeout);
             if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {

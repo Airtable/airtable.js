@@ -12,6 +12,7 @@ import {Attachment as AirtableAttachment} from './attachment';
 import {Records as AirtableRecords} from './records';
 import {RecordData as AirtableRecordData} from './record_data';
 import {QueryParams as AirtableSelectOptions} from './query_params';
+import globalFetch from './fetch';
 
 type CustomHeaders = ObjectMap<string, string | number | boolean>;
 
@@ -23,6 +24,7 @@ class Airtable {
     readonly _endpointUrl: string;
     readonly _noRetryIfRateLimited: boolean;
     readonly _requestTimeout: number;
+    readonly _fetch: typeof fetch;
 
     static Base = Base;
     static Record = AirtableRecord;
@@ -34,6 +36,7 @@ class Airtable {
     static endpointUrl: string;
     static noRetryIfRateLimited: boolean;
     static requestTimeout: number;
+    static fetch: typeof fetch;
 
     constructor(opts: Airtable.AirtableOptions = {}) {
         const defaultConfig = Airtable.default_config();
@@ -66,6 +69,9 @@ class Airtable {
                 value:
                     opts.requestTimeout || Airtable.requestTimeout || defaultConfig.requestTimeout,
             },
+            _fetch: {
+                value: opts.fetch || Airtable.fetch || defaultConfig.fetch,
+            },
         });
 
         if (!this._apiKey) {
@@ -84,6 +90,7 @@ class Airtable {
             apiKey: process.env.AIRTABLE_API_KEY,
             noRetryIfRateLimited: false,
             requestTimeout: 300 * 1000, // 5 minutes
+            fetch: globalFetch,
         };
     }
 
@@ -93,15 +100,22 @@ class Airtable {
         apiVersion,
         noRetryIfRateLimited,
         requestTimeout,
+        fetch,
     }: Pick<
         Airtable.AirtableOptions,
-        'apiKey' | 'endpointUrl' | 'apiVersion' | 'noRetryIfRateLimited' | 'requestTimeout'
+        | 'apiKey'
+        | 'endpointUrl'
+        | 'apiVersion'
+        | 'noRetryIfRateLimited'
+        | 'requestTimeout'
+        | 'fetch'
     >): void {
         Airtable.apiKey = apiKey;
         Airtable.endpointUrl = endpointUrl;
         Airtable.apiVersion = apiVersion;
         Airtable.noRetryIfRateLimited = noRetryIfRateLimited;
         Airtable.requestTimeout = requestTimeout;
+        Airtable.fetch = fetch;
     }
 
     static base(baseId: string): Airtable.Base {
@@ -119,6 +133,7 @@ namespace Airtable {
         endpointUrl?: string;
         noRetryIfRateLimited?: boolean;
         requestTimeout?: number;
+        fetch?: typeof fetch;
     }
 
     export type FieldSet = AirtableFieldSet;

@@ -1,7 +1,6 @@
 import get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
 import keys from 'lodash/keys';
-import fetch from './fetch';
 import AbortController from './abort-controller';
 import objectToQueryParamString from './object_to_query_param_string';
 import AirtableError from './airtable_error';
@@ -75,7 +74,8 @@ class Base {
         }, this._airtable._requestTimeout);
 
         return new Promise((resolve, reject) => {
-            fetch(url, requestOptions)
+            this._airtable
+                ._fetch(url, requestOptions)
                 .then((resp: Response) => {
                     clearTimeout(timeout);
                     if (resp.status === 429 && !this._airtable._noRetryIfRateLimited) {
