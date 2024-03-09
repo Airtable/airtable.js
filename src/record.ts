@@ -1,184 +1,135 @@
-import callbackToPromise from './callback_to_promise';
-import {FieldSet} from './field_set';
-import Table from './table';
+import { type RegisteredFetchOptions } from "./airtable";
+import { type FieldSet } from "./field_set";
+import { inlineError } from "./inline_error";
+import { type Table } from "./table";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type RecordError = any;
-type RecordJson = any;
-/* eslint-enable @typescript-eslint/no-explicit-any */
+export type RecordJson<TFields extends FieldSet> = {
+  [key: string]: unknown;
+  commentCount?: number;
+  fields?: TFields;
+  id: string;
+};
 
-type OptionalParameters = {typecast: boolean};
+type OptionalParameters = { fetchOptions?: RegisteredFetchOptions; typecast?: boolean };
 
-interface RecordCallback<TFields extends FieldSet> {
-    (error: null, record: Record<TFields>): void;
-    (error: RecordError): void;
-}
+export class Record<TFields extends FieldSet> {
+  public _rawJson?: RecordJson<TFields>;
 
-interface RecordActionMethod<TFields extends FieldSet> {
-    (): Promise<Record<TFields>>;
-    (done: RecordCallback<TFields>): void;
-}
+  public readonly id: string;
+  public readonly commentCount?: number;
+  public fields!: TFields;
 
-interface RecordChangeMethod<TFields extends FieldSet> {
-    (cellValuesByName: TFields, done: RecordCallback<TFields>): void;
-    (cellValuesByName: TFields, opts: OptionalParameters, done: RecordCallback<TFields>): void;
-    (cellValuesByName: TFields, opts?: OptionalParameters): Promise<Record<TFields>>;
-}
-
-class Record<TFields extends FieldSet> {
-    readonly _table: Table<TFields>;
-    _rawJson: RecordJson;
-
-    readonly id: string;
-    readonly commentCount?: number;
-    fields: TFields;
-
-    readonly save: RecordActionMethod<TFields>;
-    readonly patchUpdate: RecordChangeMethod<TFields>;
-    readonly putUpdate: RecordChangeMethod<TFields>;
-    readonly destroy: RecordActionMethod<TFields>;
-    readonly fetch: RecordActionMethod<TFields>;
-
-    readonly updateFields: RecordChangeMethod<TFields>;
-    readonly replaceFields: RecordChangeMethod<TFields>;
-
-    constructor(table: Table<TFields>, recordId: string, recordJson?: RecordJson) {
-        this._table = table;
-        this.id = recordId || recordJson.id;
-        if (recordJson) {
-            this.commentCount = recordJson.commentCount;
-        }
-        this.setRawJson(recordJson);
-
-        this.save = callbackToPromise(save, this);
-        this.patchUpdate = callbackToPromise(patchUpdate, this);
-        this.putUpdate = callbackToPromise(putUpdate, this);
-        this.destroy = callbackToPromise(destroy, this);
-        this.fetch = callbackToPromise(fetch, this);
-
-        this.updateFields = this.patchUpdate;
-        this.replaceFields = this.putUpdate;
+  constructor(
+    private table: Table<TFields>,
+    recordId: string,
+    recordJson?: RecordJson<TFields>,
+  ) {
+    this.id = recordId || recordJson?.id || inlineError(new Error("Record ID is required"));
+    if (recordJson) {
+      this.commentCount = recordJson.commentCount;
     }
+    this.setRawJson(recordJson);
+  }
 
-    getId(): string {
-        return this.id;
-    }
+  public getId(): string {
+    return this.id;
+  }
 
-    get<Field extends keyof TFields>(columnName: Field): TFields[Field] {
-        return this.fields[columnName];
-    }
+  public get<Field extends keyof TFields>(columnName: Field): TFields[Field] {
+    return this.fields[columnName];
+  }
 
-    set<Field extends keyof TFields>(columnName: Field, columnValue: TFields[Field]): void {
-        this.fields[columnName] = columnValue;
-    }
+  public set<Field extends keyof TFields>(columnName: Field, columnValue: TFields[Field]): void {
+    this.fields[columnName] = columnValue;
+  }
 
-    setRawJson(rawJson: RecordJson): void {
-        this._rawJson = rawJson;
-        this.fields = (this._rawJson && this._rawJson.fields) || {};
-    }
-}
+  public setRawJson<TLocalFields extends TFields>(rawJson?: RecordJson<TLocalFields>): void {
+    this._rawJson = rawJson;
+    this.fields = this._rawJson?.fields ?? ({} as TFields);
+  }
 
-function save<TFields extends FieldSet>(this: Record<TFields>, done: RecordCallback<TFields>) {
-    this.putUpdate(this.fields, done);
-}
-
-function patchUpdate<TFields extends FieldSet>(
-    this: Record<TFields>,
-    cellValuesByName,
-    opts,
-    done?: RecordCallback<TFields>
-) {
-    if (!done) {
-        done = opts;
-        opts = {};
-    }
+  public async patchUpdate<TLocalFields extends TFields>(
+    cellValuesByName: TLocalFields,
+    opts: OptionalParameters = {},
+  ) {
     const updateBody = {
-        fields: cellValuesByName,
-        ...opts,
+      fields: cellValuesByName,
+      ...("typecast" in opts ? { typecast: opts.typecast } : {}),
     };
 
-    this._table._base.runAction(
-        'patch',
-        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
-        {},
-        updateBody,
-        (err, response, results) => {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            this.setRawJson(results);
-            done(null, this);
-        }
+    const result = await this.table.base.makeRequest(
+      {
+        method: "patch",
+        path: `/${this.table._urlEncodedNameOrId()}/${this.id}`,
+        body: updateBody,
+      },
+      opts.fetchOptions ?? {},
     );
-}
 
-function putUpdate<TFields extends FieldSet>(
-    this: Record<TFields>,
-    cellValuesByName,
-    opts,
-    done?: RecordCallback<TFields>
-) {
-    if (!done) {
-        done = opts;
-        opts = {};
-    }
+    this.setRawJson(result.body as RecordJson<TLocalFields>);
+
+    return this;
+  }
+
+  public async updateFields<TLocalFields extends TFields>(
+    cellValuesByName: TLocalFields,
+    opts: OptionalParameters = {},
+  ) {
+    return this.patchUpdate(cellValuesByName, opts);
+  }
+
+  public async putUpdate<TLocalFields extends TFields>(cellValuesByName: TLocalFields, opts: OptionalParameters = {}) {
     const updateBody = {
-        fields: cellValuesByName,
-        ...opts,
+      fields: cellValuesByName,
+      ...("typecast" in opts ? { typecast: opts.typecast } : {}),
     };
 
-    this._table._base.runAction(
-        'put',
-        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
-        {},
-        updateBody,
-        (err, response, results) => {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            this.setRawJson(results);
-            done(null, this);
-        }
+    const result = await this.table.base.makeRequest(
+      {
+        method: "put",
+        path: `/${this.table._urlEncodedNameOrId()}/${this.id}`,
+        body: updateBody,
+      },
+      opts.fetchOptions ?? {},
     );
-}
 
-function destroy<TFields extends FieldSet>(this: Record<TFields>, done: RecordCallback<TFields>) {
-    this._table._base.runAction(
-        'delete',
-        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
-        {},
-        null,
-        err => {
-            if (err) {
-                done(err);
-                return;
-            }
+    this.setRawJson(result.body as RecordJson<TLocalFields>);
 
-            done(null, this);
-        }
+    return this;
+  }
+
+  public async replaceFields<TLocalFields extends TFields>(
+    cellValuesByName: TLocalFields,
+    opts: OptionalParameters = {},
+  ) {
+    return this.putUpdate(cellValuesByName, opts);
+  }
+
+  public async save(fetchOptions?: RegisteredFetchOptions) {
+    return this.putUpdate(this.fields, { fetchOptions });
+  }
+
+  public async destroy(fetchOptions?: RegisteredFetchOptions) {
+    await this.table.base.makeRequest(
+      {
+        method: "delete",
+        path: `/${this.table._urlEncodedNameOrId()}/${this.id}`,
+      },
+      fetchOptions,
     );
-}
+  }
 
-function fetch<TFields extends FieldSet>(this: Record<TFields>, done: RecordCallback<TFields>) {
-    this._table._base.runAction(
-        'get',
-        `/${this._table._urlEncodedNameOrId()}/${this.id}`,
-        {},
-        null,
-        (err, response, results) => {
-            if (err) {
-                done(err);
-                return;
-            }
-
-            this.setRawJson(results);
-            done(null, this);
-        }
+  public async fetch(fetchOptions?: RegisteredFetchOptions) {
+    const result = await this.table.base.makeRequest(
+      {
+        method: "get",
+        path: `/${this.table._urlEncodedNameOrId()}/${this.id}`,
+      },
+      fetchOptions,
     );
-}
 
-export = Record;
+    this.setRawJson(result.body as RecordJson<TFields>);
+
+    return this;
+  }
+}

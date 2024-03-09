@@ -1,47 +1,35 @@
-import keys from 'lodash/keys';
+import { keys } from "lodash";
 
-const isBrowser = typeof window !== 'undefined';
+export class HttpHeaders {
+  public _headersByLowercasedKey: Record<
+    string,
+    {
+      headerKey: string;
+      headerValue: string;
+    }
+  > = {};
 
-class HttpHeaders {
-    _headersByLowercasedKey;
+  public set(headerKey: string, headerValue: string): void {
+    let lowercasedKey = headerKey.toLowerCase();
 
-    constructor() {
-        this._headersByLowercasedKey = {};
+    if (lowercasedKey === "x-airtable-user-agent") {
+      lowercasedKey = "user-agent";
+      headerKey = "User-Agent";
     }
 
-    set(headerKey: string, headerValue: string): void {
-        let lowercasedKey = headerKey.toLowerCase();
+    this._headersByLowercasedKey[lowercasedKey] = {
+      headerKey,
+      headerValue,
+    };
+  }
 
-        if (lowercasedKey === 'x-airtable-user-agent') {
-            lowercasedKey = 'user-agent';
-            headerKey = 'User-Agent';
-        }
+  public toJSON(): Record<string, string> {
+    const result: Record<string, string> = {};
+    for (const lowercasedKey of keys(this._headersByLowercasedKey)) {
+      const headerDefinition = this._headersByLowercasedKey[lowercasedKey];
 
-        this._headersByLowercasedKey[lowercasedKey] = {
-            headerKey,
-            headerValue,
-        };
+      result[headerDefinition.headerKey] = headerDefinition.headerValue;
     }
-
-    toJSON(): {[key: string]: string} {
-        const result = {};
-        for (const lowercasedKey of keys(this._headersByLowercasedKey)) {
-            const headerDefinition = this._headersByLowercasedKey[lowercasedKey];
-
-            let headerKey;
-            /* istanbul ignore next */
-            if (isBrowser && lowercasedKey === 'user-agent') {
-                // Some browsers do not allow overriding the user agent.
-                // https://github.com/Airtable/airtable.js/issues/52
-                headerKey = 'X-Airtable-User-Agent';
-            } else {
-                headerKey = headerDefinition.headerKey;
-            }
-
-            result[headerKey] = headerDefinition.headerValue;
-        }
-        return result;
-    }
+    return result;
+  }
 }
-
-export = HttpHeaders;

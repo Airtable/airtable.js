@@ -1,4 +1,4 @@
-The official Airtable JavaScript library.
+Based on the he official [Airtable JavaScript library](https://github.com/lsagetlethias/airtable.js).
 
 # Airtable.js
 
@@ -17,29 +17,11 @@ base.
 To install Airtable.js in a node project:
 
 ```sh
-npm install airtable
+npm install @lsagetlethias/node-airtable
+yarn add @lsagetlethias/node-airtable
 ```
 
-Airtable.js is compatible with Node 10 and above.
-
-## Browser
-
-To use Airtable.js in the browser, use [build/airtable.browser.js](build/airtable.browser.js).
-
-For a demo, run:
-
-```sh
-cd test/test_files
-python -m SimpleHTTPServer
-```
-
-Edit `test/test_files/index.html` - put your `BASE_ID` and `API_KEY` (Be careful! You are putting your API key on a web page! Create a separate account and share only one base with it.)
-
-Then open <http://localhost:8000/> in your browser.
-
-Airtable.js is compatible with browsers supported by the Airtable web app with
-the exception of Safari 10.0. Airtable.js supports Safari 10.1 and higher.
-See the [technical requirements](https://support.airtable.com/hc/en-us/articles/217990018) for more details.
+Airtable.js is compatible with Node 18 and above.
 
 # Configuration
 
@@ -76,11 +58,14 @@ You can also view non-interactive API documentation at <https://airtable.com/dev
 
 # Promises
 
-As of [v0.5.0](https://github.com/Airtable/airtable.js/releases/tag/v0.5.0) all of the methods that take a `done` callback will return a Promise if you don't pass in a `done` callback.
+As of original lib's [v0.5.0](https://github.com/Airtable/airtable.js/releases/tag/v0.5.0) all of the methods that would take a `done` callback would return a Promise if you don't pass in a `done` callback.
+
+Now all methods are Promise-based only.
 
 For example:
 
 ```js
+// not supported anymore
 table.select().firstPage(result => { ... })
 ```
 
@@ -89,14 +74,3 @@ is equivalent to
 ```js
 table.select().firstPage().then(result => { ... })
 ```
-
-# Tests
-
-Tests are run via `npm run test`.
-
-We strive for 100% test coverage. Some aspects may not be testable or suitable
-for test coverage. The tooling supports ignoring specific parts of a file
-[documented here](https://github.com/istanbuljs/nyc#parsing-hints-ignoring-lines); use that as appropriate.
-
-When you run the tests a coverage report will be generated at `./coverage/lcov-report/index.html`
-which you can access in the browser for line by line reporting.

@@ -1,5 +1,5 @@
 export interface RecordData<TFields> {
-    id: string;
-    fields: TFields;
-    commentCount?: number;
+  commentCount?: number;
+  fields: TFields;
+  id: string;
 }

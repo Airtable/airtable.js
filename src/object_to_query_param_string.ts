@@ -1,55 +1,51 @@
-import isArray from 'lodash/isArray';
-import isNil from 'lodash/isNil';
-import keys from 'lodash/keys';
+import { isNil, isPlainObject } from "lodash";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type ToParamBody = any;
-/* eslint-enable @typescript-eslint/no-explicit-any */
+type AddFn = (key: string, value: string | null) => void;
 
 // Adapted from jQuery.param:
 // https://github.com/jquery/jquery/blob/2.2-stable/src/serialize.js
-function buildParams(prefix, obj, addFn) {
-    if (isArray(obj)) {
-        // Serialize array item.
-        for (let index = 0; index < obj.length; index++) {
-            const value = obj[index];
-            if (/\[\]$/.test(prefix)) {
-                // Treat each array item as a scalar.
-                addFn(prefix, value);
-            } else {
-                // Item is non-scalar (array or object), encode its numeric index.
-                buildParams(
-                    `${prefix}[${typeof value === 'object' && value !== null ? index : ''}]`,
-                    value,
-                    addFn
-                );
-            }
-        }
-    } else if (typeof obj === 'object') {
-        // Serialize object item.
-        for (const key of keys(obj)) {
-            const value = obj[key];
-            buildParams(`${prefix}[${key}]`, value, addFn);
-        }
-    } else {
-        // Serialize scalar item.
-        addFn(prefix, obj);
+function buildParams(prefix: string, obj: unknown, addFn: AddFn) {
+  if (Array.isArray(obj)) {
+    // Serialize array item.
+    for (let index = 0; index < obj.length; index++) {
+      const value = obj[index] as string;
+      if (/\[\]$/.test(prefix)) {
+        // Treat each array item as a scalar.
+        addFn(prefix, value);
+      } else {
+        // Item is non-scalar (array or object), encode its numeric index.
+        buildParams(`${prefix}[${typeof value === "object" && value !== null ? index : ""}]`, value, addFn);
+      }
     }
+  } else if (typeof obj === "object" && obj) {
+    // Serialize object item.
+    for (const key of Object.keys(obj)) {
+      const value = obj[key as never] as string;
+      buildParams(`${prefix}[${key}]`, value, addFn);
+    }
+  } else {
+    // Serialize scalar item.
+    addFn(prefix, obj as string);
+  }
 }
 
-function objectToQueryParamString(obj: ToParamBody): string {
-    const parts = [];
-    const addFn = (key, value) => {
-        value = isNil(value) ? '' : value;
-        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
-    };
+export function objectToQueryParamString(obj: unknown): string {
+  if (!isPlainObject(obj)) {
+    return "";
+  }
 
-    for (const key of keys(obj)) {
-        const value = obj[key];
-        buildParams(key, value, addFn);
-    }
+  const o = obj as object;
 
-    return parts.join('&').replace(/%20/g, '+');
+  const parts: string[] = [];
+  const addFn: AddFn = (key, value) => {
+    value = isNil(value) ? "" : value;
+    parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+  };
+
+  for (const key of Object.keys(o)) {
+    const value = o[key as never];
+    buildParams(key, value, addFn);
+  }
+
+  return parts.join("&").replace(/%20/g, "+");
 }
-
-export = objectToQueryParamString;

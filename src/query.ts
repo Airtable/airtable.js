@@ -1,42 +1,15 @@
-import isFunction from 'lodash/isFunction';
-import keys from 'lodash/keys';
-import Record from './record';
-import callbackToPromise from './callback_to_promise';
-import has from './has';
-import Table from './table';
+import { type FieldSet } from "./field_set";
+import { type ObjectMap } from "./object_map";
+import { objectToQueryParamString } from "./object_to_query_param_string";
 import {
-    paramValidators,
-    QueryParams,
-    shouldListRecordsParamBePassedAsParameter,
-    URL_CHARACTER_LENGTH_LIMIT,
-} from './query_params';
-import objectToQueryParamString from './object_to_query_param_string';
-import {FieldSet} from './field_set';
-import {Records} from './records';
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type CallbackError = any;
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-type PageCallback<TFields extends FieldSet> = (
-    records: Records<TFields>,
-    processNextPage: () => void
-) => void;
-type RecordCollectionCallback<TFields extends FieldSet> = (
-    error: CallbackError,
-    records?: Records<TFields>
-) => void;
-type DoneCallback = (error: CallbackError) => void;
-
-interface RecordCollectionRequestMethod<TFields extends FieldSet> {
-    (): Promise<Records<TFields>>;
-    (done: RecordCollectionCallback<TFields>): void;
-}
-
-interface RecordPageIteratationMethod<TFields extends FieldSet> {
-    (pageCallback: PageCallback<TFields>): Promise<void>;
-    (pageCallback: PageCallback<TFields>, done: DoneCallback): void;
-}
+  paramValidators,
+  type QueryParams,
+  shouldListRecordsParamBePassedAsParameter,
+  URL_CHARACTER_LENGTH_LIMIT,
+} from "./query_params";
+import { Record, type RecordJson } from "./record";
+import { type Records } from "./records";
+import { type Table } from "./table";
 
 /**
  * Builds a query object. Won't fetch until `firstPage` or
@@ -45,212 +18,137 @@ interface RecordPageIteratationMethod<TFields extends FieldSet> {
  * Params should be validated prior to being passed to Query
  * with `Query.validateParams`.
  */
-class Query<TFields extends FieldSet> {
-    readonly _table: Table<TFields>;
-    readonly _params: QueryParams<TFields>;
+export class Query<TFields extends FieldSet> {
+  public static paramValidators = paramValidators;
 
-    readonly firstPage: RecordCollectionRequestMethod<TFields>;
-    readonly eachPage: RecordPageIteratationMethod<TFields>;
-    readonly all: RecordCollectionRequestMethod<TFields>;
+  constructor(
+    public readonly table: Table<TFields>,
+    public readonly params: QueryParams<TFields>,
+  ) {}
 
-    static paramValidators = paramValidators;
+  /**
+   * Validates the parameters for passing to the Query constructor.
+   *
+   * @param params parameters to validate
+   *
+   * @returns an object with three keys:
+   *  validParams: the object that should be passed to the constructor.
+   *  ignoredKeys: a list of keys that will be ignored.
+   *  errors: a list of error messages.
+   */
+  public static validateParams<TFields extends FieldSet, Params extends QueryParams<TFields> = QueryParams<TFields>>(
+    params: Params,
+  ): {
+    errors: string[];
+    ignoredKeys: string[];
+    validParams: QueryParams<TFields>;
+  } {
+    const validParams: QueryParams<TFields> = {};
+    const ignoredKeys = [];
+    const errors = [];
 
-    constructor(table: Table<TFields>, params: QueryParams<TFields>) {
-        this._table = table;
-        this._params = params;
-
-        this.firstPage = callbackToPromise(firstPage, this);
-        this.eachPage = callbackToPromise(eachPage, this, 1);
-        this.all = callbackToPromise(all, this);
-    }
-
-    /**
-     * Validates the parameters for passing to the Query constructor.
-     *
-     * @params {object} params parameters to validate
-     *
-     * @return an object with two keys:
-     *  validParams: the object that should be passed to the constructor.
-     *  ignoredKeys: a list of keys that will be ignored.
-     *  errors: a list of error messages.
-     */
-    static validateParams<
-        TFields extends FieldSet,
-        Params extends QueryParams<TFields> = QueryParams<TFields>
-    >(
-        params: Params
-    ): {
-        validParams: QueryParams<TFields>;
-        ignoredKeys: string[];
-        errors: string[];
-    } {
-        const validParams: QueryParams<TFields> = {};
-        const ignoredKeys = [];
-        const errors = [];
-
-        for (const key of keys(params)) {
-            const value = params[key];
-            if (has(Query.paramValidators, key)) {
-                const validator = Query.paramValidators[key];
-                const validationResult = validator(value);
-                if (validationResult.pass) {
-                    validParams[key] = value;
-                } else {
-                    errors.push(validationResult.error);
-                }
-            } else {
-                ignoredKeys.push(key);
-            }
+    for (const [key, value] of Object.entries(params)) {
+      if (key in Query.paramValidators) {
+        const validator = Query.paramValidators[key as keyof QueryParams<TFields>];
+        const validationResult = validator(value as never);
+        if (validationResult.pass) {
+          validParams[key as never] = value as never;
+        } else {
+          errors.push(validationResult.error);
         }
-
-        return {
-            validParams,
-            ignoredKeys,
-            errors,
-        };
-    }
-}
-
-/**
- * Fetches the first page of results for the query asynchronously,
- * then calls `done(error, records)`.
- */
-function firstPage<TFields extends FieldSet>(
-    this: Query<TFields>,
-    done: RecordCollectionCallback<TFields>
-) {
-    if (!isFunction(done)) {
-        throw new Error('The first parameter to `firstPage` must be a function');
+      } else {
+        ignoredKeys.push(key);
+      }
     }
 
-    this.eachPage(
-        records => {
-            done(null, records);
-        },
-        error => {
-            done(error, null);
-        }
-    );
-}
+    return {
+      validParams,
+      ignoredKeys,
+      errors,
+    };
+  }
 
-/**
- * Fetches each page of results for the query asynchronously.
- *
- * Calls `pageCallback(records, fetchNextPage)` for each
- * page. You must call `fetchNextPage()` to fetch the next page of
- * results.
- *
- * After fetching all pages, or if there's an error, calls
- * `done(error)`.
- */
-function eachPage<TFields extends FieldSet>(
-    this: Query<TFields>,
-    pageCallback: PageCallback<TFields>,
-    done: DoneCallback
-) {
-    if (!isFunction(pageCallback)) {
-        throw new Error('The first parameter to `eachPage` must be a function');
+  /**
+   * Fetches the first page of results for the query asynchronously,
+   * then calls `done(error, records)`.
+   */
+  public async firstPage(): Promise<Records<TFields>> {
+    for await (const records of this.eachPage()) {
+      return records;
     }
 
-    if (!isFunction(done) && done !== void 0) {
-        throw new Error('The second parameter to `eachPage` must be a function or undefined');
-    }
+    return [];
+  }
 
-    const params = {...this._params};
-    const pathAndParamsAsString = `/${this._table._urlEncodedNameOrId()}?${objectToQueryParamString(
-        params
-    )}`;
+  /**
+   * Fetches each page of results for the query asynchronously.
+   */
+  public async *eachPage() {
+    const params = { ...this.params } as ObjectMap<string, unknown>;
+    const pathAndParamsAsString = `/${this.table._urlEncodedNameOrId()}?${objectToQueryParamString(params)}`;
 
-    let queryParams = {};
+    let queryParams = {} as ObjectMap<string, unknown>;
     let requestData = null;
-    let method;
+    let method: "get" | "post";
     let path;
 
-    if (params.method === 'post' || pathAndParamsAsString.length > URL_CHARACTER_LENGTH_LIMIT) {
-        // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
-        // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
-        // with the request params
+    if (params.method === "post" || pathAndParamsAsString.length > URL_CHARACTER_LENGTH_LIMIT) {
+      // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
+      // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
+      // with the request params
 
-        requestData = params;
-        method = 'post';
-        path = `/${this._table._urlEncodedNameOrId()}/listRecords`;
+      requestData = params;
+      method = "post";
+      path = `/${this.table._urlEncodedNameOrId()}/listRecords`;
 
-        const paramNames = Object.keys(params);
+      const paramNames = Object.keys(params);
 
-        for (const paramName of paramNames) {
-            if (shouldListRecordsParamBePassedAsParameter(paramName)) {
-                // timeZone and userLocale is parsed from the GET request separately from the other params. This parsing
-                // does not occurring within the body parser we use for POST requests, so this will still need to be passed
-                // via query params
-                queryParams[paramName] = params[paramName];
-            } else {
-                requestData[paramName] = params[paramName];
-            }
+      for (const paramName of paramNames) {
+        if (shouldListRecordsParamBePassedAsParameter(paramName)) {
+          // timeZone and userLocale is parsed from the GET request separately from the other params. This parsing
+          // does not occurring within the body parser we use for POST requests, so this will still need to be passed
+          // via query params
+          queryParams[paramName] = params[paramName];
+        } else {
+          requestData[paramName] = params[paramName];
         }
+      }
     } else {
-        method = 'get';
-        queryParams = params;
-        path = `/${this._table._urlEncodedNameOrId()}`;
+      method = "get";
+      queryParams = params;
+      path = `/${this.table._urlEncodedNameOrId()}`;
     }
 
-    const inner = () => {
-        this._table._base.runAction(
-            method,
-            path,
-            queryParams,
-            requestData,
-            (err, response, result) => {
-                if (err) {
-                    done(err, null);
-                } else {
-                    let next;
-                    if (result.offset) {
-                        params.offset = result.offset;
-                        next = inner;
-                    } else {
-                        next = () => {
-                            done(null);
-                        };
-                    }
+    let offset;
 
-                    const records = result.records.map(recordJson => {
-                        return new Record(this._table, null, recordJson);
-                    });
+    do {
+      const result = await this.table.base.makeRequest({
+        method,
+        path,
+        qs: queryParams,
+        body: requestData,
+      });
 
-                    pageCallback(records, next);
-                }
-            }
-        );
-    };
+      const body = result.body as { offset?: string; records: Array<RecordJson<TFields>> };
+      if (body.offset) {
+        params.offset = offset = body.offset;
+        yield body.records.map(recordJson => {
+          return new Record<TFields>(this.table, recordJson.id, recordJson);
+        });
+      } else break;
+    } while (offset);
 
-    inner();
-}
+    return null;
+  }
 
-/**
- * Fetches all pages of results asynchronously. May take a long time.
- */
-function all<TFields extends FieldSet>(
-    this: Query<TFields>,
-    done: RecordCollectionCallback<TFields>
-) {
-    if (!isFunction(done)) {
-        throw new Error('The first parameter to `all` must be a function');
-    }
-
+  /**
+   * Fetches all pages of results asynchronously. May take a long time.
+   */
+  public async all(): Promise<Records<TFields>> {
     const allRecords = [];
-    this.eachPage(
-        (pageRecords, fetchNextPage) => {
-            allRecords.push(...pageRecords);
-            fetchNextPage();
-        },
-        err => {
-            if (err) {
-                done(err, null);
-            } else {
-                done(null, allRecords);
-            }
-        }
-    );
+    for await (const pageRecords of this.eachPage()) {
+      allRecords.push(...pageRecords);
+    }
+    return allRecords;
+  }
 }
-
-export = Query;

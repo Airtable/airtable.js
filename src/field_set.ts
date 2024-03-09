@@ -1,14 +1,14 @@
-import {Collaborator} from './collaborator';
-import {Attachment} from './attachment';
+import { type Attachment } from "./attachment";
+import { type Collaborator } from "./collaborator";
 
 export interface FieldSet {
-    [key: string]:
-        | undefined
-        | string
-        | number
-        | boolean
-        | Collaborator
-        | ReadonlyArray<Collaborator>
-        | ReadonlyArray<string>
-        | ReadonlyArray<Attachment>;
+  [key: string]:
+    | Collaborator
+    | boolean
+    | number
+    | string
+    | readonly Attachment[]
+    | readonly Collaborator[]
+    | readonly string[]
+    | undefined;
 }

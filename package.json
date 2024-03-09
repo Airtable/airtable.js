@@ -1,68 +1,42 @@
 {
-  "name": "airtable",
-  "version": "0.12.2",
+  "name": "@lsagetlethias/node-airtable",
+  "version": "0.1.0",
   "license": "MIT",
-  "homepage": "https://github.com/airtable/airtable.js",
-  "repository": "git://github.com/airtable/airtable.js.git",
+  "homepage": "https://github.com/lsagetlethias/airtable.js",
+  "repository": "git://github.com/lsagetlethias/airtable.js.git",
   "private": false,
   "scripts": {
-    "pretest": "npm run lint && npm run prepare && cp build/airtable.browser.js test/test_files; true",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
-    "format": "prettier --write '**/*.[j|t]s'",
-    "test": "jest --env node --coverage --no-cache",
-    "test-unit": "jest --env node",
-    "prepare": "rm -rf lib/* && rm -f build/airtable.browser.js && tsc && cp lib/airtable.js lib/tmp_airtable.js && grunt browserify && rm lib/tmp_airtable.js"
+    "build": "rm -rf lib/* && tsc"
   },
   "dependencies": {
-    "@types/node": ">=8.0.0 <15",
-    "abort-controller": "^3.0.0",
-    "abortcontroller-polyfill": "^1.4.0",
-    "lodash": "^4.17.21",
-    "node-fetch": "^2.6.7"
+    "lodash": "^4.17.21"
   },
   "main": "./lib/airtable.js",
   "types": "./lib/airtable.d.ts",
-  "browser": {
-    "node-fetch": false,
-    "abort-controller": false,
-    "./lib/airtable.js": "./lib/airtable.umd.js",
-    "./lib/package_version": "./lib/package_version_browser"
-  },
   "files": [
     "/README.md",
     "/CHANGELOG.md",
-    "/LICENSE.txt",
-    "/build/airtable.browser.js",
+    "/LICENSE",
     "/lib/"
   ],
-  "jest": {
-    "coverageThreshold": {
-      "global": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      }
-    }
-  },
   "devDependencies": {
-    "@types/jest": "^26.0.3",
-    "@types/lodash": "^4.14.157",
-    "@typescript-eslint/eslint-plugin": "^3.4.0",
-    "@typescript-eslint/parser": "^3.4.0",
-    "body-parser": "^1.19.0",
-    "envify": "^4.1.0",
-    "eslint": "^6.8.0",
-    "express": "^4.17.1",
-    "get-port": "^5.0.0",
-    "grunt": "^1.3.0",
-    "grunt-browserify": "^5.3.0",
-    "husky": "^3.0.9",
-    "jest": "^24.9.0",
-    "prettier": "^1.18.2",
-    "pretty-quick": "^2.0.0",
-    "semver": "^6.3.0",
-    "typescript": "^3.9.5"
+    "@types/node": "^18",
+    "@tsconfig/node18": "^18.2.2",
+    "@types/eslint": "^8.56.5",
+    "@types/lodash": "^4.14.202",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-lodash": "^7.4.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+    "eslint-plugin-typescript-sort-keys": "^3.2.0",
+    "eslint-plugin-unused-imports": "^3.1.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.2",
+    "typescript-eslint": "^7.1.1"
   },
   "keywords": [
     "airtable",
@@ -71,6 +45,6 @@
     "spreadsheet"
   ],
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=18.0.0"
   }
 }
