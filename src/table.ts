@@ -4,6 +4,7 @@ import { type FieldSet } from "./field_set";
 import { Query } from "./query";
 import { type QueryParams } from "./query_params";
 import { Record, type RecordJson } from "./record";
+import { type RecordData } from "./record_data";
 import { type Records } from "./records";
 
 type OptionalParameters = {
@@ -11,6 +12,9 @@ type OptionalParameters = {
   method?: "get" | "post";
   typecast?: boolean;
 };
+
+type CreateRecord<TFields> = Pick<RecordData<Partial<TFields>>, "fields">;
+type CreateRecords<TFields> = Array<CreateRecord<TFields>> | Array<Partial<TFields>> | string[];
 
 export class Table<TFields extends FieldSet> {
   public readonly id?: string;
@@ -60,10 +64,16 @@ export class Table<TFields extends FieldSet> {
     return this.id || encodeURIComponent(this.name!);
   }
 
-  public async create(recordData: TFields, optionalParameters?: OptionalParameters): Promise<Record<TFields>>;
-  public async create(recordsData: TFields[], optionalParameters?: OptionalParameters): Promise<Records<TFields>>;
   public async create(
-    recordsData: TFields | TFields[],
+    recordData: Partial<TFields> | string,
+    optionalParameters?: OptionalParameters,
+  ): Promise<Record<TFields>>;
+  public async create(
+    recordsData: CreateRecords<TFields>,
+    optionalParameters?: OptionalParameters,
+  ): Promise<Records<TFields>>;
+  public async create(
+    recordsData: CreateRecords<TFields> | Partial<TFields> | string,
     optionalParameters: OptionalParameters = {},
   ): Promise<Record<TFields> | Records<TFields>> {
     const isCreatingMultipleRecords = Array.isArray(recordsData);
@@ -97,8 +107,8 @@ export class Table<TFields extends FieldSet> {
 
   public async _updateRecords(
     isDestructiveUpdate: boolean,
-    recordsDataOrRecordId: TFields[] | string,
-    recordDataOrOpts: OptionalParameters | TFields,
+    recordsDataOrRecordId: Array<RecordData<Partial<TFields>>> | string,
+    recordDataOrOpts?: OptionalParameters | RecordData<Partial<TFields>>,
     optionalParameters?: OptionalParameters,
   ): Promise<Record<TFields> | Records<TFields>> {
     const isUpdatingMultipleRecords = Array.isArray(recordsDataOrRecordId);
@@ -140,13 +150,16 @@ export class Table<TFields extends FieldSet> {
 
   public async update(
     recordId: string,
-    recordData: TFields,
+    recordData: RecordData<Partial<TFields>>,
     optionalParameters?: OptionalParameters,
   ): Promise<Record<TFields>>;
-  public async update(recordsData: TFields[], optionalParameters?: OptionalParameters): Promise<Records<TFields>>;
   public async update(
-    recordsDataOrRecordId: TFields[] | string,
-    recordDataOrOpts: OptionalParameters | TFields,
+    recordsData: Array<RecordData<Partial<TFields>>>,
+    optionalParameters?: OptionalParameters,
+  ): Promise<Records<TFields>>;
+  public async update(
+    recordsDataOrRecordId: Array<RecordData<Partial<TFields>>> | string,
+    recordDataOrOpts?: OptionalParameters | RecordData<Partial<TFields>>,
     optionalParameters?: OptionalParameters,
   ): Promise<Record<TFields> | Records<TFields>> {
     return this._updateRecords(false, recordsDataOrRecordId, recordDataOrOpts, optionalParameters);
@@ -154,13 +167,16 @@ export class Table<TFields extends FieldSet> {
 
   public replace(
     recordId: string,
-    recordData: TFields,
+    recordData: RecordData<Partial<TFields>>,
     optionalParameters?: OptionalParameters,
   ): Promise<Record<TFields>>;
-  public replace(recordsData: TFields[], optionalParameters?: OptionalParameters): Promise<Records<TFields>>;
+  public replace(
+    recordsData: Array<RecordData<Partial<TFields>>>,
+    optionalParameters?: OptionalParameters,
+  ): Promise<Records<TFields>>;
   public async replace(
-    recordsDataOrRecordId: TFields[] | string,
-    recordDataOrOpts: OptionalParameters | TFields,
+    recordsDataOrRecordId: Array<RecordData<Partial<TFields>>> | string,
+    recordDataOrOpts?: OptionalParameters | RecordData<Partial<TFields>>,
     optionalParameters?: OptionalParameters,
   ): Promise<Record<TFields> | Records<TFields>> {
     return this._updateRecords(true, recordsDataOrRecordId, recordDataOrOpts, optionalParameters);

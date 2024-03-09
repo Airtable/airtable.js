@@ -1,6 +1,6 @@
 {
   "name": "@lsagetlethias/node-airtable",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "homepage": "https://github.com/lsagetlethias/airtable.js",
   "repository": "git://github.com/lsagetlethias/airtable.js.git",
