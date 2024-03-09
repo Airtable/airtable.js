@@ -40,7 +40,7 @@ export class Table<TFields extends FieldSet> {
     return record.fetch(fetchOptions);
   }
 
-  public select(params: QueryParams<TFields> = {}): Query<TFields> {
+  public select(params: QueryParams<TFields> = {}, fetchOptions?: RegisteredFetchOptions): Query<TFields> {
     const validationResults = Query.validateParams<TFields>(params);
 
     if (validationResults.errors.length) {
@@ -57,7 +57,7 @@ export class Table<TFields extends FieldSet> {
       );
     }
 
-    return new Query<TFields>(this, validationResults.validParams);
+    return new Query<TFields>(this, validationResults.validParams, fetchOptions);
   }
 
   public _urlEncodedNameOrId(): string {

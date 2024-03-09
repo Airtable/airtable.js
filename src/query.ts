@@ -1,3 +1,4 @@
+import { type RegisteredFetchOptions } from "./airtable";
 import { type FieldSet } from "./field_set";
 import { type ObjectMap } from "./object_map";
 import { objectToQueryParamString } from "./object_to_query_param_string";
@@ -24,6 +25,7 @@ export class Query<TFields extends FieldSet> {
   constructor(
     public readonly table: Table<TFields>,
     public readonly params: QueryParams<TFields>,
+    public readonly fetchOptions: RegisteredFetchOptions = {},
   ) {}
 
   /**
@@ -122,12 +124,15 @@ export class Query<TFields extends FieldSet> {
     let offset;
 
     do {
-      const result = await this.table.base.makeRequest({
-        method,
-        path,
-        qs: queryParams,
-        body: requestData,
-      });
+      const result = await this.table.base.makeRequest(
+        {
+          method,
+          path,
+          qs: queryParams,
+          body: requestData,
+        },
+        this.fetchOptions,
+      );
 
       const body = result.body as { offset?: string; records: Array<RecordJson<TFields>> };
       if (body.offset) {
