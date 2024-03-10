@@ -135,11 +135,11 @@ export class Query<TFields extends FieldSet> {
       );
 
       const body = result.body as { offset?: string; records: Array<RecordJson<TFields>> };
+      yield body.records.map(recordJson => {
+        return new Record<TFields>(this.table, recordJson.id, recordJson);
+      });
       if (body.offset) {
         params.offset = offset = body.offset;
-        yield body.records.map(recordJson => {
-          return new Record<TFields>(this.table, recordJson.id, recordJson);
-        });
       } else break;
     } while (offset);
 
