@@ -4,6 +4,7 @@ import {Attachment} from './attachment';
 export interface FieldSet {
     [key: string]:
         | undefined
+        | null
         | string
         | number
         | boolean
