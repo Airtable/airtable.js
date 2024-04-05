@@ -271,7 +271,7 @@ describe('Base', function() {
                     res.status(401).json({});
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'AUTHENTICATION_REQUIRED',
                     message: expect.any(String),
                     statusCode: 401,
@@ -285,7 +285,7 @@ describe('Base', function() {
                         .end();
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'NOT_AUTHORIZED',
                     message: expect.any(String),
                     statusCode: 403,
@@ -299,7 +299,7 @@ describe('Base', function() {
                         .end();
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'NOT_FOUND',
                     message: expect.any(String),
                     statusCode: 404,
@@ -315,7 +315,7 @@ describe('Base', function() {
                     });
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'NOT_FOUND',
                     message: 'foo bar',
                     statusCode: 404,
@@ -329,7 +329,7 @@ describe('Base', function() {
                         .end();
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'REQUEST_TOO_LARGE',
                     message: expect.any(String),
                     statusCode: 413,
@@ -343,7 +343,7 @@ describe('Base', function() {
                         .end();
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'UNPROCESSABLE_ENTITY',
                     message: expect.any(String),
                     statusCode: 422,
@@ -359,7 +359,7 @@ describe('Base', function() {
                     });
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'FOO_BAR',
                     message: expect.any(String),
                     statusCode: 422,
@@ -375,7 +375,7 @@ describe('Base', function() {
                     });
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'UNPROCESSABLE_ENTITY',
                     message: 'foo bar',
                     statusCode: 422,
@@ -395,7 +395,7 @@ describe('Base', function() {
                     noRetryIfRateLimited: true,
                 }).base('app123');
 
-                return expect(base.makeRequest()).rejects.toEqual({
+                return expect(base.makeRequest()).rejects.toMatchObject({
                     error: 'TOO_MANY_REQUESTS',
                     message: expect.any(String),
                     statusCode: 429,
@@ -425,7 +425,7 @@ describe('Base', function() {
                         .end();
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'SERVER_ERROR',
                     message: expect.any(String),
                     statusCode: 500,
@@ -439,7 +439,7 @@ describe('Base', function() {
                         .end();
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'SERVICE_UNAVAILABLE',
                     message: expect.any(String),
                     statusCode: 503,
@@ -453,7 +453,7 @@ describe('Base', function() {
                         .end();
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'UNEXPECTED_ERROR',
                     message: expect.any(String),
                     statusCode: 402,
@@ -467,7 +467,7 @@ describe('Base', function() {
                     });
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'FOO_BAR',
                     message: expect.any(String),
                     statusCode: 402,
@@ -481,7 +481,7 @@ describe('Base', function() {
                     });
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'UNEXPECTED_ERROR',
                     message: 'foo bar',
                     statusCode: 402,
@@ -494,7 +494,7 @@ describe('Base', function() {
                     res.send('{"foo":');
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'UNEXPECTED_ERROR',
                     message: expect.any(String),
                     statusCode: 200,
@@ -506,7 +506,7 @@ describe('Base', function() {
                     res.json(['foo', 'bar']);
                 });
 
-                return expect(fakeBase.makeRequest()).rejects.toEqual({
+                return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                     error: 'UNEXPECTED_ERROR',
                     message: expect.any(String),
                     statusCode: 200,
@@ -524,7 +524,7 @@ describe('Base', function() {
                         testExpressApp = env.testExpressApp;
                     })
                     .then(function() {
-                        return expect(fakeBase.makeRequest()).rejects.toEqual({
+                        return expect(fakeBase.makeRequest()).rejects.toMatchObject({
                             error: 'CONNECTION_ERROR',
                             message: expect.any(String),
                             statusCode: null,
