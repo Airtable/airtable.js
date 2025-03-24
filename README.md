@@ -30,7 +30,7 @@ For a demo, run:
 
 ```sh
 cd test/test_files
-python -m SimpleHTTPServer
+python -m http.server
 ```
 
 Edit `test/test_files/index.html` - put your `BASE_ID` and `API_KEY` (Be careful! You are putting your API key on a web page! Create a separate account and share only one base with it.)
