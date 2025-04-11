@@ -137,3 +137,26 @@ namespace Airtable {
 }
 
 export = Airtable;
+export function getReturnStats() {
+  const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY || 'YOUR_API_KEY' }).base('app9YyFDrWuJRu0j1');
+  
+  return new Promise((resolve, reject) => {
+    const returnIssues = [];
+    
+    base('Returns').select({}).eachPage(
+      function page(records, fetchNextPage) {
+        records.forEach(record => {
+          returnIssues.push(record.fields);
+        });
+        fetchNextPage();
+      },
+      function done(err) {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(returnIssues);
+      }
+    );
+  });
+}
