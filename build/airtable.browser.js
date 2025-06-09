@@ -31,7 +31,7 @@ var AirtableError = /** @class */ (function () {
             '(',
             this.error,
             ')',
-            this.statusCode ? "[Http code " + this.statusCode + "]" : '',
+            this.statusCode ? "[Http code ".concat(this.statusCode, "]") : '',
         ].join('');
     };
     return AirtableError;
@@ -66,7 +66,7 @@ var http_headers_1 = __importDefault(require("./http_headers"));
 var run_action_1 = __importDefault(require("./run_action"));
 var package_version_1 = __importDefault(require("./package_version"));
 var exponential_backoff_with_jitter_1 = __importDefault(require("./exponential_backoff_with_jitter"));
-var userAgent = "Airtable.js/" + package_version_1.default;
+var userAgent = "Airtable.js/".concat(package_version_1.default);
 var Base = /** @class */ (function () {
     function Base(airtable, baseId) {
         this._airtable = airtable;
@@ -79,8 +79,8 @@ var Base = /** @class */ (function () {
         var _this = this;
         var _a;
         if (options === void 0) { options = {}; }
-        var method = get_1.default(options, 'method', 'GET').toUpperCase();
-        var url = this._airtable._endpointUrl + "/v" + this._airtable._apiVersionMajor + "/" + this._id + get_1.default(options, 'path', '/') + "?" + object_to_query_param_string_1.default(get_1.default(options, 'qs', {}));
+        var method = (0, get_1.default)(options, 'method', 'GET').toUpperCase();
+        var url = "".concat(this._airtable._endpointUrl, "/v").concat(this._airtable._apiVersionMajor, "/").concat(this._id).concat((0, get_1.default)(options, 'path', '/'), "?").concat((0, object_to_query_param_string_1.default)((0, get_1.default)(options, 'qs', {})));
         var controller = new abort_controller_1.default();
         var headers = this._getRequestHeaders(Object.assign({}, this._airtable._customHeaders, (_a = options.headers) !== null && _a !== void 0 ? _a : {}));
         var requestOptions = {
@@ -95,12 +95,12 @@ var Base = /** @class */ (function () {
             controller.abort();
         }, this._airtable._requestTimeout);
         return new Promise(function (resolve, reject) {
-            fetch_1.default(url, requestOptions)
+            (0, fetch_1.default)(url, requestOptions)
                 .then(function (resp) {
                 clearTimeout(timeout);
                 if (resp.status === 429 && !_this._airtable._noRetryIfRateLimited) {
-                    var numAttempts_1 = get_1.default(options, '_numAttempts', 0);
-                    var backoffDelayMs = exponential_backoff_with_jitter_1.default(numAttempts_1);
+                    var numAttempts_1 = (0, get_1.default)(options, '_numAttempts', 0);
+                    var backoffDelayMs = (0, exponential_backoff_with_jitter_1.default)(numAttempts_1);
                     setTimeout(function () {
                         var newOptions = __assign(__assign({}, options), { _numAttempts: numAttempts_1 + 1 });
                         _this.makeRequest(newOptions)
@@ -141,14 +141,14 @@ var Base = /** @class */ (function () {
      * @deprecated This method is deprecated.
      */
     Base.prototype.runAction = function (method, path, queryParams, bodyData, callback) {
-        run_action_1.default(this, method, path, queryParams, bodyData, callback, 0);
+        (0, run_action_1.default)(this, method, path, queryParams, bodyData, callback, 0);
     };
     Base.prototype._getRequestHeaders = function (headers) {
         var result = new http_headers_1.default();
-        result.set('Authorization', "Bearer " + this._airtable._apiKey);
+        result.set('Authorization', "Bearer ".concat(this._airtable._apiKey));
         result.set('User-Agent', userAgent);
         result.set('Content-Type', 'application/json');
-        for (var _i = 0, _a = keys_1.default(headers); _i < _a.length; _i++) {
+        for (var _i = 0, _a = (0, keys_1.default)(headers); _i < _a.length; _i++) {
             var headerKey = _a[_i];
             result.set(headerKey, headers[headerKey]);
         }
@@ -212,7 +212,7 @@ function _canRequestMethodIncludeBody(method) {
     return method !== 'GET' && method !== 'DELETE';
 }
 function _getErrorForNonObjectBody(statusCode, body) {
-    if (isPlainObject_1.default(body)) {
+    if ((0, isPlainObject_1.default)(body)) {
         return null;
     }
     else {
@@ -362,7 +362,7 @@ var HttpHeaders = /** @class */ (function () {
     };
     HttpHeaders.prototype.toJSON = function () {
         var result = {};
-        for (var _i = 0, _a = keys_1.default(this._headersByLowercasedKey); _i < _a.length; _i++) {
+        for (var _i = 0, _a = (0, keys_1.default)(this._headersByLowercasedKey); _i < _a.length; _i++) {
             var lowercasedKey = _a[_i];
             var headerDefinition = this._headersByLowercasedKey[lowercasedKey];
             var headerKey = void 0;
@@ -401,7 +401,7 @@ var keys_1 = __importDefault(require("lodash/keys"));
 // Adapted from jQuery.param:
 // https://github.com/jquery/jquery/blob/2.2-stable/src/serialize.js
 function buildParams(prefix, obj, addFn) {
-    if (isArray_1.default(obj)) {
+    if ((0, isArray_1.default)(obj)) {
         // Serialize array item.
         for (var index = 0; index < obj.length; index++) {
             var value = obj[index];
@@ -411,16 +411,16 @@ function buildParams(prefix, obj, addFn) {
             }
             else {
                 // Item is non-scalar (array or object), encode its numeric index.
-                buildParams(prefix + "[" + (typeof value === 'object' && value !== null ? index : '') + "]", value, addFn);
+                buildParams("".concat(prefix, "[").concat(typeof value === 'object' && value !== null ? index : '', "]"), value, addFn);
             }
         }
     }
     else if (typeof obj === 'object') {
         // Serialize object item.
-        for (var _i = 0, _a = keys_1.default(obj); _i < _a.length; _i++) {
+        for (var _i = 0, _a = (0, keys_1.default)(obj); _i < _a.length; _i++) {
             var key = _a[_i];
             var value = obj[key];
-            buildParams(prefix + "[" + key + "]", value, addFn);
+            buildParams("".concat(prefix, "[").concat(key, "]"), value, addFn);
         }
     }
     else {
@@ -431,10 +431,10 @@ function buildParams(prefix, obj, addFn) {
 function objectToQueryParamString(obj) {
     var parts = [];
     var addFn = function (key, value) {
-        value = isNil_1.default(value) ? '' : value;
-        parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+        value = (0, isNil_1.default)(value) ? '' : value;
+        parts.push("".concat(encodeURIComponent(key), "=").concat(encodeURIComponent(value)));
     };
-    for (var _i = 0, _a = keys_1.default(obj); _i < _a.length; _i++) {
+    for (var _i = 0, _a = (0, keys_1.default)(obj); _i < _a.length; _i++) {
         var key = _a[_i];
         var value = obj[key];
         buildParams(key, value, addFn);
@@ -445,7 +445,7 @@ module.exports = objectToQueryParamString;
 
 },{"lodash/isArray":79,"lodash/isNil":85,"lodash/keys":93}],12:[function(require,module,exports){
 "use strict";
-module.exports = "0.12.2";
+module.exports = "0.12.3";
 
 },{}],13:[function(require,module,exports){
 "use strict";
@@ -481,9 +481,9 @@ var Query = /** @class */ (function () {
     function Query(table, params) {
         this._table = table;
         this._params = params;
-        this.firstPage = callback_to_promise_1.default(firstPage, this);
-        this.eachPage = callback_to_promise_1.default(eachPage, this, 1);
-        this.all = callback_to_promise_1.default(all, this);
+        this.firstPage = (0, callback_to_promise_1.default)(firstPage, this);
+        this.eachPage = (0, callback_to_promise_1.default)(eachPage, this, 1);
+        this.all = (0, callback_to_promise_1.default)(all, this);
     }
     /**
      * Validates the parameters for passing to the Query constructor.
@@ -499,10 +499,10 @@ var Query = /** @class */ (function () {
         var validParams = {};
         var ignoredKeys = [];
         var errors = [];
-        for (var _i = 0, _a = keys_1.default(params); _i < _a.length; _i++) {
+        for (var _i = 0, _a = (0, keys_1.default)(params); _i < _a.length; _i++) {
             var key = _a[_i];
             var value = params[key];
-            if (has_1.default(Query.paramValidators, key)) {
+            if ((0, has_1.default)(Query.paramValidators, key)) {
                 var validator = Query.paramValidators[key];
                 var validationResult = validator(value);
                 if (validationResult.pass) {
@@ -530,7 +530,7 @@ var Query = /** @class */ (function () {
  * then calls `done(error, records)`.
  */
 function firstPage(done) {
-    if (!isFunction_1.default(done)) {
+    if (!(0, isFunction_1.default)(done)) {
         throw new Error('The first parameter to `firstPage` must be a function');
     }
     this.eachPage(function (records) {
@@ -551,14 +551,14 @@ function firstPage(done) {
  */
 function eachPage(pageCallback, done) {
     var _this = this;
-    if (!isFunction_1.default(pageCallback)) {
+    if (!(0, isFunction_1.default)(pageCallback)) {
         throw new Error('The first parameter to `eachPage` must be a function');
     }
-    if (!isFunction_1.default(done) && done !== void 0) {
+    if (!(0, isFunction_1.default)(done) && done !== void 0) {
         throw new Error('The second parameter to `eachPage` must be a function or undefined');
     }
     var params = __assign({}, this._params);
-    var pathAndParamsAsString = "/" + this._table._urlEncodedNameOrId() + "?" + object_to_query_param_string_1.default(params);
+    var pathAndParamsAsString = "/".concat(this._table._urlEncodedNameOrId(), "?").concat((0, object_to_query_param_string_1.default)(params));
     var queryParams = {};
     var requestData = null;
     var method;
@@ -569,11 +569,11 @@ function eachPage(pageCallback, done) {
         // with the request params
         requestData = params;
         method = 'post';
-        path = "/" + this._table._urlEncodedNameOrId() + "/listRecords";
+        path = "/".concat(this._table._urlEncodedNameOrId(), "/listRecords");
         var paramNames = Object.keys(params);
         for (var _i = 0, paramNames_1 = paramNames; _i < paramNames_1.length; _i++) {
             var paramName = paramNames_1[_i];
-            if (query_params_1.shouldListRecordsParamBePassedAsParameter(paramName)) {
+            if ((0, query_params_1.shouldListRecordsParamBePassedAsParameter)(paramName)) {
                 // timeZone and userLocale is parsed from the GET request separately from the other params. This parsing
                 // does not occurring within the body parser we use for POST requests, so this will still need to be passed
                 // via query params
@@ -587,7 +587,7 @@ function eachPage(pageCallback, done) {
     else {
         method = 'get';
         queryParams = params;
-        path = "/" + this._table._urlEncodedNameOrId();
+        path = "/".concat(this._table._urlEncodedNameOrId());
     }
     var inner = function () {
         _this._table._base.runAction(method, path, queryParams, requestData, function (err, response, result) {
@@ -618,7 +618,7 @@ function eachPage(pageCallback, done) {
  * Fetches all pages of results asynchronously. May take a long time.
  */
 function all(done) {
-    if (!isFunction_1.default(done)) {
+    if (!(0, isFunction_1.default)(done)) {
         throw new Error('The first parameter to `all` must be a function');
     }
     var allRecords = [];
@@ -649,34 +649,35 @@ var isNumber_1 = __importDefault(require("lodash/isNumber"));
 var isPlainObject_1 = __importDefault(require("lodash/isPlainObject"));
 var isBoolean_1 = __importDefault(require("lodash/isBoolean"));
 exports.paramValidators = {
-    fields: typecheck_1.default(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `fields` should be an array of strings'),
-    filterByFormula: typecheck_1.default(isString_1.default, 'the value for `filterByFormula` should be a string'),
-    maxRecords: typecheck_1.default(isNumber_1.default, 'the value for `maxRecords` should be a number'),
-    pageSize: typecheck_1.default(isNumber_1.default, 'the value for `pageSize` should be a number'),
-    offset: typecheck_1.default(isNumber_1.default, 'the value for `offset` should be a number'),
-    sort: typecheck_1.default(typecheck_1.default.isArrayOf(function (obj) {
-        return (isPlainObject_1.default(obj) &&
-            isString_1.default(obj.field) &&
+    fields: (0, typecheck_1.default)(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `fields` should be an array of strings'),
+    filterByFormula: (0, typecheck_1.default)(isString_1.default, 'the value for `filterByFormula` should be a string'),
+    maxRecords: (0, typecheck_1.default)(isNumber_1.default, 'the value for `maxRecords` should be a number'),
+    pageSize: (0, typecheck_1.default)(isNumber_1.default, 'the value for `pageSize` should be a number'),
+    offset: (0, typecheck_1.default)(isNumber_1.default, 'the value for `offset` should be a number'),
+    sort: (0, typecheck_1.default)(typecheck_1.default.isArrayOf(function (obj) {
+        return ((0, isPlainObject_1.default)(obj) &&
+            (0, isString_1.default)(obj.field) &&
             (obj.direction === void 0 || ['asc', 'desc'].includes(obj.direction)));
     }), 'the value for `sort` should be an array of sort objects. ' +
         'Each sort object must have a string `field` value, and an optional ' +
         '`direction` value that is "asc" or "desc".'),
-    view: typecheck_1.default(isString_1.default, 'the value for `view` should be a string'),
-    cellFormat: typecheck_1.default(function (cellFormat) {
-        return isString_1.default(cellFormat) && ['json', 'string'].includes(cellFormat);
+    view: (0, typecheck_1.default)(isString_1.default, 'the value for `view` should be a string'),
+    cellFormat: (0, typecheck_1.default)(function (cellFormat) {
+        return (0, isString_1.default)(cellFormat) && ['json', 'string'].includes(cellFormat);
     }, 'the value for `cellFormat` should be "json" or "string"'),
-    timeZone: typecheck_1.default(isString_1.default, 'the value for `timeZone` should be a string'),
-    userLocale: typecheck_1.default(isString_1.default, 'the value for `userLocale` should be a string'),
-    method: typecheck_1.default(function (method) {
-        return isString_1.default(method) && ['get', 'post'].includes(method);
+    timeZone: (0, typecheck_1.default)(isString_1.default, 'the value for `timeZone` should be a string'),
+    userLocale: (0, typecheck_1.default)(isString_1.default, 'the value for `userLocale` should be a string'),
+    method: (0, typecheck_1.default)(function (method) {
+        return (0, isString_1.default)(method) && ['get', 'post'].includes(method);
     }, 'the value for `method` should be "get" or "post"'),
-    returnFieldsByFieldId: typecheck_1.default(isBoolean_1.default, 'the value for `returnFieldsByFieldId` should be a boolean'),
-    recordMetadata: typecheck_1.default(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `recordMetadata` should be an array of strings'),
+    returnFieldsByFieldId: (0, typecheck_1.default)(isBoolean_1.default, 'the value for `returnFieldsByFieldId` should be a boolean'),
+    recordMetadata: (0, typecheck_1.default)(typecheck_1.default.isArrayOf(isString_1.default), 'the value for `recordMetadata` should be an array of strings'),
 };
 exports.URL_CHARACTER_LENGTH_LIMIT = 15000;
-exports.shouldListRecordsParamBePassedAsParameter = function (paramName) {
+var shouldListRecordsParamBePassedAsParameter = function (paramName) {
     return paramName === 'timeZone' || paramName === 'userLocale';
 };
+exports.shouldListRecordsParamBePassedAsParameter = shouldListRecordsParamBePassedAsParameter;
 
 },{"./typecheck":18,"lodash/isBoolean":81,"lodash/isNumber":86,"lodash/isPlainObject":89,"lodash/isString":90}],15:[function(require,module,exports){
 "use strict";
@@ -703,11 +704,11 @@ var Record = /** @class */ (function () {
             this.commentCount = recordJson.commentCount;
         }
         this.setRawJson(recordJson);
-        this.save = callback_to_promise_1.default(save, this);
-        this.patchUpdate = callback_to_promise_1.default(patchUpdate, this);
-        this.putUpdate = callback_to_promise_1.default(putUpdate, this);
-        this.destroy = callback_to_promise_1.default(destroy, this);
-        this.fetch = callback_to_promise_1.default(fetch, this);
+        this.save = (0, callback_to_promise_1.default)(save, this);
+        this.patchUpdate = (0, callback_to_promise_1.default)(patchUpdate, this);
+        this.putUpdate = (0, callback_to_promise_1.default)(putUpdate, this);
+        this.destroy = (0, callback_to_promise_1.default)(destroy, this);
+        this.fetch = (0, callback_to_promise_1.default)(fetch, this);
         this.updateFields = this.patchUpdate;
         this.replaceFields = this.putUpdate;
     }
@@ -736,7 +737,7 @@ function patchUpdate(cellValuesByName, opts, done) {
         opts = {};
     }
     var updateBody = __assign({ fields: cellValuesByName }, opts);
-    this._table._base.runAction('patch', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, updateBody, function (err, response, results) {
+    this._table._base.runAction('patch', "/".concat(this._table._urlEncodedNameOrId(), "/").concat(this.id), {}, updateBody, function (err, response, results) {
         if (err) {
             done(err);
             return;
@@ -752,7 +753,7 @@ function putUpdate(cellValuesByName, opts, done) {
         opts = {};
     }
     var updateBody = __assign({ fields: cellValuesByName }, opts);
-    this._table._base.runAction('put', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, updateBody, function (err, response, results) {
+    this._table._base.runAction('put', "/".concat(this._table._urlEncodedNameOrId(), "/").concat(this.id), {}, updateBody, function (err, response, results) {
         if (err) {
             done(err);
             return;
@@ -763,7 +764,7 @@ function putUpdate(cellValuesByName, opts, done) {
 }
 function destroy(done) {
     var _this = this;
-    this._table._base.runAction('delete', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, null, function (err) {
+    this._table._base.runAction('delete', "/".concat(this._table._urlEncodedNameOrId(), "/").concat(this.id), {}, null, function (err) {
         if (err) {
             done(err);
             return;
@@ -773,7 +774,7 @@ function destroy(done) {
 }
 function fetch(done) {
     var _this = this;
-    this._table._base.runAction('get', "/" + this._table._urlEncodedNameOrId() + "/" + this.id, {}, null, function (err, response, results) {
+    this._table._base.runAction('get', "/".concat(this._table._urlEncodedNameOrId(), "/").concat(this.id), {}, null, function (err, response, results) {
         if (err) {
             done(err);
             return;
@@ -794,11 +795,11 @@ var object_to_query_param_string_1 = __importDefault(require("./object_to_query_
 var package_version_1 = __importDefault(require("./package_version"));
 var fetch_1 = __importDefault(require("./fetch"));
 var abort_controller_1 = __importDefault(require("./abort-controller"));
-var userAgent = "Airtable.js/" + package_version_1.default;
+var userAgent = "Airtable.js/".concat(package_version_1.default);
 function runAction(base, method, path, queryParams, bodyData, callback, numAttempts) {
-    var url = base._airtable._endpointUrl + "/v" + base._airtable._apiVersionMajor + "/" + base._id + path + "?" + object_to_query_param_string_1.default(queryParams);
+    var url = "".concat(base._airtable._endpointUrl, "/v").concat(base._airtable._apiVersionMajor, "/").concat(base._id).concat(path, "?").concat((0, object_to_query_param_string_1.default)(queryParams));
     var headers = {
-        authorization: "Bearer " + base._airtable._apiKey,
+        authorization: "Bearer ".concat(base._airtable._apiKey),
         'x-api-version': base._airtable._apiVersion,
         'x-airtable-application-id': base.getId(),
         'content-type': 'application/json',
@@ -830,11 +831,11 @@ function runAction(base, method, path, queryParams, bodyData, callback, numAttem
     var timeout = setTimeout(function () {
         controller.abort();
     }, base._airtable._requestTimeout);
-    fetch_1.default(url, options)
+    (0, fetch_1.default)(url, options)
         .then(function (resp) {
         clearTimeout(timeout);
         if (resp.status === 429 && !base._airtable._noRetryIfRateLimited) {
-            var backoffDelayMs = exponential_backoff_with_jitter_1.default(numAttempts);
+            var backoffDelayMs = (0, exponential_backoff_with_jitter_1.default)(numAttempts);
             setTimeout(function () {
                 runAction(base, method, path, queryParams, bodyData, callback, numAttempts + 1);
             }, backoffDelayMs);
@@ -897,15 +898,15 @@ var Table = /** @class */ (function () {
         this.id = tableId;
         this.name = tableName;
         // Public API
-        this.find = callback_to_promise_1.default(this._findRecordById, this);
+        this.find = (0, callback_to_promise_1.default)(this._findRecordById, this);
         this.select = this._selectRecords.bind(this);
-        this.create = callback_to_promise_1.default(this._createRecords, this);
-        this.update = callback_to_promise_1.default(this._updateRecords.bind(this, false), this);
-        this.replace = callback_to_promise_1.default(this._updateRecords.bind(this, true), this);
-        this.destroy = callback_to_promise_1.default(this._destroyRecord, this);
+        this.create = (0, callback_to_promise_1.default)(this._createRecords, this);
+        this.update = (0, callback_to_promise_1.default)(this._updateRecords.bind(this, false), this);
+        this.replace = (0, callback_to_promise_1.default)(this._updateRecords.bind(this, true), this);
+        this.destroy = (0, callback_to_promise_1.default)(this._destroyRecord, this);
         // Deprecated API
-        this.list = deprecate_1.default(this._listRecords.bind(this), 'table.list', 'Airtable: `list()` is deprecated. Use `select()` instead.');
-        this.forEach = deprecate_1.default(this._forEachRecord.bind(this), 'table.forEach', 'Airtable: `forEach()` is deprecated. Use `select()` instead.');
+        this.list = (0, deprecate_1.default)(this._listRecords.bind(this), 'table.list', 'Airtable: `list()` is deprecated. Use `select()` instead.');
+        this.forEach = (0, deprecate_1.default)(this._forEachRecord.bind(this), 'table.forEach', 'Airtable: `forEach()` is deprecated. Use `select()` instead.');
     }
     Table.prototype._findRecordById = function (recordId, done) {
         var record = new record_1.default(this, recordId);
@@ -916,18 +917,18 @@ var Table = /** @class */ (function () {
             params = {};
         }
         if (arguments.length > 1) {
-            console.warn("Airtable: `select` takes only one parameter, but it was given " + arguments.length + " parameters. Use `eachPage` or `firstPage` to fetch records.");
+            console.warn("Airtable: `select` takes only one parameter, but it was given ".concat(arguments.length, " parameters. Use `eachPage` or `firstPage` to fetch records."));
         }
-        if (isPlainObject_1.default(params)) {
+        if ((0, isPlainObject_1.default)(params)) {
             var validationResults = query_1.default.validateParams(params);
             if (validationResults.errors.length) {
                 var formattedErrors = validationResults.errors.map(function (error) {
-                    return "  * " + error;
+                    return "  * ".concat(error);
                 });
-                throw new Error("Airtable: invalid parameters for `select`:\n" + formattedErrors.join('\n'));
+                throw new Error("Airtable: invalid parameters for `select`:\n".concat(formattedErrors.join('\n')));
             }
             if (validationResults.ignoredKeys.length) {
-                console.warn("Airtable: the following parameters to `select` will be ignored: " + validationResults.ignoredKeys.join(', '));
+                console.warn("Airtable: the following parameters to `select` will be ignored: ".concat(validationResults.ignoredKeys.join(', ')));
             }
             return new query_1.default(this, validationResults.validParams);
         }
@@ -952,7 +953,7 @@ var Table = /** @class */ (function () {
         else {
             requestData = __assign({ fields: recordsData }, optionalParameters);
         }
-        this._base.runAction('post', "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
+        this._base.runAction('post', "/".concat(this._urlEncodedNameOrId(), "/"), {}, requestData, function (err, resp, body) {
             if (err) {
                 done(err);
                 return;
@@ -974,11 +975,11 @@ var Table = /** @class */ (function () {
         var opts;
         if (Array.isArray(recordsDataOrRecordId)) {
             var recordsData = recordsDataOrRecordId;
-            opts = isPlainObject_1.default(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
+            opts = (0, isPlainObject_1.default)(recordDataOrOptsOrDone) ? recordDataOrOptsOrDone : {};
             done = (optsOrDone || recordDataOrOptsOrDone);
             var method = isDestructiveUpdate ? 'put' : 'patch';
             var requestData = __assign({ records: recordsData }, opts);
-            this._base.runAction(method, "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
+            this._base.runAction(method, "/".concat(this._urlEncodedNameOrId(), "/"), {}, requestData, function (err, resp, body) {
                 if (err) {
                     done(err);
                     return;
@@ -992,7 +993,7 @@ var Table = /** @class */ (function () {
         else {
             var recordId = recordsDataOrRecordId;
             var recordData = recordDataOrOptsOrDone;
-            opts = isPlainObject_1.default(optsOrDone) ? optsOrDone : {};
+            opts = (0, isPlainObject_1.default)(optsOrDone) ? optsOrDone : {};
             done = (done || optsOrDone);
             var record = new record_1.default(this, recordId);
             if (isDestructiveUpdate) {
@@ -1007,7 +1008,7 @@ var Table = /** @class */ (function () {
         var _this = this;
         if (Array.isArray(recordIdsOrId)) {
             var queryParams = { records: recordIdsOrId };
-            this._base.runAction('delete', "/" + this._urlEncodedNameOrId(), queryParams, null, function (err, response, results) {
+            this._base.runAction('delete', "/".concat(this._urlEncodedNameOrId()), queryParams, null, function (err, response, results) {
                 if (err) {
                     done(err);
                     return;
@@ -1030,7 +1031,7 @@ var Table = /** @class */ (function () {
             done = opts;
             opts = {};
         }
-        var pathAndParamsAsString = "/" + this._urlEncodedNameOrId() + "?" + object_to_query_param_string_1.default(opts);
+        var pathAndParamsAsString = "/".concat(this._urlEncodedNameOrId(), "?").concat((0, object_to_query_param_string_1.default)(opts));
         var path;
         var listRecordsParameters = {};
         var listRecordsData = null;
@@ -1040,13 +1041,13 @@ var Table = /** @class */ (function () {
             // // There is a 16kb limit on GET requests. Since the URL makes up nearly all of the request size, we check for any requests that
             // that come close to this limit and send it as a POST instead. Additionally, we'll send the request as a post if it is specified
             // with the request params
-            path = "/" + this._urlEncodedNameOrId() + "/listRecords";
+            path = "/".concat(this._urlEncodedNameOrId(), "/listRecords");
             listRecordsData = __assign(__assign({}, (pageSize && { pageSize: pageSize })), (offset && { offset: offset }));
             method = 'post';
             var paramNames = Object.keys(opts);
             for (var _i = 0, paramNames_1 = paramNames; _i < paramNames_1.length; _i++) {
                 var paramName = paramNames_1[_i];
-                if (query_params_1.shouldListRecordsParamBePassedAsParameter(paramName)) {
+                if ((0, query_params_1.shouldListRecordsParamBePassedAsParameter)(paramName)) {
                     listRecordsParameters[paramName] = opts[paramName];
                 }
                 else {
@@ -1056,7 +1057,7 @@ var Table = /** @class */ (function () {
         }
         else {
             method = 'get';
-            path = "/" + this._urlEncodedNameOrId() + "/";
+            path = "/".concat(this._urlEncodedNameOrId(), "/");
             listRecordsParameters = __assign({ limit: pageSize, offset: offset }, opts);
         }
         this._base.runAction(method, path, listRecordsParameters, listRecordsData, function (err, response, results) {
@@ -1150,6 +1151,9 @@ function _defineProperties(target, props) {
 function _createClass(Constructor, protoProps, staticProps) {
   if (protoProps) _defineProperties(Constructor.prototype, protoProps);
   if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
   return Constructor;
 }
 
@@ -1165,23 +1169,38 @@ function _inherits(subClass, superClass) {
       configurable: true
     }
   });
+  Object.defineProperty(subClass, "prototype", {
+    writable: false
+  });
   if (superClass) _setPrototypeOf(subClass, superClass);
 }
 
 function _getPrototypeOf(o) {
-  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
   };
   return _getPrototypeOf(o);
 }
 
 function _setPrototypeOf(o, p) {
-  _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
     o.__proto__ = p;
     return o;
   };
-
   return _setPrototypeOf(o, p);
+}
+
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function _assertThisInitialized(self) {
@@ -1195,9 +1214,30 @@ function _assertThisInitialized(self) {
 function _possibleConstructorReturn(self, call) {
   if (call && (typeof call === "object" || typeof call === "function")) {
     return call;
+  } else if (call !== void 0) {
+    throw new TypeError("Derived constructors may only return object or undefined");
   }
 
   return _assertThisInitialized(self);
+}
+
+function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+  return function _createSuperInternal() {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (hasNativeReflectConstruct) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
 }
 
 function _superPropBase(object, property) {
@@ -1209,9 +1249,9 @@ function _superPropBase(object, property) {
   return object;
 }
 
-function _get(target, property, receiver) {
+function _get() {
   if (typeof Reflect !== "undefined" && Reflect.get) {
-    _get = Reflect.get;
+    _get = Reflect.get.bind();
   } else {
     _get = function _get(target, property, receiver) {
       var base = _superPropBase(target, property);
@@ -1220,19 +1260,17 @@ function _get(target, property, receiver) {
       var desc = Object.getOwnPropertyDescriptor(base, property);
 
       if (desc.get) {
-        return desc.get.call(receiver);
+        return desc.get.call(arguments.length < 3 ? target : receiver);
       }
 
       return desc.value;
     };
   }
 
-  return _get(target, property, receiver || target);
+  return _get.apply(this, arguments);
 }
 
-var Emitter =
-/*#__PURE__*/
-function () {
+var Emitter = /*#__PURE__*/function () {
   function Emitter() {
     _classCallCheck(this, Emitter);
 
@@ -1245,12 +1283,15 @@ function () {
 
   _createClass(Emitter, [{
     key: "addEventListener",
-    value: function addEventListener(type, callback) {
+    value: function addEventListener(type, callback, options) {
       if (!(type in this.listeners)) {
         this.listeners[type] = [];
       }
 
-      this.listeners[type].push(callback);
+      this.listeners[type].push({
+        callback: callback,
+        options: options
+      });
     }
   }, {
     key: "removeEventListener",
@@ -1262,7 +1303,7 @@ function () {
       var stack = this.listeners[type];
 
       for (var i = 0, l = stack.length; i < l; i++) {
-        if (stack[i] === callback) {
+        if (stack[i].callback === callback) {
           stack.splice(i, 1);
           return;
         }
@@ -1271,22 +1312,27 @@ function () {
   }, {
     key: "dispatchEvent",
     value: function dispatchEvent(event) {
-      var _this = this;
-
       if (!(event.type in this.listeners)) {
         return;
       }
 
-      var debounce = function debounce(callback) {
-        setTimeout(function () {
-          return callback.call(_this, event);
-        });
-      };
-
       var stack = this.listeners[event.type];
+      var stackToCall = stack.slice();
 
-      for (var i = 0, l = stack.length; i < l; i++) {
-        debounce(stack[i]);
+      for (var i = 0, l = stackToCall.length; i < l; i++) {
+        var listener = stackToCall[i];
+
+        try {
+          listener.callback.call(this, event);
+        } catch (e) {
+          Promise.resolve().then(function () {
+            throw e;
+          });
+        }
+
+        if (listener.options && listener.options.once) {
+          this.removeEventListener(event.type, listener.callback);
+        }
       }
 
       return !event.defaultPrevented;
@@ -1296,40 +1342,45 @@ function () {
   return Emitter;
 }();
 
-var AbortSignal =
-/*#__PURE__*/
-function (_Emitter) {
+var AbortSignal = /*#__PURE__*/function (_Emitter) {
   _inherits(AbortSignal, _Emitter);
 
+  var _super = _createSuper(AbortSignal);
+
   function AbortSignal() {
-    var _this2;
+    var _this;
 
     _classCallCheck(this, AbortSignal);
 
-    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(AbortSignal).call(this)); // Some versions of babel does not transpile super() correctly for IE <= 10, if the parent
+    _this = _super.call(this); // Some versions of babel does not transpile super() correctly for IE <= 10, if the parent
     // constructor has failed to run, then "this.listeners" will still be undefined and then we call
     // the parent constructor directly instead as a workaround. For general details, see babel bug:
     // https://github.com/babel/babel/issues/3041
     // This hack was added as a fix for the issue described here:
     // https://github.com/Financial-Times/polyfill-library/pull/59#issuecomment-477558042
 
-    if (!_this2.listeners) {
-      Emitter.call(_assertThisInitialized(_this2));
+    if (!_this.listeners) {
+      Emitter.call(_assertThisInitialized(_this));
     } // Compared to assignment, Object.defineProperty makes properties non-enumerable by default and
     // we want Object.keys(new AbortController().signal) to be [] for compat with the native impl
 
 
-    Object.defineProperty(_assertThisInitialized(_this2), 'aborted', {
+    Object.defineProperty(_assertThisInitialized(_this), 'aborted', {
       value: false,
       writable: true,
       configurable: true
     });
-    Object.defineProperty(_assertThisInitialized(_this2), 'onabort', {
+    Object.defineProperty(_assertThisInitialized(_this), 'onabort', {
       value: null,
       writable: true,
       configurable: true
     });
-    return _this2;
+    Object.defineProperty(_assertThisInitialized(_this), 'reason', {
+      value: undefined,
+      writable: true,
+      configurable: true
+    });
+    return _this;
   }
 
   _createClass(AbortSignal, [{
@@ -1354,9 +1405,7 @@ function (_Emitter) {
 
   return AbortSignal;
 }(Emitter);
-var AbortController =
-/*#__PURE__*/
-function () {
+var AbortController = /*#__PURE__*/function () {
   function AbortController() {
     _classCallCheck(this, AbortController);
 
@@ -1371,7 +1420,7 @@ function () {
 
   _createClass(AbortController, [{
     key: "abort",
-    value: function abort() {
+    value: function abort(reason) {
       var event;
 
       try {
@@ -1397,6 +1446,25 @@ function () {
         }
       }
 
+      var signalReason = reason;
+
+      if (signalReason === undefined) {
+        if (typeof document === 'undefined') {
+          signalReason = new Error('This operation was aborted');
+          signalReason.name = 'AbortError';
+        } else {
+          try {
+            signalReason = new DOMException('signal is aborted without reason');
+          } catch (err) {
+            // IE 11 does not support calling the DOMException constructor, use a
+            // regular error object on it instead.
+            signalReason = new Error('This operation was aborted');
+            signalReason.name = 'AbortError';
+          }
+        }
+      }
+
+      this.signal.reason = signalReason;
       this.signal.dispatchEvent(event);
     }
   }, {
@@ -2121,13 +2189,13 @@ var coreJsData = root['__core-js_shared__'];
 module.exports = coreJsData;
 
 },{"./_root":72}],40:[function(require,module,exports){
-(function (global){
+(function (global){(function (){
 /** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
 
 module.exports = freeGlobal;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],41:[function(require,module,exports){
 var isKeyable = require('./_isKeyable');
 
@@ -3728,7 +3796,7 @@ var Airtable = /** @class */ (function () {
             apiVersion: '0.1.0',
             apiKey: "",
             noRetryIfRateLimited: false,
-            requestTimeout: 300 * 1000,
+            requestTimeout: 300 * 1000, // 5 minutes
         };
     };
     Airtable.configure = function (_a) {
