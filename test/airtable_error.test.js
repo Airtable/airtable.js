@@ -19,4 +19,14 @@ describe('AirtableError', function() {
             expect(error.toString()).toEqual(expect.stringContaining('404'));
         });
     });
+
+    it('has a stacktrace', function() {
+        var error = new AirtableError('TEST_ERROR', 'A test error', 400);
+        expect(error.stack).toEqual(expect.stringContaining('airtable_error.test.js'));
+    });
+
+    it('has a name', function() {
+        var error = new AirtableError('TEST_ERROR', 'A test error', 400);
+        expect(error.name).toEqual('AirtableError');
+    });
 });

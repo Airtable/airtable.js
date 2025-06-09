@@ -19,11 +19,29 @@ module.exports = AbortController;
 
 },{"abort-controller":20,"abortcontroller-polyfill/dist/cjs-ponyfill":19}],2:[function(require,module,exports){
 "use strict";
-var AirtableError = /** @class */ (function () {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var AirtableError = /** @class */ (function (_super) {
+    __extends(AirtableError, _super);
     function AirtableError(error, message, statusCode) {
-        this.error = error;
-        this.message = message;
-        this.statusCode = statusCode;
+        var _this = _super.call(this, message) || this;
+        _this.name = 'AirtableError';
+        _this.error = error;
+        _this.message = message;
+        _this.statusCode = statusCode;
+        _this.toString = AirtableError.prototype.toString.bind(_this);
+        return _this;
     }
     AirtableError.prototype.toString = function () {
         return [
@@ -35,7 +53,7 @@ var AirtableError = /** @class */ (function () {
         ].join('');
     };
     return AirtableError;
-}());
+}(Error));
 module.exports = AirtableError;
 
 },{}],3:[function(require,module,exports){
