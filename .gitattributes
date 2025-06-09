@@ -1,0 +1,5 @@
+# This file tells GitHub which files are build artifacts, so
+# they're hidden from the PR browser to make reviewing easier
+# See https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github
+build/airtable.browser.js linguist-generated=true
+test/test_files/airtable.browser.js linguist-generated=true
