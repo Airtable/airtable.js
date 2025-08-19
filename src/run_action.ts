@@ -86,8 +86,8 @@ function runAction(
                         r.statusCode = resp.status;
                         callback(error, r, body);
                     })
-                    .catch(function() {
-                        callback(base._checkStatusForError(resp.status));
+                    .catch(function(e) {
+                        callback(base._checkStatusForError(resp.status) || e);
                     });
             }
         })
