@@ -445,7 +445,7 @@ module.exports = objectToQueryParamString;
 
 },{"lodash/isArray":79,"lodash/isNil":85,"lodash/keys":93}],12:[function(require,module,exports){
 "use strict";
-module.exports = "0.12.2";
+module.exports = "0.12.3";
 
 },{}],13:[function(require,module,exports){
 "use strict";
@@ -902,6 +902,7 @@ var Table = /** @class */ (function () {
         this.create = callback_to_promise_1.default(this._createRecords, this);
         this.update = callback_to_promise_1.default(this._updateRecords.bind(this, false), this);
         this.replace = callback_to_promise_1.default(this._updateRecords.bind(this, true), this);
+        this.upsert = callback_to_promise_1.default(this._upsertRecords, this);
         this.destroy = callback_to_promise_1.default(this._destroyRecord, this);
         // Deprecated API
         this.list = deprecate_1.default(this._listRecords.bind(this), 'table.list', 'Airtable: `list()` is deprecated. Use `select()` instead.');
@@ -1002,6 +1003,41 @@ var Table = /** @class */ (function () {
                 record.patchUpdate(recordData, opts, done);
             }
         }
+    };
+    Table.prototype._upsertRecords = function (recordsData, fieldsToMergeOn, optionalParameters, done) {
+        var _this = this;
+        // Handle optional parameters
+        if (!done) {
+            done = optionalParameters;
+            optionalParameters = {};
+        }
+        // Validate fieldsToMergeOn
+        if (!Array.isArray(fieldsToMergeOn) || fieldsToMergeOn.length === 0) {
+            var error = new Error('fieldsToMergeOn must be a non-empty array of field names');
+            done(error);
+            return;
+        }
+        // Validate recordsData is an array (upsert only supports batch operations)
+        if (!Array.isArray(recordsData)) {
+            var error = new Error('recordsData must be an array for upsert operations');
+            done(error);
+            return;
+        }
+        // Construct request payload following Airtable API spec
+        var requestData = __assign({ performUpsert: {
+                fieldsToMergeOn: fieldsToMergeOn,
+            }, records: recordsData }, optionalParameters);
+        // Use PATCH method as per Airtable API
+        this._base.runAction('patch', "/" + this._urlEncodedNameOrId() + "/", {}, requestData, function (err, resp, body) {
+            if (err) {
+                done(err);
+                return;
+            }
+            var result = body.records.map(function (record) {
+                return new record_1.default(_this, record.id, record);
+            });
+            done(null, result);
+        });
     };
     Table.prototype._destroyRecord = function (recordIdsOrId, done) {
         var _this = this;

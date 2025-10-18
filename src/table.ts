@@ -94,12 +94,32 @@ interface TableChangeRecords<TFields extends FieldSet> {
     (recordsData: RecordData<Partial<TFields>>[], done: RecordCollectionCallback<TFields>): void;
 }
 
+interface TableUpsertRecords<TFields extends FieldSet> {
+    (
+        recordsData: CreateRecords<TFields>,
+        fieldsToMergeOn: string[],
+        optionalParameters?: OptionalParameters
+    ): Promise<Records<TFields>>;
+    (
+        recordsData: CreateRecords<TFields>,
+        fieldsToMergeOn: string[],
+        optionalParameters: OptionalParameters,
+        done: RecordCollectionCallback<TFields>
+    ): void;
+    (
+        recordsData: CreateRecords<TFields>,
+        fieldsToMergeOn: string[],
+        done: RecordCollectionCallback<TFields>
+    ): void;
+}
+
 interface TableDestroyRecords<TFields extends FieldSet> {
     (recordId: string): Promise<Record<TFields>>;
     (recordId: string, done: RecordCallback<TFields>): void;
     (recordIds: string[]): Promise<Records<TFields>>;
     (recordIds: string[], done: RecordCollectionCallback<TFields>): void;
 }
+
 class Table<TFields extends FieldSet> {
     readonly _base: Base;
 
@@ -111,6 +131,7 @@ class Table<TFields extends FieldSet> {
     readonly create: TableCreateRecords<TFields>;
     readonly update: TableChangeRecords<TFields>;
     readonly replace: TableChangeRecords<TFields>;
+    readonly upsert: TableUpsertRecords<TFields>;
     readonly destroy: TableDestroyRecords<TFields>;
 
     /** @deprecated */
@@ -135,6 +156,7 @@ class Table<TFields extends FieldSet> {
         this.create = callbackToPromise(this._createRecords, this);
         this.update = callbackToPromise(this._updateRecords.bind(this, false), this);
         this.replace = callbackToPromise(this._updateRecords.bind(this, true), this);
+        this.upsert = callbackToPromise(this._upsertRecords, this);
         this.destroy = callbackToPromise(this._destroyRecord, this);
 
         // Deprecated API
@@ -331,6 +353,61 @@ class Table<TFields extends FieldSet> {
                 record.patchUpdate(recordData, opts, done);
             }
         }
+    }
+
+    _upsertRecords(
+        recordsData: CreateRecords<TFields>,
+        fieldsToMergeOn: string[],
+        optionalParameters: OptionalParameters | RecordCollectionCallback<TFields>,
+        done?: RecordCollectionCallback<TFields>
+    ): void | Promise<Records<TFields>> {
+        // Handle optional parameters
+        if (!done) {
+            done = optionalParameters as RecordCollectionCallback<TFields>;
+            optionalParameters = {};
+        }
+
+        // Validate fieldsToMergeOn
+        if (!Array.isArray(fieldsToMergeOn) || fieldsToMergeOn.length === 0) {
+            const error = new Error('fieldsToMergeOn must be a non-empty array of field names');
+            done(error);
+            return;
+        }
+
+        // Validate recordsData is an array (upsert only supports batch operations)
+        if (!Array.isArray(recordsData)) {
+            const error = new Error('recordsData must be an array for upsert operations');
+            done(error);
+            return;
+        }
+
+        // Construct request payload following Airtable API spec
+        const requestData = {
+            performUpsert: {
+                fieldsToMergeOn: fieldsToMergeOn,
+            },
+            records: recordsData,
+            ...optionalParameters,
+        };
+
+        // Use PATCH method as per Airtable API
+        this._base.runAction(
+            'patch',
+            `/${this._urlEncodedNameOrId()}/`,
+            {},
+            requestData,
+            (err, resp, body) => {
+                if (err) {
+                    done(err);
+                    return;
+                }
+
+                const result = body.records.map(record => {
+                    return new Record(this, record.id, record);
+                });
+                done(null, result);
+            }
+        );
     }
 
     _destroyRecord(recordId: string, done: RecordCallback<TFields>): void;
