@@ -69,16 +69,31 @@ function getMockEnvironmentAsync(options) {
     const batchRecordUpdate = [
         _checkParamsMiddleware,
         function(req, res) {
-            res.json({
-                records: req.body.records.map(function(record) {
-                    var fields = req.body.typecast ? {typecasted: true} : record.fields;
+            // Check if this is an upsert request
+            if (req.body.performUpsert) {
+                const records = req.body.records.map(function(record, index) {
+                    const fields = req.body.typecast
+                        ? {typecasted: true, ...record.fields}
+                        : record.fields;
                     return {
-                        id: record.id,
+                        id: record.id || 'rec' + index,
                         createdTime: FAKE_CREATED_TIME,
                         fields: fields,
                     };
-                }),
-            });
+                });
+                res.json({records: records});
+            } else {
+                res.json({
+                    records: req.body.records.map(function(record) {
+                        var fields = req.body.typecast ? {typecasted: true} : record.fields;
+                        return {
+                            id: record.id,
+                            createdTime: FAKE_CREATED_TIME,
+                            fields: fields,
+                        };
+                    }),
+                });
+            }
         },
     ];
 

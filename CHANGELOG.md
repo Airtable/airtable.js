@@ -1,3 +1,9 @@
+# v0.12.3
+ * Add `table.upsert()` method for updating existing records or creating new ones based on merge fields
+ * Support for both Promise and callback APIs
+ * Comprehensive error handling and validation
+ * Full TypeScript support with proper type definitions
+
 # v0.12.2
  * Fix invalid URL error in `abort-controller`
 

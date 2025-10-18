@@ -90,6 +90,40 @@ is equivalent to
 table.select().firstPage().then(result => { ... })
 ```
 
+# Upsert Records
+
+The `upsert` method allows you to update existing records or create new ones based on specified merge fields. This is useful when you want to ensure records exist with certain values, regardless of whether they already exist in the table.
+
+```js
+// Upsert with Promise
+const records = await table.upsert(
+  [{ fields: { Name: 'John', Email: 'john@example.com' } }],
+  ['Email']
+);
+
+// Upsert with callback
+table.upsert(
+  [{ fields: { Name: 'Jane', Email: 'jane@example.com' } }],
+  ['Email'],
+  { typecast: true },
+  (err, records) => {
+    if (err) console.error(err);
+    else console.log('Upserted:', records);
+  }
+);
+
+// Upsert with multiple merge fields
+table.upsert(
+  [{ fields: { Name: 'Bob', Email: 'bob@company.com', Company: 'Acme Corp' } }],
+  ['Email', 'Company']
+);
+```
+
+The `upsert` method will:
+- **Update existing records** if they match the specified merge fields
+- **Create new records** if no match is found
+- **Return an error** if multiple records match the merge criteria (duplicate matches)
+
 # Tests
 
 Tests are run via `npm run test`.
