@@ -154,24 +154,28 @@ class Base {
 
         if (statusCode === 401) {
             return new AirtableError(
-                'AUTHENTICATION_REQUIRED',
-                'You should provide valid api key to perform this operation',
+                type ?? 'AUTHENTICATION_REQUIRED',
+                message ?? 'You should provide valid api key to perform this operation',
                 statusCode
             );
         } else if (statusCode === 403) {
             return new AirtableError(
-                'NOT_AUTHORIZED',
-                'You are not authorized to perform this operation',
+                type ?? 'NOT_AUTHORIZED',
+                message ?? 'You are not authorized to perform this operation',
                 statusCode
             );
         } else if (statusCode === 404) {
             return new AirtableError(
-                'NOT_FOUND',
+                type ?? 'NOT_FOUND',
                 message ?? 'Could not find what you are looking for',
                 statusCode
             );
         } else if (statusCode === 413) {
-            return new AirtableError('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
+            return new AirtableError(
+                type ?? 'REQUEST_TOO_LARGE',
+                message ?? 'Request body is too large',
+                statusCode
+            );
         } else if (statusCode === 422) {
             return new AirtableError(
                 type ?? 'UNPROCESSABLE_ENTITY',
@@ -180,20 +184,20 @@ class Base {
             );
         } else if (statusCode === 429) {
             return new AirtableError(
-                'TOO_MANY_REQUESTS',
-                'You have made too many requests in a short period of time. Please retry your request later',
+                type ?? 'TOO_MANY_REQUESTS',
+                message ?? 'You have made too many requests in a short period of time. Please retry your request later',
                 statusCode
             );
         } else if (statusCode === 500) {
             return new AirtableError(
-                'SERVER_ERROR',
-                'Try again. If the problem persists, contact support.',
+                type ?? 'SERVER_ERROR',
+                message ?? 'Try again. If the problem persists, contact support.',
                 statusCode
             );
         } else if (statusCode === 503) {
             return new AirtableError(
-                'SERVICE_UNAVAILABLE',
-                'The service is temporarily unavailable. Please retry shortly.',
+                type ?? 'SERVICE_UNAVAILABLE',
+                message ?? 'The service is temporarily unavailable. Please retry shortly.',
                 statusCode
             );
         } else if (statusCode >= 400) {

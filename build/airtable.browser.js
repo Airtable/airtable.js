@@ -158,28 +158,28 @@ var Base = /** @class */ (function () {
         var _a = (body !== null && body !== void 0 ? body : { error: {} }).error, error = _a === void 0 ? {} : _a;
         var type = error.type, message = error.message;
         if (statusCode === 401) {
-            return new airtable_error_1.default('AUTHENTICATION_REQUIRED', 'You should provide valid api key to perform this operation', statusCode);
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'AUTHENTICATION_REQUIRED', message !== null && message !== void 0 ? message : 'You should provide valid api key to perform this operation', statusCode);
         }
         else if (statusCode === 403) {
-            return new airtable_error_1.default('NOT_AUTHORIZED', 'You are not authorized to perform this operation', statusCode);
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'NOT_AUTHORIZED', message !== null && message !== void 0 ? message : 'You are not authorized to perform this operation', statusCode);
         }
         else if (statusCode === 404) {
-            return new airtable_error_1.default('NOT_FOUND', message !== null && message !== void 0 ? message : 'Could not find what you are looking for', statusCode);
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'NOT_FOUND', message !== null && message !== void 0 ? message : 'Could not find what you are looking for', statusCode);
         }
         else if (statusCode === 413) {
-            return new airtable_error_1.default('REQUEST_TOO_LARGE', 'Request body is too large', statusCode);
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'REQUEST_TOO_LARGE', message !== null && message !== void 0 ? message : 'Request body is too large', statusCode);
         }
         else if (statusCode === 422) {
             return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'UNPROCESSABLE_ENTITY', message !== null && message !== void 0 ? message : 'The operation cannot be processed', statusCode);
         }
         else if (statusCode === 429) {
-            return new airtable_error_1.default('TOO_MANY_REQUESTS', 'You have made too many requests in a short period of time. Please retry your request later', statusCode);
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'TOO_MANY_REQUESTS', message !== null && message !== void 0 ? message : 'You have made too many requests in a short period of time. Please retry your request later', statusCode);
         }
         else if (statusCode === 500) {
-            return new airtable_error_1.default('SERVER_ERROR', 'Try again. If the problem persists, contact support.', statusCode);
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'SERVER_ERROR', message !== null && message !== void 0 ? message : 'Try again. If the problem persists, contact support.', statusCode);
         }
         else if (statusCode === 503) {
-            return new airtable_error_1.default('SERVICE_UNAVAILABLE', 'The service is temporarily unavailable. Please retry shortly.', statusCode);
+            return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'SERVICE_UNAVAILABLE', message !== null && message !== void 0 ? message : 'The service is temporarily unavailable. Please retry shortly.', statusCode);
         }
         else if (statusCode >= 400) {
             return new airtable_error_1.default(type !== null && type !== void 0 ? type : 'UNEXPECTED_ERROR', message !== null && message !== void 0 ? message : 'An unexpected error occurred', statusCode);
