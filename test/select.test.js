@@ -594,6 +594,43 @@ describe('record selection', function() {
             });
     });
 
+    it('uses POST listRows endpoint when single quotes push the sent URL past 15k characters', function(done) {
+        // Each ' is sent as %27, so this formula is ~14.7k characters before encoding quotes and
+        // ~16.4k once they are encoded, which the API rejects with a 414 if sent as a GET.
+        const longFormula = `OR(${[...Array(410)]
+            .map((_, i) => `RECORD_ID()='rec${String(i).padStart(14, '0')}'`)
+            .join(',')})`;
+
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('POST');
+            expect(req.url).toBe('/v0/app123/Table/listRecords?');
+            expect(req.body.filterByFormula).toBe(longFormula);
+
+            res.json({
+                records: [
+                    {
+                        id: 'recordA',
+                        fields: {Name: 'Rebecca'},
+                        createdTime: '2020-04-20T16:20:00.000Z',
+                    },
+                ],
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .select({
+                filterByFormula: longFormula,
+            })
+            .eachPage(function page(records) {
+                records.forEach(function(record) {
+                    expect(record.id).toBe('recordA');
+                });
+                done();
+            });
+    });
+
     it('uses POST listRows endpoint when "post" is specified for method', function(done) {
         testExpressApp.set('handler override', function(req, res) {
             expect(req.method).toBe('POST');

@@ -17,6 +17,10 @@ describe('objectToQueryParamString', function() {
 
         expect(objectToQueryParamString({'🌴': 'foo'})).toBe('%F0%9F%8C%B4=foo');
         expect(objectToQueryParamString({foo: '🌴'})).toBe('foo=%F0%9F%8C%B4');
+
+        expect(objectToQueryParamString({foo: "RECORD_ID()='rec123'"})).toBe(
+            'foo=RECORD_ID()%3D%27rec123%27'
+        );
     });
 
     it('serializes numbers', function() {

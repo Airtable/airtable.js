@@ -41,7 +41,9 @@ function objectToQueryParamString(obj: ToParamBody): string {
     const parts = [];
     const addFn = (key, value) => {
         value = isNil(value) ? '' : value;
-        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+        // encodeURIComponent leaves ' as-is, but fetch percent-encodes it in the query string, so
+        // encode it here to keep the length check in query.ts in line with the URL actually sent.
+        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(value).replace(/'/g, '%27')}`);
     };
 
     for (const key of keys(obj)) {
