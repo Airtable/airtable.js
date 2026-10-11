@@ -503,6 +503,9 @@ var Query = /** @class */ (function () {
             var key = _a[_i];
             var value = params[key];
             if (has_1.default(Query.paramValidators, key)) {
+                if (value === void 0) {
+                    continue;
+                }
                 var validator = Query.paramValidators[key];
                 var validationResult = validator(value);
                 if (validationResult.pass) {

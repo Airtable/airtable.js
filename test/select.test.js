@@ -624,4 +624,38 @@ describe('record selection', function() {
                 done();
             });
     });
+
+    it('ignores undefined query parameters', function(done) {
+        testExpressApp.set('handler override', function(req, res) {
+            expect(req.method).toBe('GET');
+            expect(req.url).toBe('/v0/app123/Table?maxRecords=10');
+            res.json({
+                records: [
+                    {
+                        id: 'recordA',
+                        fields: {Name: 'Rebecca'},
+                        createdTime: '2020-04-20T16:20:00.000Z',
+                    },
+                ],
+                offset: 'offsetABC',
+            });
+        });
+
+        return airtable
+            .base('app123')
+            .table('Table')
+            .select({
+                filterByFormula: void 0,
+                maxRecords: 10,
+                pageSize: void 0,
+                view: void 0,
+            })
+            .eachPage(function page(records) {
+                expect(records.length).toBe(1);
+                expect(records[0].id).toBe('recordA');
+                expect(records[0].get('Name')).toBe('Rebecca');
+                done();
+            });
+    });
 });
+

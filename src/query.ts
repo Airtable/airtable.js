@@ -26,7 +26,7 @@ type RecordCollectionCallback<TFields extends FieldSet> = (
     error: CallbackError,
     records?: Records<TFields>
 ) => void;
-type DoneCallback = (error: CallbackError) => void;
+type DoneCallback = (error: CallbackError, result?: null) => void;
 
 interface RecordCollectionRequestMethod<TFields extends FieldSet> {
     (): Promise<Records<TFields>>;
@@ -91,6 +91,9 @@ class Query<TFields extends FieldSet> {
         for (const key of keys(params)) {
             const value = params[key];
             if (has(Query.paramValidators, key)) {
+                if (value === void 0) {
+                    continue;
+                }
                 const validator = Query.paramValidators[key];
                 const validationResult = validator(value);
                 if (validationResult.pass) {
